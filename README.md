@@ -3,10 +3,27 @@ TODO: Give a short introduction of your project. Let this section explain the ob
 
 # Getting Started
 TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+1.	Software dependencies
+2.	Latest releases
+3.	API references
+
+## Installation Process
+
+After cloning the repository, you need to install dependencies for both the frontend (React) and backend (Node.js/Express):
+
+1. **Install frontend dependencies:**
+   ```sh
+   cd client
+   npm install
+   ```
+
+2. **Install backend dependencies:**
+   ```sh
+   cd client/server
+   npm install
+   ```
+
+This will install all required packages listed in each folder’s `package.json`.
 
 # Build and Test
 TODO: Describe and show how to build your code and run the tests. 
@@ -19,19 +36,23 @@ If you want to learn more about creating good readme files then refer the follow
 - [Visual Studio Code](https://github.com/Microsoft/vscode)
 - [Chakra Core](https://github.com/Microsoft/ChakraCore)
 
-# Julia's Commit
-Implemented React Frontend 
-To Run: 
-cd client 
-cd server 
-node index.js 
+## How to Run the Server and Access About/Login Pages
 
-Implemented Node Backend 
-To run: 
-cd client 
-npm start 
+1. **Start the Node.js backend server:**
+   ```sh
+   cd client/server
+   node index.js
+   ```
+   The server will run on [http://localhost:5000](http://localhost:5000).
 
-NOTE: These each need to be in there own terminals to run frontend/backend stuff
-discuss if we like this process or not and if we want to change production style 
-TODO: Find Template for About Page/Login stuff 
-Make sure that the database cooperates with this setup  
+2. **Access the About and Login pages:**
+   - Open your browser and go to [http://localhost:5000/](http://localhost:5000/) to view the About page.
+   - To view the Login page, go to [http://localhost:5000/login.html](http://localhost:5000/login.html).
+
+> **Note:**  
+> If you are running the React frontend, it will be available at [http://localhost:3000](http://localhost:3000/).  
+> The static HTML About/Login pages are only served from the backend at port 5000.
+> I found React prefers using JSX files for components instead of plain HTML. JSX allows you to write HTML-like syntax directly in JavaScript, making it easier to create dynamic and interactive user interfaces. It's not something we discussed in planning, but we might what to consider the switch over HTML. Plan discuss as a group. 
+
+TODO: Find Template for About Page/Login stuff. 
+Make sure that the database cooperates with this setup.  
