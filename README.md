@@ -19,6 +19,18 @@ If you want to learn more about creating good readme files then refer the follow
 - [Visual Studio Code](https://github.com/Microsoft/vscode)
 - [Chakra Core](https://github.com/Microsoft/ChakraCore)
 
-Jason's Commit
-Julia's Commit
-Ohm's Commit 
+# Julia's Commit
+Implemented React Frontend 
+To Run: 
+cd server 
+node index.j 
+
+Implemented Node Backend 
+To run: 
+cd client 
+npm start 
+
+NOTE: These each need to be in there own terminals to run frontend/backend stuff
+discuss if we like this process or not and if we want to change production style 
+TODO: Find Template for About Page/Login stuff 
+Make sure that the database cooperates with this setup  
