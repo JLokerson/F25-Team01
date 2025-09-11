@@ -23,7 +23,7 @@ If you want to learn more about creating good readme files then refer the follow
 Implemented React Frontend 
 To Run: 
 cd server 
-node index.j 
+node index.js 
 
 Implemented Node Backend 
 To run: 
