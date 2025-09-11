@@ -22,6 +22,7 @@ If you want to learn more about creating good readme files then refer the follow
 # Julia's Commit
 Implemented React Frontend 
 To Run: 
+cd client 
 cd server 
 node index.js 
 
