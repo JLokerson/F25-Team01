@@ -1,11 +1,19 @@
-// server/index.js
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const app = express();
-const port = 5000; // or any other available port
+const port = 5000; // Can change the port if needed
 
 app.use(cors()); // Enable CORS for cross-origin requests
 app.use(express.json()); // Enable parsing JSON request bodies
+
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, '../../public')));
+
+// Serve about.html at the root URL
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/about.html'));
+});
 
 // Example API endpoint
 app.get('/api/data', (req, res) => {
