@@ -1,11 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
 
 export default function Login() {
+  // Not secure - for demonstration purposes only
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Mock login logic
+    alert(`Username: ${username}\nPassword: ${password}`);
+  };
+
   return (
-    <div>
-      <h1>This will be the login page</h1>
-      <Link to="/about">Go to About Page</Link>
+    <div className="container mt-5" style={{ maxWidth: 400 }}>
+      <h1 className="mb-4">Login</h1>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label htmlFor="username" className="form-label">Username</label>
+          <input
+            type="text"
+            id="username"
+            className="form-control"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label htmlFor="password" className="form-label">Password</label>
+          <input
+            type="password"
+            id="password"
+            className="form-control"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit" className="btn btn-primary w-100">Login</button>
+      </form>
+      <div className="mt-3">
+        <Link to="/about">Go to About Page</Link>
+      </div>
     </div>
   );
 }
