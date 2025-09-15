@@ -4,10 +4,8 @@ import { Link } from 'react-router-dom';
 export default function Login() {
   return (
     <div>
-      <h1>This will be the login page</h1>
+      <h1>This will be the profile page</h1>
       <Link to="/about">Go to About Page</Link>
-      <br></br>
-      <Link to="/profile">Go to Profile Page</Link>
     </div>
   );
 }
