@@ -14,6 +14,7 @@ export default function About() {
       <div style={{minHeight:"92vh",maxHeight:"92vh"}}>
         <h1>This will be the about page</h1>
         <Link to="/login">Go to Login Page</Link>
+        <br></br>
         <div className="spinner-border text-primary" role="status">
           <span className="sr-only"> </span>
         </div>
