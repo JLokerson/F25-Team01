@@ -32,7 +32,7 @@ export default function About() {
       {MostOfTheText()}
       <div style={{minHeight:"12vh",maxHeight:"12vh"}}>
         <p>By using our site you hereby agree that we, the designers and hosts of this service, are not to be held liable for any and all harm, fiscal or otherwise, that may arise from the use of our software. You agree that should you have any legal dispute with us, it is to be handled via arbitration in Clemson, South Carolina. The arbitrator in any such arrangement will be selected and/or approved by us, Network Drivers.`</p>
-        <button style={{minHeight:"8vh",maxHeight:"8vh"}} type="submit" onClick={DisplayTOS} className="btn btn-info">TOS</button>
+        <button style={{minHeight:"8vh",maxHeight:"8vh"}} type="submit" onClick={DisplayTOS} className="btn btn-info">Hide TOS</button>
       </div>
     </div>);
   }else{
@@ -41,7 +41,7 @@ export default function About() {
       {MostOfTheText()}
       <div style={{minHeight:"12vh",maxHeight:"12vh"}}>
         <p style={{color:"#ffffff"}}>This text doesn't exist</p>
-        <button style={{minHeight:"8vh",maxHeight:"8vh",}} type="submit" onClick={DisplayTOS} className="btn btn-info">TOS</button>
+        <button style={{minHeight:"8vh",maxHeight:"8vh",}} type="submit" onClick={DisplayTOS} className="btn btn-info">Show TOS</button>
       </div>
     </div>);
   }
