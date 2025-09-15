@@ -11,14 +11,14 @@ function DisplayTOS() {
 export default function About() {
   return (
     <div>
-      <div style={{minHeight:"75vw",maxHeight:"75vw"}}>
+      <div style={{minHeight:"92vh",maxHeight:"92vh"}}>
         <h1>This will be the about page</h1>
         <Link to="/login">Go to Login Page</Link>
         <div className="spinner-border text-primary" role="status">
           <span className="sr-only"> </span>
         </div>
       </div>
-      <button style={{minHeight:"25vw",maxHeight:"25vw"}} type="submit" onClick={DisplayTOS} className="btn btn-info">TOS</button>
+      <button style={{minHeight:"8vh",maxHeight:"8vh"}} type="submit" onClick={DisplayTOS} className="btn btn-info">TOS</button>
     </div>
   );
 }
