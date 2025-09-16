@@ -8,11 +8,11 @@ app.use(cors()); // Enable CORS for cross-origin requests
 app.use(express.json()); // Enable parsing JSON request bodies
 
 // Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, '../../public')));
+app.use(express.static(path.resolve(__dirname, '../../public')));
 
 // Serve about.html at the root URL
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../public/about.html'));
+  res.sendFile(path.resolve(__dirname, '../../public/about.html'));
 });
 
 // Example API endpoint
