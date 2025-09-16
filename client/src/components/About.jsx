@@ -42,7 +42,7 @@ export default function About() {
     <div>
       {MostOfTheText(ShowTOS)}
       <div style={{minHeight:"12vh",maxHeight:"12vh"}}>
-        <p>By using our site you hereby agree that we, the designers and hosts of this service, are not to be held liable for any and all harm, fiscal or otherwise, that may arise from the use of our software. You agree that should you have any legal dispute with us, it is to be handled via arbitration in Clemson, South Carolina. The arbitrator in any such arrangement will be selected and/or approved by us, Network Drivers.`</p>
+        <p>By using our site you hereby agree that we, the designers and hosts of this service, are not to be held liable for any and all harm, fiscal or otherwise, that may arise from the use of our software. You agree that should you have any legal dispute with us, it is to be handled via arbitration in Clemson, South Carolina. The arbitrator in any such arrangement will be selected and/or approved by us, Network Drivers. By continuing to use this application you hereby agree to these terms.`</p>
         <button style={{minHeight:"8vh",maxHeight:"8vh"}} type="submit" onClick={DisplayTOS} className="btn btn-info">Hide TOS</button>
       </div>
     </div>);
