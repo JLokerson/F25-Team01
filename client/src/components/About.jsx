@@ -16,6 +16,7 @@ function MostOfTheText(){
         <div className="spinner-border text-primary" role="status">
           <span className="sr-only"> </span>
         </div>
+        <p>This website is intended to be used for drivers to earn rewards points and claim rewards. Please log in and you will be directed to the correct location.</p>
       </div>
   );
 }
