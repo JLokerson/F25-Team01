@@ -32,8 +32,8 @@ function addNewUser(data){
   console.log("Testing addNewUser func");
   console.log(data);
   // var parsedData = JSON.parse(data);
-  var sql = "INSERT INTO USER (user_ID, first_name, last_name, email, password) VALUES (?, ?, ?, ?, ?)";
-  var values = [2, "Julia", "Lokerson", "fakeer@mail.com", "password123"];
+  var sql = "INSERT INTO USER (first_name, last_name, email, password) VALUES (?, ?, ?, ?)";
+  var values = ["Julia", "Lokerson", "fakeer@mail.com", "password123"];
   con.query(sql, values, function (err, result, fields) {
         if (err) throw err;
         
