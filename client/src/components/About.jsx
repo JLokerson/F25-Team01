@@ -3,7 +3,18 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
+var textStuff = "";
+function callAPI(){
+  var response = fetch("http://localhost:4000/testAPI")
+  .then(res => res.text())
+  .then(res => setString(res));
 
+  return textStuff;
+};
+
+function setString(str){
+  textStuff = str;
+}
 
 
 function MostOfTheText(InputBool){
@@ -51,7 +62,7 @@ export default function About() {
     <div>
       {MostOfTheText(ShowTOS)}
       <div style={{minHeight:"12vh",maxHeight:"12vh"}}>
-        <p style={{color:"#ffffff"}}>This text doesn't exist</p>
+        <p style={{color:"#ffffff"}}>{callAPI()}</p>
         <button style={{minHeight:"8vh",maxHeight:"8vh",}} type="submit" onClick={DisplayTOS} className="btn btn-info">Show TOS</button>
       </div>
     </div>);

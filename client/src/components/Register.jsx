@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
 
-export default function Login() {
+export default function Register() {
   // Not secure - for demonstration purposes only
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -18,20 +18,18 @@ export default function Login() {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            first_name: "Julia",
-            last_name: "Lokerson",
-            email: "fakeer@mail.com",
-            password: "password123"
+            first_name: 'Julia',
+            last_name: 'Lokerson',
+            email: 'fakeer@mail.com',
+            password: 'password123'
         })
     });
 
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
-    //console.log(response.json());
-    // return response.statusText;
-    alert(response.status + " " + response.statusText);
-    // alert(JSON.stringify(response.json));
+    console.log(response.json());
+    return response.json();
 
     //return textStuff;
   };
@@ -68,7 +66,7 @@ export default function Login() {
         <Link to="/about">Go to About Page</Link>
       </div>
       <div className="mt-3">
-        <Link to="/register">Go to Register Page</Link>
+        <Link to="/login">Go to Login Page</Link>
       </div>
     </div>
   );
