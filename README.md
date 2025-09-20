@@ -19,7 +19,7 @@ After cloning the repository, you need to install dependencies for both the fron
 
 2. **Install backend dependencies:**
    ```sh
-   cd client/server
+   cd server
    npm install
    ```
 
