@@ -16,9 +16,14 @@ export default function SponsorNavbar() {
                     <a class="nav-link" href="/SponsorHome">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Link</a>
+                    <a class="nav-link" href="#">Profile</a>
                 </li>
-
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Driver Management</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Catalog Management</a>
+                </li>
                 {/* Commented out the unwanted parts, but left as a reference on how to make given elements since the bootstrap default example had to be slightly modified to work with react
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

@@ -16,7 +16,16 @@ export default function DriverNavbar() {
                     <a class="nav-link" href="/DriverHome">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Link</a>
+                    <a class="nav-link" href="#">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Catalog</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Cart</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">My Orders</a>
                 </li>
 
                 {/* Commented out the unwanted parts, but left as a reference on how to make given elements since the bootstrap default example had to be slightly modified to work with react
