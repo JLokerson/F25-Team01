@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import About from './components/About';
 import Login from './components/Login';
 import AdminHome from './components/AdminHome';
+import DriverHome from './components/DriverHome';
+import SponsorHome from './components/SponsorHome';
 
 function App() {
   return (
