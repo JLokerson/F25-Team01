@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
-import AdminNavbar from AdminNavbar;
+import AdminNavbar from 'AdminNavbar';
 
 export default function AdminHome() {
     return (
