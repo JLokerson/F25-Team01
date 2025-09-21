@@ -16,7 +16,7 @@ export default function AdminNavbar() {
                     <a class="nav-link" href="/AdminHome">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Profile</a>
+                    <a class="nav-link" href="/AdminProfile">Profile</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">User Management</a>

@@ -16,7 +16,7 @@ export default function DriverNavbar() {
                     <a class="nav-link" href="/DriverHome">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Profile</a>
+                    <a class="nav-link" href="/DriverProfile">Profile</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Catalog</a>

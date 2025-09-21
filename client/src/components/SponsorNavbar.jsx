@@ -16,7 +16,7 @@ export default function SponsorNavbar() {
                     <a class="nav-link" href="/SponsorHome">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Profile</a>
+                    <a class="nav-link" href="/SponsorProfile">Profile</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Driver Management</a>
