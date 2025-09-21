@@ -13,6 +13,8 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/AdminHome" element={<AdminHome/>} />
+        <Route path="/DriverHome" element={<DriverHome/>} />
+        <Route path="/SponsorHome" element={<SponsorHome/>} />
       </Routes>
     </Router>
   );
