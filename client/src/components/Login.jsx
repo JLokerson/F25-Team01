@@ -11,17 +11,19 @@ export default function Login() {
     e.preventDefault();
     // Mock login logic
     //alert(`Username: ${username}\nPassword: ${password}`);
-    var response = await fetch("http://localhost:4000/testAPI/addUser",
+    var response = await fetch("http://localhost:4000/userAPI/addUser",
     {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            first_name: "Julia",
-            last_name: "Lokerson",
-            email: "fakeer@mail.com",
-            password: "password123"
+            FirstName: "Julia", 
+            LastName: "Lokerson",
+            Email: "fakeer@mail.com", 
+            Password: "password123", 
+            PasswordSalt: "aBit", 
+            UserType: 3
         })
     });
 
