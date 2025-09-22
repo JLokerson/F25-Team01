@@ -50,11 +50,11 @@ If you want to learn more about creating good readme files then refer the follow
 cd client/server
 node index.js
 ```
-The server will run on [http://localhost:5000](http://localhost:5000).
+The server will run on [http://localhost:4000](http://localhost:4000).
 
 ### 2. Access the About and Login pages (Static HTML):
-- Open your browser and go to [http://localhost:5000/](http://localhost:5000/) to view the About page.
-- To view the Login page, go to [http://localhost:5000/login.html](http://localhost:5000/login.html).
+- Open your browser and go to [http://localhost:4000/](http://localhost:4000/) to view the About page.
+- To view the Login page, go to [http://localhost:4000/login.html](http://localhost:4000/login.html).
 
 ---
 
@@ -75,7 +75,7 @@ The server will run on [http://localhost:5000](http://localhost:5000).
 
 ### Differences Between Static HTML and React Frontend
 
-- **Static HTML (Backend, port 5000):**
+- **Static HTML (Backend, port 4000):**
   - Pages are served as plain HTML files from the backend.
   - Limited interactivity and dynamic content.
   - Good for simple, static pages.
