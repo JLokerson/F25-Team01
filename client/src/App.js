@@ -7,6 +7,7 @@ import AdminHome from './components/AdminHome';
 import DriverHome from './components/DriverHome';
 import SponsorHome from './components/SponsorHome';
 import Recover from './components/Recover';
+import Register from './components/Register';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/recover" element={<Recover />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/AdminHome" element={<AdminHome/>} />
         <Route path="/DriverHome" element={<DriverHome/>} />
         <Route path="/SponsorHome" element={<SponsorHome/>} />

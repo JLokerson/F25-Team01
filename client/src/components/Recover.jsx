@@ -21,7 +21,7 @@ export default function Recover() {
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: 400 }}>
+    <div className="form-page-container">
       <h1 className="mb-4">Password Recovery</h1>
       {submitted ? (
         <div>
