@@ -1,0 +1,9 @@
+{
+  "groupName": "Network Drivers",
+  "team": "Team 1",
+  "members": ["Jason L", "Ohm P", "Julia L", "Emerson K"],
+  "productName": "Driver Rewards Demo",
+  "version": "0.1.0",
+  "releaseDate": "2025-09-15",
+  "description": "Barebones static demo: catalog, cart, profile, about. JSON-backed with ES modules."
+}

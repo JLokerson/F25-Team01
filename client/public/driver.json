@@ -1,0 +1,30 @@
+[
+    {
+        "firstName": "Tim",
+        "lastName": "Lyle",
+        "birthday": "03-25-1988",
+        "phoneNumber": "888-735-1818",
+        "email": "tlyle88@gmail.com"
+    },
+    {
+        "firstName": "Jessica",
+        "lastName": "Smith",
+        "birthday": "11-02-1985",
+        "phoneNumber": "222-987-6543",
+        "email": "jessica.smith85@example.com"
+    },
+    {
+        "firstName": "Carlos",
+        "lastName": "Mendez",
+        "birthday": "05-30-1992",
+        "phoneNumber": "333-456-7890",
+        "email": "carlos.mendez92@example.com"
+    },
+    {
+        "firstName": "Ava",
+        "lastName": "Johnson",
+        "birthday": "09-18-1987",
+        "phoneNumber": "444-321-6789",
+        "email": "ava.johnson87@example.com"
+    }
+]
