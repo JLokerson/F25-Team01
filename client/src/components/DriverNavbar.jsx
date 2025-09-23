@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
+import Logout from './NoElementHelpers/Logout';
 
 export default function DriverNavbar() {
     return (
@@ -17,6 +18,9 @@ export default function DriverNavbar() {
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/DriverProfile">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onClick={Logout}>Profile</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Catalog</a>
