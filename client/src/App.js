@@ -8,6 +8,9 @@ import DriverHome from './components/DriverHome';
 import SponsorHome from './components/SponsorHome';
 import Recover from './components/Recover';
 import Register from './components/Register';
+import AdminProfile from './components/ProfilePages/AdminProfile'
+import DriverProfile from './components/ProfilePages/DriverProfile'
+import SponsorProfile from './components/ProfilePages/SponsorProfile';
 
 function App() {
   return (
@@ -21,6 +24,9 @@ function App() {
         <Route path="/AdminHome" element={<AdminHome/>} />
         <Route path="/DriverHome" element={<DriverHome/>} />
         <Route path="/SponsorHome" element={<SponsorHome/>} />
+        <Route path="/AdminProfile" element={<AdminProfile/>} />
+        <Route path="/DriverProfile" element={<DriverProfile/>} />
+        <Route path="/SponsorProfile" element={<SponsorProfile/>} />
       </Routes>
     </Router>
   );
