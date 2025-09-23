@@ -13,16 +13,21 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Use entered email and password in the request body
-    var response = await fetch("http://localhost:4000/testAPI/login", // <-- changed endpoint
+    // Mock login logic
+    //alert(`Username: ${username}\nPassword: ${password}`);
+    var response = await fetch("http://localhost:4000/userAPI/login",
     {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            email: username, 
-            password: password
+            FirstName: "Julia", 
+            LastName: "Lokerson",
+            Email: "fakeer@mail.com", 
+            Password: "password123", 
+            PasswordSalt: "aBit", 
+            UserType: 3
         })
     });
 
