@@ -8,10 +8,11 @@ app.use(cors()); // Enable CORS for cross-origin requests
 app.use(express.json()); // Enable parsing JSON request bodies
 
 var userAPIRouter = require("./DB_API/userAPI");
-
+// var userTest = require("./testAPI");
 // Serve static files from the 'public' directory
 app.use(express.static(path.resolve(__dirname, '../../public')));
 app.use("/userAPI", userAPIRouter);
+// app.use("/testAPI", userTest);
 
 // Serve about.html at the root URL
 app.get('/', (req, res) => {
