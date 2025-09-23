@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* bring over your design tokens so existing CSS still vibes */
+:root{
+  --bg:#0b0f17; --surface:#121826; --text:#e7eefc; --muted:#a6b3cc;
+  --brand:#4f8cff; --brand-2:#35d07f; --danger:#ff6b6b;
+}
+
+@layer base {
+  html, body, #root { @apply h-full bg-[#0b0f17] text-[var(--text)]; }
+  a { @apply text-[var(--brand)] hover:underline; }
+}
+
+@layer components {
+  .container { @apply max-w-6xl mx-auto px-4; }
+  .muted { @apply text-[var(--muted)]; }
+  .badge { @apply inline-block text-xs px-2 py-0.5 rounded bg-white/10 ml-2; }
+  .btn { @apply inline-flex items-center gap-2 px-3 py-2 rounded border border-white/20 bg-[#0e1524] hover:bg-white/10 transition; }
+  .btn--primary { @apply bg-[var(--brand)] border-none text-black hover:brightness-110; }
+  .btn--danger { @apply bg-[var(--danger)] border-none text-black hover:brightness-110; }
+
+  .shop-header { @apply flex items-end justify-between mb-4; }
+  .amazon-grid { @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-3; }
+
+  .product-card { @apply bg-[var(--surface)] rounded-lg overflow-hidden border border-white/10 shadow-sm; }
+  .product-card img { @apply w-full h-48 object-cover; }
+  .pc-body { @apply p-4; }
+  .pc-desc { @apply text-sm text-[var(--muted)] line-clamp-3; }
+  .pc-price { @apply flex items-center justify-between mt-3; }
+  .pc-actions { @apply mt-4; }
+
+  .about-card { @apply bg-[var(--surface)] border border-white/10 rounded p-6; }
+  .error-card { @apply bg-[var(--surface)] border border-red-400/30 text-red-200 rounded p-6; }
+
+  .sortbar { @apply mb-4 flex items-center gap-2; }
+  .sortbar select { @apply bg-[#0e1524] border border-white/20 rounded px-2 py-1; }
+}

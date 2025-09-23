@@ -6,6 +6,7 @@ import Login from './components/Login';
 import AdminHome from './components/AdminHome';
 import DriverHome from './components/DriverHome';
 import SponsorHome from './components/SponsorHome';
+import AppRoutes from './lin-migrate/AppRoutes'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/AdminHome" element={<AdminHome/>} />
         <Route path="/DriverHome" element={<DriverHome/>} />
         <Route path="/SponsorHome" element={<SponsorHome/>} />
+        <Route path="/migrate/*" element={<AppRoutes />} />
       </Routes>
     </Router>
   );

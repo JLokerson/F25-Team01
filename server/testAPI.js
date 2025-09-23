@@ -2,7 +2,7 @@
 
 // Load environment variables from .env file
 require('dotenv').config();
-let mysql = require('mysql');
+let mysql = require('mysql2');
 
 const dbConfig = {
   host: process.env.DB_HOST,
