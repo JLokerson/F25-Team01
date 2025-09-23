@@ -15,7 +15,7 @@ export default function Login() {
     e.preventDefault();
     // Mock login logic
     //alert(`Username: ${username}\nPassword: ${password}`);
-    var response = await fetch("http://localhost:4000/userAPI/addUser",
+    var response = await fetch("http://localhost:4000/userAPI/login",
     {
         method: 'POST',
         headers: {
