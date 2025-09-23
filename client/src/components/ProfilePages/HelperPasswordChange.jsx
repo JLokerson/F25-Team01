@@ -9,7 +9,7 @@ export default function HelperPasswordChange(UserID = -1) {
 
 
     function ChangePassword(){
-        if(setnewpass1 == setnewpass2){
+        if(newpass1 === newpass2){
             // ATTEMPT TO UPDATE PASSWORD IF OLDPASS CORRECT
 
             // IF NOT CORRECT:
