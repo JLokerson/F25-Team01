@@ -1,8 +1,8 @@
-/* CRACO config to enable TailwindCSS with CRA */
+/* CRACO config: delegate PostCSS to postcss.config.js (CRA 5 + Tailwind) */
 module.exports = {
   style: {
     postcss: {
-      plugins: [require('tailwindcss'), require('autoprefixer')],
+      mode: 'file',
     },
   },
 }

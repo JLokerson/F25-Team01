@@ -1,0 +1,35 @@
+:root{
+  --bg:#0b0f17; --surface:#121826; --text:#e7eefc; --muted:#a6b3cc;
+  --brand:#4f8cff; --brand-2:#35d07f; --danger:#ff6b6b;
+}
+
+html, body, #root { height: 100%; background: var(--bg); color: var(--text); }
+a { color: var(--brand); }
+a:hover { text-decoration: underline; }
+
+.container { max-width: 72rem; margin: 0 auto; padding: 0 1rem; }
+.muted { color: var(--muted); }
+.badge { display: inline-block; font-size: .75rem; padding: .125rem .5rem; border-radius: .375rem; background: rgba(255,255,255,.1); margin-left: .5rem; }
+.btn { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .75rem; border-radius: .375rem; border: 1px solid rgba(255,255,255,.2); background: #0e1524; transition: background .15s ease; }
+.btn:hover { background: rgba(255,255,255,.1); }
+.btn--primary { background: var(--brand); border: none; color: #000; }
+.btn--primary:hover { filter: brightness(1.1); }
+.btn--danger { background: var(--danger); border: none; color: #000; }
+.btn--danger:hover { filter: brightness(1.1); }
+
+.shop-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1rem; }
+.amazon-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+.product-card { background: var(--surface); border-radius: .5rem; overflow: hidden; border: 1px solid rgba(255,255,255,.1); box-shadow: 0 1px 2px rgba(0,0,0,.2); cursor: pointer; }
+.product-card img { width: 100%; height: 12rem; object-fit: cover; display: block; }
+.pc-body { padding: 1rem; }
+.pc-desc { font-size: .875rem; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.pc-price { display: flex; align-items: center; justify-content: space-between; margin-top: .75rem; }
+.pc-actions { margin-top: 1rem; }
+
+.about-card { background: var(--surface); border: 1px solid rgba(255,255,255,.1); border-radius: .5rem; padding: 1.5rem; }
+.error-card { background: var(--surface); border: 1px solid rgba(255,0,0,.3); color: #fecaca; border-radius: .5rem; padding: 1.5rem; }
+
+.sortbar { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; }
+.sortbar select { background: #0e1524; border: 1px solid rgba(255,255,255,.2); border-radius: .375rem; padding: .25rem .5rem; color: var(--text); }
+
