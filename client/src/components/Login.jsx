@@ -28,8 +28,6 @@ export default function Login() {
             Password: "password123", 
             PasswordSalt: "aBit", 
             UserType: 3
-            email: username, 
-            password: password
         })
     });
 
