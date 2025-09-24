@@ -13,36 +13,68 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock login logic
-    //alert(`Username: ${username}\nPassword: ${password}`);
-    var response = await fetch("http://localhost:4000/userAPI/login",
-    {
+    
+    try {
+      const response = await fetch("http://localhost:4000/userAPI/login", {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            FirstName: "Julia", 
-            LastName: "Lokerson",
-            Email: "fakeer@mail.com", 
-            Password: "password123", 
-            PasswordSalt: "aBit", 
-            UserType: 3
+          Email: username,
+          Password: password
         })
-    });
+      });
 
-    if (!response.ok) {
+      // Debug: Log the response status and text
+      console.log('Response status:', response.status);
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+
+      // Try to parse as JSON only if we got a response
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse JSON:', parseError);
+        console.error('Raw response:', responseText);
+        alert("Server error. Check console for details.");
+        return;
+      }
+
+      if (!response.ok) {
         setFailedAttempts(prev => {
           const next = prev + 1;
           if (next >= 5) setShowRecovery(true);
           return next;
         });
-        alert("Login failed. Please check your credentials.");
+        alert(data.message || "Login failed. Please check your credentials.");
         return;
+      }
+
+      // Login successful
+      setFailedAttempts(0);
+      setShowRecovery(false);
+      
+      // Store user info (consider using localStorage or context)
+      console.log('Login successful:', data.user);
+      
+      // Navigate based on user type
+      const userType = data.user.UserType;
+      if (userType === 1) {
+        navigate('/AdminHome'); // Admin user
+      } else if (userType === 2) {
+        navigate('/SponsorHome'); // Sponsor user
+      } else if (userType === 3) {
+        navigate('/DriverHome'); // Driver user
+      } else {
+        navigate('/about'); // Default fallback
+      }
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      alert("Network error. Please try again.");
     }
-    setFailedAttempts(0);
-    setShowRecovery(false);
-    alert(response.status + " " + response.statusText);
   };
 
   const handleRecovery = () => {

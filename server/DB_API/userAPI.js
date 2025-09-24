@@ -106,6 +106,49 @@ async function updatePassword(data){
     }
 }
 
+/**
+ * Authenticates a user by email and password
+ * @param {object} data - An object containing Email and Password
+ * @returns {Promise<object|null>} The user object if authenticated, otherwise null
+ */
+async function loginUser(data) {
+    if (!data.Email || !data.Password) {
+        throw new Error("Email and Password are required for login.");
+    }
+
+    try {
+        console.log(`Attempting login for email: ${data.Email}`);
+        console.log(`Password provided: ${data.Password}`); // Debug line
+        const sql = "SELECT * FROM USER WHERE Email = ?";
+        const values = [data.Email];
+
+        const users = await db.executeQuery(sql, values);
+        
+        if (users.length === 0) {
+            console.log("User not found for login attempt.");
+            return null;
+        }
+
+        const user = users[0];
+        console.log(`Found user with password: ${user.Password}`); // Debug line
+        
+        // TODO: Implement proper password hashing comparison
+        // For now, comparing plain text (NOT SECURE - for development only)
+        if (user.Password === data.Password) {
+            console.log("Login successful for user:", user.Email);
+            // Remove password from returned user object for security
+            const { Password, PasswordSalt, ...userWithoutPassword } = user;
+            return userWithoutPassword;
+        } else {
+            console.log("Invalid password for user:", user.Email);
+            return null;
+        }
+    } catch (error) {
+        console.error("Failed to authenticate user:", error);
+        throw error;
+    }
+}
+
 var express = require("express");
 var router=express.Router();
 
@@ -171,5 +214,31 @@ router.post("/updatePassword", async (req, res, next) => {
     }
 });
 
+router.post("/login", async (req, res, next) => {
+    const data = req.body;
+    console.log('Received login attempt for email:', data.Email);
+    
+    try {
+        const user = await loginUser(data);
+        if (user) {
+            res.status(200).json({ 
+                message: 'Login successful!', 
+                user: user 
+            });
+        } else {
+            res.status(401).json({ message: 'Invalid email or password.' });
+        }
+    } catch (error) {
+        if (error.message.includes("required")) {
+            return res.status(400).json({ message: error.message });
+        }
+        res.status(500).send('Error during login.');
+    }
+});
+
+// Test route to verify login endpoint exists
+router.get("/test-login", (req, res) => {
+    res.json({ message: "Login route is accessible" });
+});
 
 module.exports=router;
