@@ -1,0 +1,35 @@
+[
+    {
+        "ITEM_ID": 18645,
+        "ITEM_NAME": "Sony Headphones",
+        "ITEM_IMG": "https://imgs.search.brave.com/hXBos9k0W8SVG4qcQtqPU4bMGqXGxUkeOmYZc6vsFwk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMtbmEuc3NsLWlt/YWdlcy1hbWF6b24u/Y29tL2ltYWdlcy9J/LzYxMzA0TG02WVVM/LmpwZw",
+        "ITEM_DES": "Sony xxx headphones with xxx 18 hour battery life.",
+        "ITEM_PRICE": 800,
+        "ITEM_STOCK": 10
+    }
+    ,
+    {
+        "ITEM_ID": 18646,
+        "ITEM_NAME": "Starbucks Gift Card",
+        "ITEM_IMG": "https://imgs.search.brave.com/WLAJYegtsrqfytQSrK2Ls4z0vA-53po82ofwbJDtuXg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9yZXZp/ZXdlZC1jb20tcmVz/LmNsb3VkaW5hcnku/Y29tL2ltYWdlL2Zl/dGNoL3MtLUN6MFRi/eDZqLS0vYl93aGl0/ZSxjX2ZpbGxfcGFk/LGNzX3NyZ2IsZl9h/dXRvLGZsX3Byb2dy/ZXNzaXZlLnN0cmlw/X3Byb2ZpbGUsZ19h/dXRvLGhfMjIwLHFf/YXV0byx3XzIyMC9o/dHRwczovL3Jldmll/d2VkLXByb2R1Y3Rp/b24uczMuYW1hem9u/YXdzLmNvbS9hdHRh/Y2htZW50L2M1NzQ5/ZjVjNDU1NjRjZTYv/YmVzdC1naWZ0LWNh/cmRzLWFtYXpvbi1z/dGFyYnVja3MuanBn",
+        "ITEM_DES": "A $25 Starbucks gift card for coffee lovers.",
+        "ITEM_PRICE": 200,
+        "ITEM_STOCK": 50
+    },
+    {
+        "ITEM_ID": 18647,
+        "ITEM_NAME": "Pillow Case Set",
+        "ITEM_IMG": "https://imgs.search.brave.com/4UxoPhkByrhtHa8X-wsq0RdgsRx3KXLaKHmX5nyDPB0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NjE2TDgyWkVjbUwu/anBn",
+        "ITEM_DES": "Set of 2 soft cotton pillow cases, standard size.",
+        "ITEM_PRICE": 500,
+        "ITEM_STOCK": 20
+    },
+    {
+        "ITEM_ID": 18648,
+        "ITEM_NAME": "Artic Fox Backpack",
+        "ITEM_IMG": "https://imgs.search.brave.com/Coe-8TULjs-f4ii5W1cZUpGKbpdXfXEu5gD-1WTSJZQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NDFLNXBBVTNEV0wu/anBn",
+        "ITEM_DES": "Durable backpack with multiple compartments with a built-in lunchbox, ideal for school or travel.",
+        "ITEM_PRICE": 150,
+        "ITEM_STOCK": 0
+    }
+]
