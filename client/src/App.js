@@ -12,6 +12,7 @@ import AdminProfile from './components/ProfilePages/AdminProfile'
 import DriverProfile from './components/ProfilePages/DriverProfile'
 import SponsorProfile from './components/ProfilePages/SponsorProfile';
 import CartPage from './components/DriverCart';
+import OrderConfirmation from './components/DriverOrderConfirmation';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path="/DriverProfile" element={<DriverProfile/>} />
         <Route path="/SponsorProfile" element={<SponsorProfile/>} />
         <Route path="/Cart" element={<CartPage/>} />
+        <Route path="/OrderConfirmation" element={<OrderConfirmation/>}/>
       </Routes>
     </Router>
   );
