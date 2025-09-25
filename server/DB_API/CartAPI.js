@@ -25,3 +25,21 @@ async function getCartItems(data){
         throw error;
     }
 }
+
+async function AddToCart(params) {
+    try {
+        console.log("Inserting new entry to CART_MAPPINGS table");
+        console.log(data);
+        const sql = "INSERT INTO USER (DriverID, ProductID) VALUES (?, ?)";
+        const values = [data.DriverID, data.ProductID];
+
+        const result = await db.executeQuery(sql, values);
+
+        console.log("Record inserted, ID: " + result.insertId);
+        return result; 
+    }
+    catch (error) {
+        console.error("Failed to add new cart mapping:", error);
+        throw error;
+    }
+}
