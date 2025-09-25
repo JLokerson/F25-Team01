@@ -4,7 +4,6 @@ async function getCartItems(data){
     let sql;
     let values;
 
-    // Prioritize searching by UserID if it's provided.
     if (data.DriverID) {
         console.log(`Querying CART_MAPPINGS by DriverID: ${data.DriverID}`);
         sql = "SELECT * FROM CART_MAPPINGS WHERE DriverID = ?";
@@ -15,7 +14,7 @@ async function getCartItems(data){
         const cartitems = await db.executeQuery(sql, values);
         if (cartitems.length > 0) {
             console.log("Found " + cartitems.length + " items for Driver " + data.DriverID);
-            return cartitems; // users[0] Return the first user found (should be unique by ID or email combo)
+            return cartitems;
         } else {
             cartitems.log("Empty cart.");
             return null;
@@ -50,7 +49,7 @@ async function GetCartsFromItems(params){
     let sql;
     let values;
 
-    // Prioritize searching by UserID if it's provided.
+
     if (data.ProductID) {
         console.log(`Querying CART_MAPPINGS by ProductID: ${data.ProductID}`);
         sql = "SELECT * FROM CART_MAPPINGS WHERE ProductID = ?";
@@ -61,7 +60,7 @@ async function GetCartsFromItems(params){
         const cartitems = await db.executeQuery(sql, values);
         if (cartitems.length > 0) {
             console.log("Found " + cartitems.length + " items for Product " + data.ProductID);
-            return cartitems; // users[0] Return the first user found (should be unique by ID or email combo)
+            return cartitems;
         } else {
             cartitems.log("Empty cart.");
             return null;
