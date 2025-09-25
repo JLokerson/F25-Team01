@@ -4,7 +4,6 @@ async function getCartItems(data){
     let sql;
     let values;
 
-    // Prioritize searching by UserID if it's provided.
     if (data.DriverID) {
         console.log(`Querying CART_MAPPINGS by DriverID: ${data.DriverID}`);
         sql = "SELECT * FROM CART_MAPPINGS WHERE DriverID = ?";
@@ -15,7 +14,7 @@ async function getCartItems(data){
         const cartitems = await db.executeQuery(sql, values);
         if (cartitems.length > 0) {
             console.log("Found " + cartitems.length + " items for Driver " + data.DriverID);
-            return cartitems; // users[0] Return the first user found (should be unique by ID or email combo)
+            return cartitems;
         } else {
             console.log("Empty cart.");
             return null;
@@ -44,9 +43,9 @@ async function AddToCart(data) {
     }
 }
 
+
 var express = require("express");
 var router=express.Router();
-
 
 router.get("/getCartItems", async (req, res, next) => {
     try {
