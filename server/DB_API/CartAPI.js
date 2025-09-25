@@ -43,3 +43,31 @@ async function AddToCart(params) {
         throw error;
     }
 }
+
+// Returns all mappings for a specific item, useful in case we want statistics
+// on item popularity that we can present to sponsors when editing the catalog.
+async function GetCartsFromItems(params){
+    let sql;
+    let values;
+
+    // Prioritize searching by UserID if it's provided.
+    if (data.ProductID) {
+        console.log(`Querying CART_MAPPINGS by ProductID: ${data.ProductID}`);
+        sql = "SELECT * FROM CART_MAPPINGS WHERE ProductID = ?";
+        values = [data.ProductID];
+    }
+
+    try {
+        const cartitems = await db.executeQuery(sql, values);
+        if (cartitems.length > 0) {
+            console.log("Found " + cartitems.length + " items for Product " + data.ProductID);
+            return cartitems; // users[0] Return the first user found (should be unique by ID or email combo)
+        } else {
+            cartitems.log("Empty cart.");
+            return null;
+        }
+    } catch (error) {
+        console.error("Failed to get cart items:", error);
+        throw error;
+    }
+}
