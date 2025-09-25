@@ -75,7 +75,7 @@ async function GetCartsFromItems(params){
 var express = require("express");
 var router=express.Router();
 
-
+// Get requests
 router.get("/GetCartItems", async function(req, res, next) {
     try {
         const returns = await getCartItems(req.query);
@@ -91,5 +91,18 @@ router.get("/GetItemMappings", async function(req, res, next) {
         res.json(returns);
     } catch (error) {
         res.status(500).send('Database error.');
+    }
+});
+
+
+// Post requests
+router.post("/AddCartItem", async (req, res, next) => {
+    const data = req.body;
+    console.log('Received POST data: ', data);
+    try {
+        const result = await AddToCart(data);
+        res.status(200).json({ message: 'Cart item added successfully!', id: result.insertId });
+    } catch (error) {
+        res.status(500).send('Error adding user.');
     }
 });
