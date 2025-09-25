@@ -1,6 +1,6 @@
 ## How to Run the Server
 
-## 1. Set Up the Node.js abckend server:
+## 1. Set Up the Node.js backend server:
 make sure node/npm is installed
 
 ```sh
