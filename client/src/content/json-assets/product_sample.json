@@ -27,9 +27,49 @@
     {
         "ITEM_ID": 18648,
         "ITEM_NAME": "Artic Fox Backpack",
-        "ITEM_IMG": "https://imgs.search.brave.com/Coe-8TULjs-f4ii5W1cZUpGKbpdXfXEu5gD-1WTSJZQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NDFLNXBBVTNEV0wu/anBn",
+        "ITEM_IMG": "",
         "ITEM_DES": "Durable backpack with multiple compartments with a built-in lunchbox, ideal for school or travel.",
         "ITEM_PRICE": 150,
-        "ITEM_STOCK": 0
+        "ITEM_STOCK": 3
+    },
+    {
+        "ITEM_ID": 18649,
+        "ITEM_NAME": "Bluetooth Speaker",
+        "ITEM_IMG": "https://imgs.search.brave.com/b1Vn5fU20X5eZVWEFzC_be3xLTrH-7Ah8p4TtYRKoAo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYXJ0cy5jb20v/ZmlsZXMvMTIvQmx1/ZXRvb3RoLVNwZWFr/ZXItUE5HLURvd25s/b2FkLUltYWdlLnBu/Zw",
+        "ITEM_DES": "Portable Bluetooth speaker with 360° sound and 12-hour battery life.",
+        "ITEM_PRICE": 350,
+        "ITEM_STOCK": 15
+    },
+    {
+        "ITEM_ID": 18650,
+        "ITEM_NAME": "Yoga Mat",
+        "ITEM_IMG": "https://imgs.search.brave.com/gXcavI39G9EirzLjt_aHOLbogHIJ-zx8vKu1SvptClI/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4z/ZC5pY29uc2NvdXQu/Y29tLzNkL3ByZW1p/dW0vdGh1bWIveW9n/YS1tYXQtM2QtaWxs/dXN0cmF0aW9uLWRv/d25sb2FkLWluLXBu/Zy1ibGVuZC1mYngt/Z2x0Zi1maWxlLWZv/cm1hdHMtLXNwb3J0/LXBhY2stc3BvcnRz/LWdhbWVzLWlsbHVz/dHJhdGlvbnMtNDQ1/NTU0OS5wbmc",
+        "ITEM_DES": "Non-slip yoga mat, 6mm thick, perfect for home workouts.",
+        "ITEM_PRICE": 120,
+        "ITEM_STOCK": 25
+    },
+    {
+        "ITEM_ID": 18651,
+        "ITEM_NAME": "Wireless Mouse",
+        "ITEM_IMG": "https://imgs.search.brave.com/gAdsBz3yqkHjXtZuPTHkZaXW_-siKGfDe6aRVjebtkE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5naXRlbS5jb20v/cGltZ3MvbS8xMzgt/MTM4NzM0Nl9jb21w/dXRlci13aXJlbGVz/cy1tb3VzZS1wbmct/dHJhbnNwYXJlbnQt/cG5nLnBuZw",
+        "ITEM_DES": "Ergonomic wireless mouse with adjustable DPI and silent clicks.",
+        "ITEM_PRICE": 90,
+        "ITEM_STOCK": 40
+    },
+    {
+        "ITEM_ID": 18652,
+        "ITEM_NAME": "Reusable Water Bottle",
+        "ITEM_IMG": "https://imgs.search.brave.com/6CR6PmuxQJkpd6ovO1kQjAY6p6Ati_e1aIxkM4kIBeA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/cG5nZ2FsbGVyeS5j/b20vd3AtY29udGVu/dC91cGxvYWRzL3N0/YWlubGVzcy1zdGVl/bC13YXRlci1ib3R0/bGUtMDQucG5n",
+        "ITEM_DES": "Stainless steel water bottle, 750ml, keeps drinks cold for 24 hours.",
+        "ITEM_PRICE": 60,
+        "ITEM_STOCK": 30
+    },
+    {
+        "ITEM_ID": 18653,
+        "ITEM_NAME": "Desk Organizer",
+        "ITEM_IMG": "https://imgs.search.brave.com/QPPHaVDZpmkNxarWDFBwxLfP798_PMYcKJbESaX9_g4/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9hdGxh/cy1jb250ZW50LWNk/bi5waXhlbHNxdWlk/LmNvbS9zdG9jay1p/bWFnZXMvZGVzay1z/dGF0aW9uZXJ5LW9y/Z2FuaXplci13aXRo/LW9mZmljZS1zdXBw/bGllcy1pbi1ib3gt/UE8xMDl5Mi02MDAu/anBn",
+        "ITEM_DES": "Multi-compartment desk organizer for pens, notes, and gadgets.",
+        "ITEM_PRICE": 80,
+        "ITEM_STOCK": 22
     }
 ]
