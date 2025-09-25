@@ -70,3 +70,26 @@ async function GetCartsFromItems(params){
         throw error;
     }
 }
+
+
+var express = require("express");
+var router=express.Router();
+
+
+router.get("/GetCartItems", async function(req, res, next) {
+    try {
+        const returns = await getCartItems(req.query);
+        res.json(returns);
+    } catch (error) {
+        res.status(500).send('Database error.');
+    }
+});
+
+router.get("/GetItemMappings", async function(req, res, next) {
+    try {
+        const returns = await GetCartsFromItems(req.query);
+        res.json(returns);
+    } catch (error) {
+        res.status(500).send('Database error.');
+    }
+});
