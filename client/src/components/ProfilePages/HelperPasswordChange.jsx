@@ -7,10 +7,17 @@ export default function HelperPasswordChange(UserID = -1) {
     const [newpass2, setnewpass2] = useState('');
     const [oldpass, setoldpass] = useState('');
 
+    async function AttemptUpdate(newpass){
+
+    }
+
 
     function ChangePassword(){
         if(newpass1 === newpass2){
             // ATTEMPT TO UPDATE PASSWORD IF OLDPASS CORRECT
+            if(oldpass){
+                AttemptUpdate(newpass1);
+            }
 
             // IF NOT CORRECT:
             alert('Incorrect Current Password. Password Not Updated.');
