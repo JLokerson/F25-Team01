@@ -71,7 +71,7 @@ async function addNewUser(data){
 
         const result = await db.executeQuery(sql, values);
 
-        console.log("Record inserted, ID: " + result.insertId);
+        console.log("Record inserted user, ID: " + result.insertId);
         return result; 
     }
     catch (error) {
@@ -185,7 +185,7 @@ router.get("/getUser", async function(req, res, next) {
 });
 
 router.post("/addUser", async (req, res, next) => {
-    const data = req.body;
+    const data = req.query;
     console.log('Received POST data: ', data);
     try {
         const result = await addNewUser(data);
@@ -231,7 +231,7 @@ router.post('/login', async (req, res, next) => {
 });
 
 router.post("/updatePassword", async (req, res, next) => {
-    const data = req.body;
+    const data = req.query;
     console.log('Received POST data for password update: ', data);
     try {
         const result = await updatePassword(data);
@@ -276,4 +276,4 @@ router.get("/test-login", (req, res) => {
     res.json({ message: "Login route is accessible" });
 });
 
-module.exports=router;
+module.exports={router, addNewUser};
