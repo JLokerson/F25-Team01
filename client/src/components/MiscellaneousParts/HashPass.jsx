@@ -1,3 +1,5 @@
+// Swiped most of this method from the web, then made slight modifications.
+// To quote one of my professors: "Never roll your own crypto."
 async function digestMessage(message) {
     const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
     const hashBuffer = await window.crypto.subtle.digest("SHA-256", msgUint8); // hash the message
@@ -9,8 +11,10 @@ return hashHex;
 }
 
 
-
-
+// hashes twice to protect against length extension attacks.
+// Though it would not be immediately obvious as to how one
+// could be of merit here, the added protection seemed wise
+// since it was easy to implement it.
 export default async function HashPassword(passwd,salt){
     return await digestMessage(await digestMessage(passwd + salt));
 }
