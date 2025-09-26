@@ -6,6 +6,9 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [salt, setSalt] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [acceptedTOS, setAcceptedTOS] = useState(false);
   const navigate = useNavigate();
@@ -20,6 +23,10 @@ export default function Register() {
     setError('');
     // Example registration logic (mock)
     // await fetch("http://localhost:4000/testAPI/register", { ... })
+    // TO DO: 
+    // - add field 
+    // - Check for duplicate emails 
+    // - randomly generate password salt for making new user 
     alert("Registered successfully!");
     navigate('/login');
   };
@@ -28,6 +35,28 @@ export default function Register() {
     <div className="form-page-container">
       <h1 className="mb-4">Register</h1>
       <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label htmlFor="firstName" className="form-label">First Name</label>
+          <input
+            type="text"
+            id="firstName"
+            className="form-control"
+            value={firstName}
+            onChange={e => setFirstName(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label htmlFor="lastName" className="form-label">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            className="form-control"
+            value={lastName}
+            onChange={e => setLastName(e.target.value)}
+            required
+          />
+        </div>
         <div className="mb-3">
           <label htmlFor="email" className="form-label">Email</label>
           <input
