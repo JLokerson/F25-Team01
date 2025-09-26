@@ -5,7 +5,8 @@
         "firstName": "Tim",
         "lastName": "Lyle",
         "birthday": "03-25-1988",
-        "email": "tlyle88@gmail.com"
+        "email": "tlyle88@gmail.com",
+        "points": 1000
     },
     {
         "userid": 2,
@@ -13,7 +14,8 @@
         "firstName": "Jessica",
         "lastName": "Smith",
         "birthday": "11-02-1985",
-        "email": "jessica.smith85@gmail.com"
+        "email": "jessica.smith85@gmail.com",
+        "points": 1000
     },
     {
         "userid": 3,
@@ -21,7 +23,8 @@
         "firstName": "Carlos",
         "lastName": "Mendez",
         "birthday": "05-30-1992",
-        "email": "carlos.mendez92@gmail.com"
+        "email": "carlos.mendez92@gmail.com",
+        "points": 1000
     },
     {
         "userid": 4,
@@ -29,7 +32,8 @@
         "firstName": "Ava",
         "lastName": "Johnson",
         "birthday": "09-18-1987",
-        "email": "ava.johnson87@gmail.com"
+        "email": "ava.johnson87@gmail.com",
+        "points": 1000
     },
     {
         "userid": 5,
@@ -37,7 +41,8 @@
         "firstName": "Ethan",
         "lastName": "Brown",
         "birthday": "07-12-1990",
-        "email": "ethan.brown90@gmail.com"
+        "email": "ethan.brown90@gmail.com",
+        "points": 1000
     },
     {
         "userid": 6,
@@ -45,7 +50,8 @@
         "firstName": "Sophia",
         "lastName": "Lee",
         "birthday": "02-28-1983",
-        "email": "sophia.lee83@gmail.com"
+        "email": "sophia.lee83@gmail.com",
+        "points": 1000
     },
     {
         "userid": 7,
@@ -53,7 +59,8 @@
         "firstName": "Michael",
         "lastName": "Clark",
         "birthday": "12-05-1989",
-        "email": "michael.clark89@gmail.com"
+        "email": "michael.clark89@gmail.com",
+        "points": 1000
     },
     {
         "userid": 8,
@@ -61,7 +68,8 @@
         "firstName": "Olivia",
         "lastName": "Martinez",
         "birthday": "04-16-1991",
-        "email": "olivia.martinez91@gmail.com"
+        "email": "olivia.martinez91@gmail.com",
+        "points": 1000
     },
     {
         "userid": 9,
@@ -69,6 +77,7 @@
         "firstName": "David",
         "lastName": "Nguyen",
         "birthday": "08-23-1986",
-        "email": "david.nguyen86@gmail.com"
+        "email": "david.nguyen86@gmail.com",
+        "points": 1000
     }
 ]
