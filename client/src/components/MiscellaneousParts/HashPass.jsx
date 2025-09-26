@@ -18,3 +18,23 @@ return hashHex;
 export default async function HashPassword(passwd,salt){
     return await digestMessage(await digestMessage(passwd + salt));
 }
+
+
+// Password salt generation methods stored down here
+export default function GenerateSalt(){
+    const SaltLength = 20;
+    let val = "";
+    for (x = 0; x < 20; x++){
+        val = val + RandomChar();
+    }
+    return val;
+}
+
+// Handles byte selection.
+function RandomChar(){
+    const MAX_VAL = 26;
+    const ASCII_A = 65;
+    let rand = math.random() * MAX_VAL;
+    rand = math.floor(MAX_VAL)  + ASCII_A;
+    return String.fromCharCode(rand);
+}
