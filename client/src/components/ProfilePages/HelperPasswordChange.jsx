@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
-import HashPassword from '../MiscellaneousParts/HashPass';
+import HashPassword, { GenerateSalt } from '../MiscellaneousParts/HashPass';
 
 export default function HelperPasswordChange(UserID = -1) {
     const [newpass1, setnewpass1] = useState('');
@@ -9,7 +9,7 @@ export default function HelperPasswordChange(UserID = -1) {
     const [oldpass, setoldpass] = useState('');
 
     async function AttemptUpdate(newpass){
-        let salt = 'boo';
+        let salt = GenerateSalt;
         await alert("Hash is " + await HashPassword(newpass+salt));
     }
 
