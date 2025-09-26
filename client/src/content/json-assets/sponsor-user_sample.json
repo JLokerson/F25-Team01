@@ -1,0 +1,47 @@
+[
+    {
+        "userid": "sponsor001",
+        "accountType": 2,
+        "firstName": "Alice",
+        "lastName": "Johnson",
+        "birthday": "1975-03-12",
+        "email": "alice.johnson@gmail.com",
+        "drivers": [1, 2]
+    },
+    {
+        "userid": "sponsor002",
+        "accountType": 2,
+        "firstName": "Bob",
+        "lastName": "Smith",
+        "birthday": "1980-07-25",
+        "email": "bob.smith@gmail.com",
+        "drivers": [3]
+    },
+    {
+        "userid": "sponsor003",
+        "accountType": 2,
+        "firstName": "Carol",
+        "lastName": "Lee",
+        "birthday": "1968-11-30",
+        "email": "carol.lee@gmail.com",
+        "drivers": [4, 5, 6]
+    },
+    {
+        "userid": "sponsor004",
+        "accountType": 2,
+        "firstName": "David",
+        "lastName": "Kim",
+        "birthday": "1990-02-18",
+        "email": "david.kim@gmail.com",
+        "drivers": [7]
+    },
+    {
+        "userid": "sponsor005",
+        "accountType": 2,
+        "firstName": "Eva",
+        "lastName": "Martinez",
+        "birthday": "1985-09-05",
+        "email": "eva.martinez@gmail.com",
+        "drivers": [8, 9]
+    }
+]

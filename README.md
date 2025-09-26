@@ -75,7 +75,7 @@ The server will run on [http://localhost:5000](http://localhost:5000).
 
 ### Differences Between Static HTML and React Frontend
 
-- **Static HTML (Backend, port 5000):**
+- **Static HTML (Backend, port 4000):**
   - Pages are served as plain HTML files from the backend.
   - Limited interactivity and dynamic content.
   - Good for simple, static pages.
@@ -92,4 +92,4 @@ The server will run on [http://localhost:5000](http://localhost:5000).
 TODO: Find Template for About Page/Login stuff. 
 Make sure that the database cooperates with this setup.  
 
-CURRENT SPRINT: SPRINT 2
+CURRENT SPRINT: SPRINT 3

@@ -1,0 +1,74 @@
+[
+    {
+        "userid": 1,
+        "accountType": 1,
+        "firstName": "Tim",
+        "lastName": "Lyle",
+        "birthday": "03-25-1988",
+        "email": "tlyle88@gmail.com"
+    },
+    {
+        "userid": 2,
+        "accountType": 1,
+        "firstName": "Jessica",
+        "lastName": "Smith",
+        "birthday": "11-02-1985",
+        "email": "jessica.smith85@gmail.com"
+    },
+    {
+        "userid": 3,
+        "accountType": 1,
+        "firstName": "Carlos",
+        "lastName": "Mendez",
+        "birthday": "05-30-1992",
+        "email": "carlos.mendez92@gmail.com"
+    },
+    {
+        "userid": 4,
+        "accountType": 1,
+        "firstName": "Ava",
+        "lastName": "Johnson",
+        "birthday": "09-18-1987",
+        "email": "ava.johnson87@gmail.com"
+    },
+    {
+        "userid": 5,
+        "accountType": 1,
+        "firstName": "Ethan",
+        "lastName": "Brown",
+        "birthday": "07-12-1990",
+        "email": "ethan.brown90@gmail.com"
+    },
+    {
+        "userid": 6,
+        "accountType": 1,
+        "firstName": "Sophia",
+        "lastName": "Lee",
+        "birthday": "02-28-1983",
+        "email": "sophia.lee83@gmail.com"
+    },
+    {
+        "userid": 7,
+        "accountType": 1,
+        "firstName": "Michael",
+        "lastName": "Clark",
+        "birthday": "12-05-1989",
+        "email": "michael.clark89@gmail.com"
+    },
+    {
+        "userid": 8,
+        "accountType": 1,
+        "firstName": "Olivia",
+        "lastName": "Martinez",
+        "birthday": "04-16-1991",
+        "email": "olivia.martinez91@gmail.com"
+    },
+    {
+        "userid": 9,
+        "accountType": 1,
+        "firstName": "David",
+        "lastName": "Nguyen",
+        "birthday": "08-23-1986",
+        "email": "david.nguyen86@gmail.com"
+    }
+]
