@@ -195,40 +195,6 @@ router.post("/addUser", async (req, res, next) => {
     }
 });
 
-// POST /userAPI/login
-// Accepts { Email, Password } and attempts to authenticate.
-// - If a DB is configured it will try to find the user by Email and compare Password (insecure plaintext compare for prototyping).
-// - If no DB row is found, it will accept a single demo credential so the frontend can be tested without a DB.
-router.post('/login', async (req, res, next) => {
-    const { Email, Password } = req.body || {};
-    if (!Email || !Password) return res.status(400).json({ message: 'Email and Password required' });
-
-    try {
-        // Try DB lookup first
-        const rows = await db.executeQuery('SELECT * FROM USER WHERE Email = ?', [Email]);
-        if (rows && rows.length > 0) {
-            const user = rows[0];
-            // WARNING: plaintext compare used for quick prototyping only. Replace with hashed password check.
-            if (user.Password === Password) {
-                // don't send password back
-                delete user.Password;
-                delete user.PasswordSalt;
-                return res.status(200).json({ message: 'Login successful', user });
-            }
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
-
-        // Fallback demo credential to make frontend testing easier when DB isn't configured
-        if (Email === 'fakeer@mail.com' && Password === 'password123') {
-            return res.status(200).json({ message: 'Demo login successful', demo: true });
-        }
-
-        return res.status(401).json({ message: 'Invalid credentials' });
-    } catch (error) {
-        console.error('Login error:', error);
-        return res.status(500).json({ message: 'Server error during login' });
-    }
-});
 
 router.post("/updatePassword", async (req, res, next) => {
     const data = req.query;
@@ -250,7 +216,7 @@ router.post("/updatePassword", async (req, res, next) => {
 });
 
 router.post("/login", async (req, res, next) => {
-    const data = req.body;
+    const data = req.query;
     console.log('Received login attempt for email:', data.Email);
     
     try {
