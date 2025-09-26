@@ -24,6 +24,7 @@ export default function CartPage() {
             navigate('/OrderConfirmation');
         }
     }
+    
     return (
         <div>
             {DriverNavbar()}
