@@ -7,10 +7,12 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
+  const [acceptedTOS, setAcceptedTOS] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!acceptedTOS) return;
     if (password !== confirm) {
       setError("Passwords do not match.");
       return;
@@ -60,7 +62,31 @@ export default function Register() {
           />
         </div>
         {error && <div className="alert alert-danger">{error}</div>}
-        <button type="submit" className="btn btn-primary w-100">Register</button>
+        <div className="mb-3">
+          <p style={{fontSize: "0.95em"}}>
+            By using our site you hereby agree that we, the designers and hosts of this service, are not to be held liable for any and all harm, fiscal or otherwise, that may arise from the use of our software. You agree that should you have any legal dispute with us, it is to be handled via arbitration in Clemson, South Carolina. The arbitrator in any such arrangement will be selected and/or approved by us, Network Drivers. By continuing to use this application you hereby agree to these terms.
+          </p>
+        </div>
+        <div className="mb-3 form-check">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            id="acceptTOS"
+            checked={acceptedTOS}
+            onChange={e => setAcceptedTOS(e.target.checked)}
+          />
+          <label className="form-check-label" htmlFor="acceptTOS">
+            I understand and accept the Terms of Service
+          </label>
+        </div>
+        <button
+          type="submit"
+          className="btn btn-primary w-100"
+          disabled={!acceptedTOS}
+          style={{opacity: acceptedTOS ? 1 : 0.6, cursor: acceptedTOS ? 'pointer' : 'not-allowed'}}
+        >
+          Register
+        </button>
       </form>
       <div className="mt-3">
         <Link to="/login">Already have an account? Login</Link>
