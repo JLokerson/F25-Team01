@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './Home.css';
+import '../styles/Home.css';
 
 export default function Home() {
   const navigate = useNavigate();
