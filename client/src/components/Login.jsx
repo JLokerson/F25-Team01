@@ -55,9 +55,9 @@ export default function Login() {
       // Login successful
       setFailedAttempts(0);
       setShowRecovery(false);
-      
-      // Store user info (consider using localStorage or context)
-      console.log('Login successful:', data.user);
+
+      // Store user info in localStorage
+      localStorage.setItem('user', JSON.stringify(data.user));
       
       // Navigate based on user type
       const userType = data.user.UserType;
