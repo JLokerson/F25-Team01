@@ -13,7 +13,7 @@ import DriverProfile from './components/ProfilePages/DriverProfile'
 import SponsorProfile from './components/ProfilePages/SponsorProfile';
 import Products from './components/Products';
 import CartPage from './components/CartPage';
-import Navbar from './components/Navbar';f
+import Navbar from './components/Navbar';
 import Home from './components/Home';
 
 function App() {
