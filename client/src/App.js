@@ -13,11 +13,14 @@ import DriverProfile from './components/ProfilePages/DriverProfile'
 import SponsorProfile from './components/ProfilePages/SponsorProfile';
 import Products from './components/Products';
 import CartPage from './components/CartPage';
-import Navbar from './components/Navbar';
+import Navbar from './components/Navbar';f
 import Home from './components/Home';
 
 function App() {
   // Simple auth check: presence of "user" in localStorage
+  /* Allows rendering of Navbar conditionally, I have it set up where the 
+    Cart button in the navbar only works for drivers 
+    Since the Cart button will not have to work for Sponsor users / Admin */
   const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
   let user = null;
   try {
@@ -32,14 +35,14 @@ function App() {
       {user && <Navbar user={user} />}
 
       <Routes>
-        {/* Home is general landing page for unauthenticated users */}
+        {/* General home landing page */}
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/recover" element={<Recover />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Role-specific home pages (navigated to after login) */}
+        {/* Specific Home page for user X after login */}
         <Route path="/AdminHome" element={<AdminHome/>} />
         <Route path="/DriverHome" element={<DriverHome/>} />
         <Route path="/SponsorHome" element={<SponsorHome/>} />
