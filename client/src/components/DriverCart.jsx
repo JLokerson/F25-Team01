@@ -59,7 +59,45 @@ export default function DriverCart() {
             alert('No items in cart to order');
             return;
         }else{
-            // TODO: Place an order (call server API) - currently just navigate
+            // Build an order object and persist to localStorage (simple client-side orders)
+            const prodRaw = localStorage.getItem('products') || '[]';
+            let prods = [];
+            try { prods = JSON.parse(prodRaw); } catch (e) { prods = []; }
+
+            // create snapshot of ordered items (including price at time of order)
+            const items = cart.map(id => {
+                const p = prods.find(x => x.ITEM_ID === id);
+                return p ? { ITEM_ID: p.ITEM_ID, ITEM_NAME: p.ITEM_NAME, ITEM_PRICE: p.ITEM_PRICE } : { ITEM_ID: id };
+            });
+
+            const order = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                user: user ?? null,
+                items,
+            };
+
+            const ordersRaw = localStorage.getItem('orders') || '[]';
+            let orders = [];
+            try { orders = JSON.parse(ordersRaw); } catch (e) { orders = []; }
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+
+            // Clear cart
+            localStorage.setItem('cart', JSON.stringify([]));
+            setCart([]);
+
+            // Persist products array (products were already mutated on addToCart in Products.jsx via localStorage)
+            // But ensure any local productsMap changes are written back too
+            try {
+                const prodMap = productsMap;
+                const prodsArray = Object.keys(prodMap).map(k => prodMap[k]);
+                localStorage.setItem('products', JSON.stringify(prodsArray));
+            } catch (e) {
+                // ignore
+            }
+
+            // Navigate to confirmation
             navigate('/DriverOrderConfirmation');
         }
     }

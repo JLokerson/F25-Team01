@@ -13,14 +13,13 @@ import DriverProfile from './components/ProfilePages/DriverProfile'
 import SponsorProfile from './components/ProfilePages/SponsorProfile';
 import Products from './components/Products';
 import CartPage from './components/CartPage';
+import DriverCart from './components/DriverCart';
+import DriverOrderConfirmation from './components/DriverOrderConfirmation';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 
 function App() {
   // Simple auth check: presence of "user" in localStorage
-  /* Allows rendering of Navbar conditionally, I have it set up where the 
-    Cart button in the navbar only works for drivers 
-    Since the Cart button will not have to work for Sponsor users / Admin */
   const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
   let user = null;
   try {
@@ -35,26 +34,30 @@ function App() {
       {user && <Navbar user={user} />}
 
       <Routes>
-        {/* General home landing page */}
+        {/* General routes */}
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/recover" element={<Recover />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/cart" element={<CartPage />} />
 
-        {/* Specific Home page for user X after login */}
-        <Route path="/AdminHome" element={<AdminHome/>} />
-        <Route path="/DriverHome" element={<DriverHome/>} />
-        <Route path="/SponsorHome" element={<SponsorHome/>} />
+        {/* Admin routes */}
+        <Route path="/adminhome" element={<AdminHome />} />
+        <Route path="/adminprofile" element={<AdminProfile />} />
 
-        {/* Profiles */}
-        <Route path="/AdminProfile" element={<AdminProfile/>} />
-        <Route path="/DriverProfile" element={<DriverProfile/>} />
-        <Route path="/SponsorProfile" element={<SponsorProfile/>} />
+        {/* Sponsor routes */}
+        <Route path="/sponsorhome" element={<SponsorHome />} />
+        <Route path="/sponsorprofile" element={<SponsorProfile />} />
+
+        {/* Driver routes */}
+        <Route path="/driverhome" element={<DriverHome />} />
+        <Route path="/driverprofile" element={<DriverProfile />} />
+        <Route path="/drivercart" element={<DriverCart />} />
+        <Route path="/driverorderconfirmation" element={<DriverOrderConfirmation />} />
 
         {/* Shared pages */}
-        <Route path="/products" element={<Products/>} />
-        <Route path="/cart" element={<CartPage/>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
