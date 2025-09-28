@@ -36,7 +36,9 @@ export default function AdminNavbar() {
                 <li className="nav-item">
                     <a className="nav-link" href="#">User Management</a>
                 </li>
-
+                <li className="nav-item">
+                    <a className="nav-link" href="/MakeNewUser">Make New User</a>
+                </li>
                 {/* Commented out the unwanted parts, but left as a reference on how to make given elements since the bootstrap default example had to be slightly modified to work with react
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

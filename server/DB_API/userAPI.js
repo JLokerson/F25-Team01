@@ -65,9 +65,12 @@ async function getUser(data){
 async function addNewUser(data){
     try {
         console.log("Inserting new User to User Table");
-        console.log(data);
+        console.log("Data to insert:", data);
         const sql = "INSERT INTO USER (FirstName, LastName, Email, Password, PasswordSalt, UserType) VALUES (?, ?, ?, ?, ?, ?)";
         const values = [data.FirstName, data.LastName, data.Email, data.Password, data.PasswordSalt, data.UserType];
+
+        console.log("SQL:", sql);
+        console.log("Values:", values);
 
         const result = await db.executeQuery(sql, values);
 
@@ -75,7 +78,7 @@ async function addNewUser(data){
         return result; 
     }
     catch (error) {
-        console.error("Failed to add new user:", error);
+        console.error("Database query failed:", error);
         throw error;
     }
 };
@@ -150,7 +153,15 @@ async function loginUser(data) {
 }
 
 var express = require("express");
-var router=express.Router();
+var router = express.Router();
+
+router.use((req, res, next) => {
+    console.log('userAPI router middleware hit:', req.method, req.originalUrl);
+    next();
+});
+router.use(express.json()); // Ensure JSON body parsing for all routes in this router
+
+console.log("userAPI router loaded"); 
 
 router.get("/", async function(req, res, next) {
     try {
@@ -185,19 +196,42 @@ router.get("/getUser", async function(req, res, next) {
 });
 
 router.post("/addUser", async (req, res, next) => {
-    const data = req.query;
-    console.log('Received POST data: ', data);
+    console.log('--- /addUser route hit ---');
+    console.log('Raw req.body:', req.body);
+    console.log('Raw req.query:', req.query);
+
+    // Prefer body, fallback to query for Postman compatibility
+    const source = Object.keys(req.body).length > 0 ? req.body : req.query;
+
+    // Default fields to empty string or 1 for UserType if missing
+    const FirstName = source.FirstName ? String(source.FirstName).trim() : '';
+    const LastName = source.LastName ? String(source.LastName).trim() : '';
+    const Email = source.Email ? String(source.Email).trim() : '';
+    const Password = source.Password ? String(source.Password) : '';
+    const PasswordSalt = source.PasswordSalt ? String(source.PasswordSalt) : '';
+    const UserType = source.UserType && !isNaN(Number(source.UserType)) ? Number(source.UserType) : 1;
+
+    console.log('Parsed fields:', { FirstName, LastName, Email, Password, PasswordSalt, UserType });
+
+    // Validation: check for missing fields
+    if (!FirstName || !LastName || !Email || !Password || !PasswordSalt || !UserType) {
+        console.error('Missing required fields:', { FirstName, LastName, Email, Password, PasswordSalt, UserType });
+        return res.status(400).json({ message: 'Missing required fields.', body: source });
+    }
+
     try {
-        const result = await addNewUser(data);
+        const result = await addNewUser({ FirstName, LastName, Email, Password, PasswordSalt, UserType });
+        console.log('User added successfully, DB result:', result);
         res.status(200).json({ message: 'User added successfully!', id: result.insertId });
     } catch (error) {
-        res.status(500).send('Error adding user.');
+        console.error('Error in /addUser:', error); // Log the full error
+        res.status(500).json({ message: 'Error adding user.', error: error.message });
     }
 });
 
 
 router.post("/updatePassword", async (req, res, next) => {
-    const data = req.query;
+    const data = req.body;
     console.log('Received POST data for password update: ', data);
     try {
         const result = await updatePassword(data);
@@ -216,9 +250,9 @@ router.post("/updatePassword", async (req, res, next) => {
 });
 
 router.post("/login", async (req, res, next) => {
-    const data = req.query;
+    const data = req.body;
     console.log('Received login attempt for email:', data.Email);
-    
+
     try {
         const user = await loginUser(data);
         if (user) {

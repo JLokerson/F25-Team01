@@ -9,8 +9,24 @@ const port = process.env.SERVER_PORT || 4000; // Use environment variable
 app.use(cors()); // Enable CORS for cross-origin requests
 app.use(express.json()); // Enable parsing JSON request bodies
 
+// Log every request and its body (for debugging)
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  // Only log body for POST/PUT
+  if (req.method === 'POST' || req.method === 'PUT') {
+    let bodyData = '';
+    req.on('data', chunk => { bodyData += chunk; });
+    req.on('end', () => {
+      console.log('Raw body:', bodyData);
+      next();
+    });
+  } else {
+    next();
+  }
+});
+
 var userAPIRouter = require("./DB_API/userAPI").router;
-var adminAPIRouter = require("./DB_API/adminAPI").router;
+// var adminAPIRouter = require("./DB_API/adminAPI").router;
 var adminAPIRouter = require("./DB_API/adminAPI").router;
 var sponsorAPIRouter = require("./DB_API/sponsorAPI").router;
 var driverAPIRouter = require("./DB_API/driverAPI").router;
