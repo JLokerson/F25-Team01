@@ -16,6 +16,7 @@ export default function DriverCart() {
     const [productsMap, setProductsMap] = useState({});
 
     useEffect(() => {
+        console.log('DriverCart mounted: reading cart/products from localStorage');
         const raw = localStorage.getItem('cart') || '[]';
         try { setCart(JSON.parse(raw)); } catch(e) { setCart([]); }
 
@@ -26,6 +27,33 @@ export default function DriverCart() {
             prods.forEach(p => map[p.ITEM_ID] = p);
             setProductsMap(map);
         } catch(e) { setProductsMap({}); }
+    }, []);
+
+    // listen for cart updates dispatched by other components in the same tab
+    useEffect(() => {
+        const handler = (e) => {
+            console.log('DriverCart received cartUpdated event', e && e.detail);
+            const raw = localStorage.getItem('cart') || '[]';
+            try { setCart(JSON.parse(raw)); } catch(e) { setCart([]); }
+            const prodRaw = localStorage.getItem('products') || '[]';
+            try {
+                const prods = JSON.parse(prodRaw);
+                const map = {};
+                prods.forEach(p => map[p.ITEM_ID] = p);
+                setProductsMap(map);
+            } catch(e) { setProductsMap({}); }
+        };
+        window.addEventListener('cartUpdated', handler);
+        // also listen to storage events for other tabs
+        const storageHandler = (e) => {
+            console.log('DriverCart received storage event', e);
+            if (e.key === 'cart' || e.key === 'products') handler(e);
+        };
+        window.addEventListener('storage', storageHandler);
+        return () => {
+            window.removeEventListener('cartUpdated', handler);
+            window.removeEventListener('storage', storageHandler);
+        };
     }, []);
 
     const remove = (itemId) => {
@@ -152,33 +180,34 @@ export default function DriverCart() {
             {DriverNavbar()}
             <div className="container my-5">
                 <h3>Your Cart</h3>
-                {userType !== 3 ? (
-                    <p>The cart is only available to drivers. If you believe this is an error, please contact an administrator.</p>
-                ) : (
-                    <>
-                        {cart.length === 0 ? (
-                            <p>Your cart is empty.</p>
-                        ) : (
-                            <div className="list-group mb-3">
-                                {cart.map(id => productsMap[id]).filter(Boolean).map(item => (
-                                    <div key={item.ITEM_ID} className="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <div><strong>{item.ITEM_NAME}</strong></div>
-                                            <div className="text-muted small">Price: ${item.ITEM_PRICE} • Stock: {item.ITEM_STOCK}</div>
-                                        </div>
-                                        <div>
-                                            <button className="btn btn-sm btn-danger me-2" onClick={() => remove(item.ITEM_ID)}>Remove</button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        <div className="d-flex">
-                            <button type="submit" onClick={OrderConfirm} className="btn btn-info me-2">Order All</button>
-                            <Link to="/DriverHome" className="btn btn-secondary">Back</Link>
-                        </div>
-                    </>
+                {/* If not a driver, show a warning but still display cart contents */}
+                {userType !== 3 && (
+                    <p className="text-warning">The cart is only available to drivers. You can still view the cart contents below.</p>
                 )}
+
+                {/* Cart contents */}
+                {cart.length === 0 ? (
+                    <p>Your cart is empty.</p>
+                ) : (
+                    <div className="list-group mb-3">
+                        {cart.map(id => productsMap[id]).filter(Boolean).map(item => (
+                            <div key={item.ITEM_ID} className="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div><strong>{item.ITEM_NAME}</strong></div>
+                                    <div className="text-muted small">Price: ${item.ITEM_PRICE} • Stock: {item.ITEM_STOCK}</div>
+                                </div>
+                                <div>
+                                    <button className="btn btn-sm btn-danger me-2" onClick={() => remove(item.ITEM_ID)}>Remove</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                <div className="d-flex">
+                    <button type="submit" onClick={OrderConfirm} className="btn btn-info me-2" disabled={userType !== 3}>Order All</button>
+                    <Link to="/DriverHome" className="btn btn-secondary">Back</Link>
+                </div>
             </div>
         </div>
     );
