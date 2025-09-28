@@ -19,7 +19,7 @@ export default function Navbar({ user }) {
 
   const handleCart = (e) => {
     if (userType === 3) {
-      navigate('/cart');
+      navigate('/drivercart');
     } else {
       // For non-drivers, prevent navigating and show a small notice
       e.preventDefault();

@@ -57,6 +57,11 @@ export default function Products() {
         try { cart = JSON.parse(raw); } catch (e) { cart = []; }
         cart.push(itemId);
         localStorage.setItem('cart', JSON.stringify(cart));
+        // notify other components (e.g., DriverCart) that cart changed
+        try {
+            console.log('Products.addToCart: updated cart', cart);
+            window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cart } }));
+        } catch (e) { console.error('Failed to dispatch cartUpdated', e); }
     };
 
     // Remove item from cart helper 
