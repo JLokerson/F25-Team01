@@ -5,7 +5,7 @@ export default function CartPage(){
   let user = null;
   try { user = JSON.parse(localStorage.getItem('user')); } catch(e) { user = null; }
   const userType = user?.UserType ?? user?.accountType ?? null;
-
+  // Cart is stored as an array of ITEM_IDs
   const [cart, setCart] = useState([]); // array of ITEM_IDs
   const [productsMap, setProductsMap] = useState({});
 

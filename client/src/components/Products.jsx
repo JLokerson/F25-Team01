@@ -5,22 +5,26 @@ import initialProducts from '../content/json-assets/product_sample.json';
 
 export default function Products() {
     console.log("Catalog of all products. Products component rendered. Products.jsx");
-
     const [products, setProducts] = useState([]);
-    const [view, setView] = useState('all'); // 'all' | 'popular'
+    // Filter for viewing items by all or popular
+    const [view, setView] = useState('all');
 
-    // Load products from localStorage or initial JSON on mount
+    // Load products from product_sample.json on first render
     useEffect(() => {
         const stored = localStorage.getItem('products');
         if (stored) {
             try {
-                setProducts(JSON.parse(stored));
-                return;
+                // Array of items
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    setProducts(parsed);
+                    return;
+                }
             } catch (e) {
                 console.error('Failed to parse stored products', e);
             }
         }
-        // Deep copy initialProducts to avoid accidental mutation
+        
         const copied = initialProducts.map(p => ({ ...p }));
         setProducts(copied);
         localStorage.setItem('products', JSON.stringify(copied));
@@ -55,7 +59,7 @@ export default function Products() {
         localStorage.setItem('cart', JSON.stringify(cart));
     };
 
-    // Remove item from cart helper (used by CartPage) — exported via window for small app wiring
+    // Remove item from cart helper 
     const removeFromCart = (itemId) => {
         // Restore stock by +1 and don't change popularity
         setProducts(prev => prev.map(p => p.ITEM_ID === itemId ? { ...p, ITEM_STOCK: (p.ITEM_STOCK ?? 0) + 1 } : p));
@@ -73,6 +77,7 @@ export default function Products() {
         window.__app_removeFromCart = removeFromCart;
     }, [products]);
 
+    // Determine products to show based on view filter
     const productsToShow = () => {
         if (view === 'popular') {
             return [...products].sort((a, b) => (b.ITEM_POPULARITY ?? 0) - (a.ITEM_POPULARITY ?? 0));
@@ -86,7 +91,7 @@ export default function Products() {
                 <h1>Product Catalog</h1>
                 <Link to="/DriverHome" className="btn btn-secondary">Back to Driver Home</Link>
             </div>
-
+            <p>Browse and redeem products using your points!</p>
             <div className="mb-3">
                 <div className="btn-group" role="group" aria-label="Product view tabs">
                     <button className={`btn btn-outline-primary ${view === 'all' ? 'active' : ''}`} onClick={() => setView('all')}>All</button>
