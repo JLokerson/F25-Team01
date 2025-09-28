@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '../styles/Navbar.css'
 
 export default function Navbar({ user }) {
   const navigate = useNavigate();
