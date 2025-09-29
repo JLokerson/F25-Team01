@@ -32,7 +32,6 @@ function App() {
         <Route path="/SponsorProfile" element={<SponsorProfile/>} />
         <Route path="/products" element={<Products />} />
         <Route path="/OrderConfirmation" element={<OrderConfirmation/>}/>
-        <Route path="/Cart" element={<CartPage/>}/>
       </Routes>
     </Router>
   );
