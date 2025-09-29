@@ -14,41 +14,12 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Hardcoded login bypass for development
-    if (username === "omalt@mail.com" && password === "evoL1321") {
-      const user = {
-        UserID: 8,
-        FirstName: "'Ohm'",
-        LastName: "Patel",
-        Email: "omalt@mail.com",
-        UserType: 1
-      };
-      localStorage.setItem('user', JSON.stringify(user));
-      console.log('User stored in localStorage (hardcoded):', user);
-
-      // Navigate based on user type
-      if (user.UserType === 1) {
-        navigate('/AdminHome');
-      } else if (user.UserType === 2) {
-        navigate('/SponsorHome');
-      } else if (user.UserType === 3) {
-        navigate('/DriverHome');
-      } else {
-        navigate('/about');
-      }
-      return;
-    }
-
     try {
-      const response = await fetch("http://localhost:4000/userAPI/login", {
-        method: 'POST',
+      const response = await fetch(`http://localhost:4000/userAPI/login?Email=${encodeURIComponent(username)}&Password=${encodeURIComponent(password)}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          Email: username,
-          Password: password
-        })
+        }
       });
 
       // Debug: Log the response status and text

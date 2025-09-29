@@ -249,9 +249,26 @@ router.post("/updatePassword", async (req, res, next) => {
     }
 });
 
-router.post("/login", async (req, res, next) => {
-    const data = req.query;
+router.get("/login", async (req, res, next) => {
+    console.log('--- /login route hit ---');
+    console.log('Raw req.query:', req.query);
+    
+    const data = {
+        Email: req.query.Email,
+        Password: req.query.Password
+    };
+    
+    console.log('Final parsed data:', data);
     console.log('Received login attempt for email:', data.Email);
+
+    // Check if data is valid before proceeding
+    if (!data.Email || !data.Password) {
+        console.log('Missing Email or Password in request');
+        return res.status(400).json({ 
+            message: "Email and Password are required for login.",
+            received: { Email: data.Email, Password: data.Password }
+        });
+    }
 
     try {
         const user = await loginUser(data);
@@ -264,6 +281,7 @@ router.post("/login", async (req, res, next) => {
             res.status(401).json({ message: 'Invalid email or password.' });
         }
     } catch (error) {
+        console.error('Login error details:', error);
         if (error.message.includes("required")) {
             return res.status(400).json({ message: error.message });
         }
