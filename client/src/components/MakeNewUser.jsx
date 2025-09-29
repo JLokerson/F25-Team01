@@ -12,6 +12,7 @@ export default function MakeNewUser() {
         UserType: 1, // 1=Admin, 2=Driver, 3=Sponsor
     });
     const [message, setMessage] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e) => {
         const { name, value, type } = e.target;
@@ -26,6 +27,10 @@ export default function MakeNewUser() {
                 [name]: value
             });
         }
+    };
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
     };
 
     const handleSubmit = async (e) => {
@@ -89,7 +94,23 @@ export default function MakeNewUser() {
                     </div>
                     <div className="mb-3">
                         <label className="form-label">Password</label>
-                        <input type="password" className="form-control" name="Password" value={form.Password} onChange={handleChange} required />
+                        <div className="input-group">
+                            <input 
+                                type={showPassword ? "text" : "password"} 
+                                className="form-control" 
+                                name="Password" 
+                                value={form.Password} 
+                                onChange={handleChange} 
+                                required 
+                            />
+                            <button 
+                                type="button" 
+                                className="btn btn-outline-secondary" 
+                                onClick={togglePasswordVisibility}
+                            >
+                                {showPassword ? "Hide" : "Show"}
+                            </button>
+                        </div>
                     </div>
                     <div className="mb-3">
                         <label className="form-label">User Type</label>
