@@ -6,81 +6,45 @@ import DriverNavbar from './DriverNavbar';
 export default function DriverCart() {
     let navigate = useNavigate();
 
-    // read user from localStorage to determine availability
-    let user = null;
-    try { user = JSON.parse(localStorage.getItem('user')); } catch(e) { user = null; }
-    const userType = user?.UserType ?? user?.accountType ?? null;
-
-    // Cart is stored as an array of ITEM_IDs
-    const [cart, setCart] = useState([]);
-    const [productsMap, setProductsMap] = useState({});
-
-    useEffect(() => {
-        console.log('DriverCart mounted: reading cart/products from localStorage');
-        const raw = localStorage.getItem('cart') || '[]';
-        try { setCart(JSON.parse(raw)); } catch(e) { setCart([]); }
-
-        const prodRaw = localStorage.getItem('products') || '[]';
-        try {
-            const prods = JSON.parse(prodRaw);
-            const map = {};
-            prods.forEach(p => map[p.ITEM_ID] = p);
-            setProductsMap(map);
-        } catch(e) { setProductsMap({}); }
-    }, []);
-
-    // listen for cart updates dispatched by other components in the same tab
-    useEffect(() => {
-        const handler = (e) => {
-            console.log('DriverCart received cartUpdated event', e && e.detail);
-            const raw = localStorage.getItem('cart') || '[]';
-            try { setCart(JSON.parse(raw)); } catch(e) { setCart([]); }
-            const prodRaw = localStorage.getItem('products') || '[]';
-            try {
-                const prods = JSON.parse(prodRaw);
-                const map = {};
-                prods.forEach(p => map[p.ITEM_ID] = p);
-                setProductsMap(map);
-            } catch(e) { setProductsMap({}); }
-        };
-        window.addEventListener('cartUpdated', handler);
-        // also listen to storage events for other tabs
-        const storageHandler = (e) => {
-            console.log('DriverCart received storage event', e);
-            if (e.key === 'cart' || e.key === 'products') handler(e);
-        };
-        window.addEventListener('storage', storageHandler);
-        return () => {
-            window.removeEventListener('cartUpdated', handler);
-            window.removeEventListener('storage', storageHandler);
-        };
-    }, []);
-
-    const remove = (itemId) => {
-        // call the global helper created in Products.jsx
-        if (window.__app_removeFromCart) {
-            window.__app_removeFromCart(itemId);
-        }
-        // update local cart view
-        setCart(prev => {
-            const next = [...prev];
-            const idx = next.indexOf(itemId);
-            if (idx !== -1) next.splice(idx, 1);
-            localStorage.setItem('cart', JSON.stringify(next));
-            return next;
-        });
-        // update local products map for UI
-        setProductsMap(prev => {
-            const p = prev[itemId];
-            if (!p) return prev;
-            const updated = { ...prev, [itemId]: { ...p, ITEM_STOCK: (p.ITEM_STOCK ?? 0) + 1 } };
-            return updated;
-        });
-    };
-
+    
     function OrderConfirm(){
-        // Use local cart to determine items to order
-        let CartItems = cart;
+        // Make a call to grab the orders associated with the currently logged in user here
+        let CartItems = null
+
+        // REQUEST HANDLING START
+        try {
+        const response = await fetch("http://localhost:4000/CartAPI/getCartItems", {
+            method: 'GET',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+            userID: UserID
+            })
+        });
+
+        // Debug: Log the response status and text
+        console.log('Response status:', response.status);
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+
+        // Gets the response and parses it as JSON
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('Failed to parse JSON:', parseError);
+            console.error('Raw response:', responseText);
+            alert("Server error. Check console for details.");
+            return;
+        }
+
+        if (!response.ok) {
+            alert(data.message || "Failed to fetch cart items.");
+            return;
+        }
+
+        CartItems = data;
 
         // Check if cart has items.
         if (!CartItems || CartItems.length === 0){
@@ -92,7 +56,7 @@ export default function DriverCart() {
             let prods = [];
             try { prods = JSON.parse(prodRaw); } catch (e) { prods = []; }
 
-            // create snapshot of ordered items (including price at time of order)
+            // Create snapshot of ordered items (including price at time of order)
             const items = cart.map(id => {
                 const p = prods.find(x => x.ITEM_ID === id);
                 return p ? { ITEM_ID: p.ITEM_ID, ITEM_NAME: p.ITEM_NAME, ITEM_PRICE: p.ITEM_PRICE } : { ITEM_ID: id };
@@ -122,12 +86,21 @@ export default function DriverCart() {
                 const prodsArray = Object.keys(prodMap).map(k => prodMap[k]);
                 localStorage.setItem('products', JSON.stringify(prodsArray));
             } catch (e) {
-                // ignore
+                // Ignore here
             }
 
             // Navigate to confirmation
             navigate('/DriverOrderConfirmation');
         }
+        
+        // Store user info (consider using localStorage or context)
+        console.log('Cart retrieval successful.');
+        
+        } catch (error) {
+        console.error('Unknown error:', error);
+        alert("Error. Please try again.");
+        }
+        // REQUEST HANDLING STOP
     }
 
     return (
