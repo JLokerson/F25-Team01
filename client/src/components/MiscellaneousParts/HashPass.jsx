@@ -36,7 +36,7 @@ export function GenerateSalt(){
 function RandomChar(){
     const MAX_VAL = 26;
     const ASCII_A = 65;
-    let rand = math.random() * MAX_VAL;
-    rand = math.floor(MAX_VAL)  + ASCII_A;
+    let rand = Math.random() * MAX_VAL;
+    rand = Math.floor(MAX_VAL)  + ASCII_A;
     return String.fromCharCode(rand);
 }
