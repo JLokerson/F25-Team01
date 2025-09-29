@@ -1,3 +1,5 @@
+
+
 // Swiped most of this method from the web, then made slight modifications.
 // To quote one of my professors: "Never roll your own crypto."
 async function digestMessage(message) {
@@ -21,10 +23,10 @@ export default async function HashPassword(passwd,salt){
 
 
 // Password salt generation methods stored down here
-export default function GenerateSalt(){
+export function GenerateSalt(){
     const SaltLength = 20;
     let val = "";
-    for (x = 0; x < 20; x++){
+    for (let x = 0; x < 20; x++){
         val = val + RandomChar();
     }
     return val;
