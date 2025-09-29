@@ -7,7 +7,7 @@ export default function CartPage() {
     let navigate = useNavigate(); 
 
     
-    async function OrderConfirm(UserID = -1){
+    async function OrderConfirm(UserID = 1){
         // Make a call to grab the orders associated with the currently logged in user here
         let CartItems = null
 
@@ -20,7 +20,7 @@ export default function CartPage() {
             'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-            userID: UserID
+            DriverID: UserID
             })
         });
 
