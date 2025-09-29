@@ -14,15 +14,9 @@ app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
   // Only log body for POST/PUT
   if (req.method === 'POST' || req.method === 'PUT') {
-    let bodyData = '';
-    req.on('data', chunk => { bodyData += chunk; });
-    req.on('end', () => {
-      console.log('Raw body:', bodyData);
-      next();
-    });
-  } else {
-    next();
+    console.log('Parsed body:', req.body);
   }
+  next();
 });
 
 var userAPIRouter = require("./DB_API/userAPI").router;
