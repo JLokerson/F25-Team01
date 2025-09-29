@@ -1,17 +1,67 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link, useNavigate } from 'react-router-dom';
+import { GenerateSalt } from './MiscellaneousParts/HashPass';
+
+//TO DO: how do we want to handle user types? Right now it defaults to Driver (1) for all new registrations
+// Do we want driver to make an account w a sponsor or is that something they can do after making account? 
 
 export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [salt, setSalt] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [acceptedTOS, setAcceptedTOS] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
+
+  const checkEmailExists = async (email) => {
+    try {
+      const response = await fetch(`http://localhost:4000/userAPI/checkEmail?email=${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      return data.exists;
+    } catch (error) {
+      console.error('Error checking email:', error);
+      return false;
+    }
+  };
+
+  const loginUser = async (email, password) => {
+    try {
+      const response = await fetch(`http://localhost:4000/userAPI/login?Email=${encodeURIComponent(email)}&Password=${encodeURIComponent(password)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const responseText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse login response:', parseError);
+        return null;
+      }
+
+      if (response.ok && data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        return data.user;
+      }
+      return null;
+    } catch (error) {
+      console.error('Auto-login error:', error);
+      return null;
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,15 +70,64 @@ export default function Register() {
       setError("Passwords do not match.");
       return;
     }
+
+    // Check for duplicate email
+    const emailExists = await checkEmailExists(email);
+    if (emailExists) {
+      setError('A user with this email already exists. Please use a different email.');
+      return;
+    }
+
     setError('');
-    // Example registration logic (mock)
-    // await fetch("http://localhost:4000/testAPI/register", { ... })
-    // TO DO: 
-    // - add field 
-    // - Check for duplicate emails 
-    // - randomly generate password salt for making new user 
-    alert("Registered successfully!");
-    navigate('/login');
+
+    // Create user object
+    const user = {
+      FirstName: firstName.trim(),
+      LastName: lastName.trim(),
+      Email: email.trim(),
+      Password: password,
+      PasswordSalt: GenerateSalt(),
+      UserType: 1 // Default to Driver for public registration
+    };
+
+    try {
+      const response = await fetch('http://localhost:4000/userAPI/addUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(user)
+      });
+      
+      const data = await response.json().catch(() => ({}));
+      
+      if (response.ok) {
+        alert("Registered successfully!");
+        
+        // Automatically log the user in
+        const loggedInUser = await loginUser(email, password);
+        if (loggedInUser) {
+          // Navigate based on user type (Driver = 1, so goes to DriverHome)
+          const userType = loggedInUser.UserType;
+          if (userType === 1) {
+            navigate('/DriverHome');
+          } else if (userType === 2) {
+            navigate('/SponsorHome');
+          } else if (userType === 3) {
+            navigate('/AdminHome');
+          } else {
+            navigate('/about');
+          }
+        } else {
+          // If auto-login fails, just go to login page
+          navigate('/login');
+        }
+      } else {
+        setError('Failed to register: ' + (data.message || 'Unknown error'));
+      }
+    } catch (err) {
+      setError('Error: ' + err.message);
+    }
   };
 
   return (
@@ -70,25 +169,45 @@ export default function Register() {
         </div>
         <div className="mb-3">
           <label htmlFor="password" className="form-label">Password</label>
-          <input
-            type="password"
-            id="password"
-            className="form-control"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-          />
+          <div className="input-group">
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              className="form-control"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
         </div>
         <div className="mb-3">
           <label htmlFor="confirm" className="form-label">Confirm Password</label>
-          <input
-            type="password"
-            id="confirm"
-            className="form-control"
-            value={confirm}
-            onChange={e => setConfirm(e.target.value)}
-            required
-          />
+          <div className="input-group">
+            <input
+              type={showConfirm ? "text" : "password"}
+              id="confirm"
+              className="form-control"
+              value={confirm}
+              onChange={e => setConfirm(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => setShowConfirm(!showConfirm)}
+              tabIndex={-1}
+            >
+              {showConfirm ? "Hide" : "Show"}
+            </button>
+          </div>
         </div>
         {error && <div className="alert alert-danger">{error}</div>}
         <div className="mb-3">
