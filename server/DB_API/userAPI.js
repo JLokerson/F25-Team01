@@ -250,7 +250,7 @@ router.post("/updatePassword", async (req, res, next) => {
 });
 
 router.post("/login", async (req, res, next) => {
-    const data = req.body;
+    const data = req.query;
     console.log('Received login attempt for email:', data.Email);
 
     try {
