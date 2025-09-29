@@ -16,6 +16,10 @@ app.use((req, res, next) => {
   if (req.method === 'POST' || req.method === 'PUT') {
     console.log('Parsed body:', req.body);
   }
+  // Log response status after response is sent
+  res.on('finish', () => {
+    console.log(`[${new Date().toISOString()}] Response status: ${res.statusCode} for ${req.method} ${req.originalUrl}`);
+  });
   next();
 });
 
@@ -46,6 +50,9 @@ app.get('/', (req, res) => {
 app.get('/api/data', (req, res) => {
   res.json({ message: 'Ohm says hello from the Node.js backend!' });
 });
+
+// Optional: Handle favicon.ico requests to avoid 404 errors in browser
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

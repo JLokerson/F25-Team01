@@ -13,7 +13,32 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
+    // Hardcoded login bypass for development
+    if (username === "omalt@mail.com" && password === "evoL1321") {
+      const user = {
+        UserID: 8,
+        FirstName: "'Ohm'",
+        LastName: "Patel",
+        Email: "omalt@mail.com",
+        UserType: 1
+      };
+      localStorage.setItem('user', JSON.stringify(user));
+      console.log('User stored in localStorage (hardcoded):', user);
+
+      // Navigate based on user type
+      if (user.UserType === 1) {
+        navigate('/AdminHome');
+      } else if (user.UserType === 2) {
+        navigate('/SponsorHome');
+      } else if (user.UserType === 3) {
+        navigate('/DriverHome');
+      } else {
+        navigate('/about');
+      }
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:4000/userAPI/login", {
         method: 'POST',
@@ -35,6 +60,7 @@ export default function Login() {
       let data;
       try {
         data = JSON.parse(responseText);
+        console.log('Parsed response data:', data); // <-- Add this line
       } catch (parseError) {
         console.error('Failed to parse JSON:', parseError);
         console.error('Raw response:', responseText);
@@ -57,7 +83,13 @@ export default function Login() {
       setShowRecovery(false);
 
       // Store user info in localStorage
+      if (!data.user) {
+        alert("No user object in response! Check backend response format.");
+        console.error('No user object in response:', data);
+        return;
+      }
       localStorage.setItem('user', JSON.stringify(data.user));
+      console.log('User stored in localStorage:', data.user); // <-- Add this line
       
       // Navigate based on user type
       const userType = data.user.UserType;
