@@ -7,7 +7,7 @@ export default function CartPage() {
     let navigate = useNavigate(); 
 
     
-    async function OrderConfirm(){
+    async function OrderConfirm(UserID = -1){
         // Make a call to grab the orders associated with the currently logged in user here
         let CartItems = null
 
@@ -20,9 +20,7 @@ export default function CartPage() {
             'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-            userID: UserID,
-            Password: newpass,
-            PasswordSalt: salt
+            userID: UserID
             })
         });
 
@@ -46,17 +44,7 @@ export default function CartPage() {
             alert(data.message || "Failed to fetch cart items.");
             return;
         }
-        
-        // Store user info (consider using localStorage or context)
-        console.log('Password change successful.');
-        
-        } catch (error) {
-        console.error('Unknown error:', error);
-        alert("Error. Please try again.");
-        }
-        // REQUEST HANDLING STOP
 
-        print(data);
         CartItems = data;
 
         // Check if cart has items.
@@ -71,6 +59,15 @@ export default function CartPage() {
             // Go to confirmation page
             navigate('/OrderConfirmation');
         }
+        
+        // Store user info (consider using localStorage or context)
+        console.log('Password change successful.');
+        
+        } catch (error) {
+        console.error('Unknown error:', error);
+        alert("Error. Please try again.");
+        }
+        // REQUEST HANDLING STOP
     }
     
     return (
