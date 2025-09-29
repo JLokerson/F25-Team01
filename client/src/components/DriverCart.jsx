@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link, useNavigate } from 'react-router-dom';
 import DriverNavbar from './DriverNavbar';
 
+
 export default function DriverCart() {
     let navigate = useNavigate();
     // read user from localStorage to determine availability
@@ -61,7 +62,7 @@ export default function DriverCart() {
             'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-            userID: UserID
+            userID: user
             })
         });
 
