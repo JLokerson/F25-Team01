@@ -294,4 +294,49 @@ router.get("/test-login", (req, res) => {
     res.json({ message: "Login route is accessible" });
 });
 
+/**
+ * Checks if an email already exists in the USER database
+ * @param {string} email - The email to check
+ * @returns {Promise<boolean>} True if email exists, false otherwise
+ */
+async function checkEmailExists(email) {
+    if (!email) {
+        throw new Error("Email is required to check for duplicates.");
+    }
+
+    try {
+        console.log(`Checking if email exists: ${email}`);
+        const sql = "SELECT COUNT(*) as count FROM USER WHERE Email = ?";
+        const values = [email];
+
+        const result = await db.executeQuery(sql, values);
+        const exists = result[0].count > 0;
+        
+        console.log(`Email ${email} exists: ${exists}`);
+        return exists;
+    } catch (error) {
+        console.error("Failed to check email existence:", error);
+        throw error;
+    }
+}
+
+router.get("/checkEmail", async (req, res, next) => {
+    console.log('--- /checkEmail route hit ---');
+    console.log('Raw req.query:', req.query);
+    
+    const { email } = req.query;
+    
+    if (!email) {
+        return res.status(400).json({ exists: false, message: 'Email parameter is required' });
+    }
+
+    try {
+        const exists = await checkEmailExists(email);
+        res.json({ exists });
+    } catch (error) {
+        console.error('Error checking email:', error);
+        res.status(500).json({ exists: false, message: 'Internal server error' });
+    }
+});
+
 module.exports={router, addNewUser};

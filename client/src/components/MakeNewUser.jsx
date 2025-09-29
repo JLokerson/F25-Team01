@@ -33,6 +33,22 @@ export default function MakeNewUser() {
         setShowPassword(!showPassword);
     };
 
+    const checkEmailExists = async (email) => {
+        try {
+            const response = await fetch(`http://localhost:4000/userAPI/checkEmail?email=${encodeURIComponent(email)}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            return data.exists; // Assuming backend returns { exists: true/false }
+        } catch (error) {
+            console.error('Error checking email:', error);
+            return false; // Assume email doesn't exist if check fails
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         // Trim values to avoid accidental spaces
@@ -51,10 +67,17 @@ export default function MakeNewUser() {
             return;
         }
 
+        // Check for duplicate email
+        const emailExists = await checkEmailExists(user.Email);
+        if (emailExists) {
+            setMessage('A user with this email already exists. Please use a different email.');
+            return;
+        }
+
         console.log('Submitting user:', user); // Log what is being sent
 
         try {
-            const response = await fetch('/userAPI/addUser', {
+            const response = await fetch('http://localhost:4000/userAPI/addUser', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
