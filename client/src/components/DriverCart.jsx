@@ -14,7 +14,7 @@ export default function CartPage() {
 
         // REQUEST HANDLING START
         try {
-        const response = await fetch("http://localhost:4000/CartAPI/getCartItems", {
+        const response = await fetch("http://localhost:4000/cartAPI/getCartItems", {
             method: 'GET',
             headers: {
             'Content-Type': 'application/json',
