@@ -65,11 +65,11 @@ export default function Login() {
       // Navigate based on user type
       const userType = data.user.UserType;
       if (userType === 1) {
-        navigate('/AdminHome'); // Admin user
+        navigate('/DriverHome'); // Driver user
       } else if (userType === 2) {
         navigate('/SponsorHome'); // Sponsor user
       } else if (userType === 3) {
-        navigate('/DriverHome'); // Driver user
+        navigate('/AdminHome'); // Admin user
       } else {
         navigate('/about'); // Default fallback
       }

@@ -9,7 +9,7 @@ export default function MakeNewUser() {
         LastName: '',
         Email: '',
         Password: '',
-        UserType: 1, // 1=Admin, 2=Driver, 3=Sponsor
+        UserType: 1, // 1=Driver, 2=Sponsor, 3=Admin
     });
     const [message, setMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -117,19 +117,10 @@ export default function MakeNewUser() {
                         <div>
                             <input
                                 type="radio"
-                                id="admin"
+                                id="driver"
                                 name="UserType"
                                 value="1"
                                 checked={form.UserType === 1}
-                                onChange={handleChange}
-                            />
-                            <label htmlFor="admin" className="ms-1 me-3">Admin</label>
-                            <input
-                                type="radio"
-                                id="driver"
-                                name="UserType"
-                                value="2"
-                                checked={form.UserType === 2}
                                 onChange={handleChange}
                             />
                             <label htmlFor="driver" className="ms-1 me-3">Driver</label>
@@ -137,11 +128,20 @@ export default function MakeNewUser() {
                                 type="radio"
                                 id="sponsor"
                                 name="UserType"
+                                value="2"
+                                checked={form.UserType === 2}
+                                onChange={handleChange}
+                            />
+                            <label htmlFor="sponsor" className="ms-1 me-3">Sponsor</label>
+                            <input
+                                type="radio"
+                                id="admin"
+                                name="UserType"
                                 value="3"
                                 checked={form.UserType === 3}
                                 onChange={handleChange}
                             />
-                            <label htmlFor="sponsor" className="ms-1">Sponsor</label>
+                            <label htmlFor="admin" className="ms-1">Admin</label>
                         </div>
                     </div>
                     <button type="submit" className="btn btn-primary">Create User</button>
