@@ -61,7 +61,7 @@ export default function CartPage() {
         }
         
         // Store user info (consider using localStorage or context)
-        console.log('Password change successful.');
+        console.log('Cart retrieval successful.');
         
         } catch (error) {
         console.error('Unknown error:', error);
