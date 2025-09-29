@@ -26,7 +26,7 @@ export default async function HashPassword(passwd,salt){
 export function GenerateSalt(){
     const SaltLength = 20;
     let val = "";
-    for (let x = 0; x < 20; x++){
+    for (let x = 0; x < SaltLength; x++){
         val = val + RandomChar();
     }
     return val;
