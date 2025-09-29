@@ -40,14 +40,22 @@ export default function Navbar({ user }) {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <Link className="nav-link" to="/about">About</Link>
+              <Link className="nav-link" to="/">Home</Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/driverhome">Driver Home</Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/drivercart">Driver Cart</Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/products">Products</Link>
             </li>
             <li className="nav-item">
-              {/* Cart link: allowed for drivers only */}
-              <a href="#" onClick={handleCart} className={`nav-link ${userType !== 3 ? 'text-muted' : ''}`}>Cart</a>
+              <Link className="nav-link" to="/about">About</Link>
+            </li>
+            <li className="nav-item">
+              <button className="nav-link btn btn-link" onClick={() => handleProfile()}>Profile</button>
             </li>
           </ul>
 
