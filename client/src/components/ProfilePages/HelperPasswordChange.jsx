@@ -62,6 +62,7 @@ export default function HelperPasswordChange(UserID = -1) {
             // ATTEMPT TO UPDATE PASSWORD IF OLDPASS CORRECT
             if(oldpass){ // ToDo: implement proper check if this password is correct
                 AttemptUpdate(newpass1);
+                return;
             }
 
             // IF NOT CORRECT:
