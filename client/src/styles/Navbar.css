@@ -1,4 +1,3 @@
-
 .navbar{
 	position:relative;
 	z-index:2;
@@ -115,5 +114,47 @@
 	.brand{font-size:1rem}
 	.landing__title{font-size:1.8rem}
 	.btn-getstarted{padding:.7rem 1.1rem}
+}
+
+/* Custom styles for role-specific navbars to override white text */
+.admin-navbar .navbar-brand,
+.admin-navbar .nav-link,
+.admin-navbar .navbar-text {
+  color: #000000 !important;
+}
+
+.sponsor-navbar .navbar-brand,
+.sponsor-navbar .nav-link,
+.sponsor-navbar .navbar-text {
+  color: #000000 !important;
+}
+
+.driver-navbar .navbar-brand,
+.driver-navbar .nav-link,
+.driver-navbar .navbar-text {
+  color: #000000 !important;
+}
+
+/* Override the general navbar transparency for role-specific navbars */
+.admin-navbar,
+.sponsor-navbar,
+.driver-navbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Ensure buttons have proper contrast */
+.admin-navbar .btn-outline-dark,
+.sponsor-navbar .btn-outline-danger,
+.driver-navbar .btn-outline-danger {
+  border-color: #000000 !important;
+  color: #000000 !important;
+}
+
+/* Override the transparent background rule specifically for role navbars */
+.admin-navbar.navbar,
+.sponsor-navbar.navbar,
+.driver-navbar.navbar {
+  background: #ffffff !important;
 }
 

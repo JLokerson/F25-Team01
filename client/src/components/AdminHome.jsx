@@ -6,7 +6,7 @@ import AdminNavbar from './AdminNavbar';
 export default function AdminHome() {
     return (
         <div>
-            {AdminNavbar()}
+            <AdminNavbar />
             {/* Place admin home page text below here */}
         </div>
     );

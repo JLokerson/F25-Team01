@@ -61,7 +61,7 @@ export default function DriverCart() {
             'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-            userID: UserID
+            userID: user?.UserID || user?.ID
             })
         });
 
@@ -149,7 +149,7 @@ export default function DriverCart() {
             {DriverNavbar()}
             <div className="container my-5">
                 <h3>Your Cart</h3>
-                {userType !== 3 ? (
+                {userType !== 1 ? (
                     <p>The cart is only available to drivers. If you believe this is an error, please contact an administrator.</p>
                 ) : (
                     <>

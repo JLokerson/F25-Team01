@@ -15,6 +15,24 @@ return hashHex;
 // Though it would not be immediately obvious as to how one
 // could be of merit here, the added protection seemed wise
 // since it was easy to implement it.
-export default async function HashPassword(passwd,salt){
+export async function HashPassword(passwd, salt) {
     return await digestMessage(await digestMessage(passwd + salt));
+}
+
+// Password salt generation methods stored down here
+export function GenerateSalt() {
+    const SaltLength = 20;
+    let val = "";
+    for (let x = 0; x < SaltLength; x++) {
+        val = val + RandomChar();
+    }
+    return val;
+}
+
+// Handles byte selection.
+function RandomChar() {
+    const MAX_VAL = 26;
+    const ASCII_A = 65;
+    let rand = Math.floor(Math.random() * MAX_VAL) + ASCII_A;
+    return String.fromCharCode(rand);
 }

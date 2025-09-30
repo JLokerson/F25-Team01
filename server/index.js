@@ -9,8 +9,22 @@ const port = process.env.SERVER_PORT || 4000; // Use environment variable
 app.use(cors()); // Enable CORS for cross-origin requests
 app.use(express.json()); // Enable parsing JSON request bodies
 
+// Log every request and its body (for debugging)
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  // Only log body for POST/PUT
+  if (req.method === 'POST' || req.method === 'PUT') {
+    console.log('Parsed body:', req.body);
+  }
+  // Log response status after response is sent
+  res.on('finish', () => {
+    console.log(`[${new Date().toISOString()}] Response status: ${res.statusCode} for ${req.method} ${req.originalUrl}`);
+  });
+  next();
+});
+
 var userAPIRouter = require("./DB_API/userAPI").router;
-var adminAPIRouter = require("./DB_API/adminAPI").router;
+// var adminAPIRouter = require("./DB_API/adminAPI").router;
 var adminAPIRouter = require("./DB_API/adminAPI").router;
 var sponsorAPIRouter = require("./DB_API/sponsorAPI").router;
 var driverAPIRouter = require("./DB_API/driverAPI").router;
@@ -36,6 +50,9 @@ app.get('/', (req, res) => {
 app.get('/api/data', (req, res) => {
   res.json({ message: 'Ohm says hello from the Node.js backend!' });
 });
+
+// Optional: Handle favicon.ico requests to avoid 404 errors in browser
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

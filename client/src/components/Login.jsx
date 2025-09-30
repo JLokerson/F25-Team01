@@ -13,17 +13,13 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
-      const response = await fetch("http://localhost:4000/userAPI/login", {
-        method: 'POST',
+      const response = await fetch(`http://localhost:4000/userAPI/login?Email=${encodeURIComponent(username)}&Password=${encodeURIComponent(password)}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          Email: username,
-          Password: password
-        })
+        }
       });
 
       // Debug: Log the response status and text
@@ -35,6 +31,7 @@ export default function Login() {
       let data;
       try {
         data = JSON.parse(responseText);
+        console.log('Parsed response data:', data); // <-- Add this line
       } catch (parseError) {
         console.error('Failed to parse JSON:', parseError);
         console.error('Raw response:', responseText);
@@ -57,16 +54,22 @@ export default function Login() {
       setShowRecovery(false);
 
       // Store user info in localStorage
+      if (!data.user) {
+        alert("No user object in response! Check backend response format.");
+        console.error('No user object in response:', data);
+        return;
+      }
       localStorage.setItem('user', JSON.stringify(data.user));
+      console.log('User stored in localStorage:', data.user); // <-- Add this line
       
       // Navigate based on user type
       const userType = data.user.UserType;
       if (userType === 1) {
-        navigate('/AdminHome'); // Admin user
+        navigate('/DriverHome'); // Driver user
       } else if (userType === 2) {
         navigate('/SponsorHome'); // Sponsor user
       } else if (userType === 3) {
-        navigate('/DriverHome'); // Driver user
+        navigate('/AdminHome'); // Admin user
       } else {
         navigate('/about'); // Default fallback
       }
@@ -129,7 +132,7 @@ export default function Login() {
             <Link to="/recover" className="btn btn-warning btn-sm flex-fill">Forgot Password?</Link>
           </div>
           <div className="text-center">
-            <Link to="/about" className="btn btn-secondary btn-sm">Back</Link>
+            <Link to="/" className="btn btn-secondary btn-sm">Back</Link>
           </div>
         </div>
       </div>
