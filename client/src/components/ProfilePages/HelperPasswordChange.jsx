@@ -9,7 +9,7 @@ export default function HelperPasswordChange(UserID = 1) {
     const [oldpass, setoldpass] = useState('');
 
     async function AttemptUpdate(newpass){
-        let salt = GenerateSalt;
+        let salt = GenerateSalt();
         await alert("Hash is " + await HashPassword(newpass+salt));
             
         try {
