@@ -11,6 +11,8 @@ export default function Home() {
     return (
     <div className="landing" aria-label="Landing page">
         <div className="landing__bg" />
+        
+            {/* Navbar section */}
             <nav className="navbar navbar-expand-lg navbar-dark">
                 <div className="container-fluid px-4">
                     <a className="navbar-brand d-flex align-items-center" href="#" onClick={(e) => { e.preventDefault(); navigate('/'); }}>
@@ -32,8 +34,9 @@ export default function Home() {
                     </div>
                 </div>
             </nav>
-        
-        <main className="landing__content container text-center">
+
+            {/* Main landing page */}
+            <main className="landing__content container text-center">
         <div className="row justify-content-center">
             <div className="col-12 col-md-10 col-lg-8">
                 <h1 className="landing__title display-4">Together, we drive change</h1>
@@ -45,6 +48,7 @@ export default function Home() {
         </div>
         </main>
 
+        {/* Footer section */}
         <footer className="landing__footer">&copy; {new Date().getFullYear()} Network Drivers</footer>
     </div>
   );
