@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link, useNavigate } from 'react-router-dom';
 import DriverNavbar from './DriverNavbar';
+import driversSeed from '../content/json-assets/driver_sample.json';
 
 
 export default function DriverCart() {
@@ -131,6 +132,39 @@ export default function DriverCart() {
                 localStorage.setItem('products', JSON.stringify(prodsArray));
             } catch (e) {
                 // Ignore here
+            }
+            // --- Update driver points: deduct points for userid=1 by total cost of ordered items ---
+            try {
+                const driversRaw = localStorage.getItem('drivers');
+                let driversList = [];
+                if (driversRaw) {
+                    try { driversList = JSON.parse(driversRaw); } catch (e) { driversList = []; }
+                }
+
+                // If still no drivers persisted, fall back to the bundled seed JSON
+                if (!Array.isArray(driversList) || driversList.length === 0) {
+                    driversList = Array.isArray(driversSeed) ? driversSeed.map(d => ({ ...d })) : [];
+                }
+
+                // Calculate total cost of ordered items (sum of ITEM_PRICE)
+                const totalCost = items.reduce((sum, it) => sum + (Number(it.ITEM_PRICE) || 0), 0);
+
+                // Find driver with userid === 1 (numeric or string)
+                const target = driversList.find(d => Number(d.userid) === 1 || d.userid === 1);
+                if (target) {
+                    const current = Number(target.points) || 0;
+                    target.points = Math.max(0, current - totalCost);
+                } else {
+                    // If no driver exists, create a minimal one for userid=1 with negative-adjusted points (clamped to 0)
+                    const pts = Math.max(0, 0 - totalCost);
+                    driversList.push({ userid: 1, accountType: 1, firstName: 'Driver', lastName: 'One', birthday: '', email: '', points: pts });
+                }
+
+                localStorage.setItem('drivers', JSON.stringify(driversList));
+                // notify any open pages of drivers change
+                try { window.dispatchEvent(new Event('driversUpdated')); } catch (e) { /* ignore */ }
+            } catch (e) {
+                console.error('Failed to update driver points:', e);
             }
             navigate('/DriverOrderConfirmation');
         }
