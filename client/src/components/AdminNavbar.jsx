@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '../App.css';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function AdminNavbar() {
@@ -15,54 +16,57 @@ export default function AdminNavbar() {
         window.onpopstate = function () {
             window.history.go(1);
         };
-        navigate('/about', { replace: true });
+        navigate('/', { replace: true });
+    };
+
+    const navbarStyle = {
+        backgroundColor: '#ff8c00'
+    };
+
+    const textStyle = {
+        color: '#000000 !important',
+        fontWeight: '600'
+    };
+
+    const brandStyle = {
+        color: '#000000 !important',
+        fontWeight: 'bold'
     };
 
     return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-light">
-            <a className="navbar-brand" href="#">Admin Home</a>
-            <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span className="navbar-toggler-icon"></span>
-            </button>
+        <nav className="admin-navbar navbar navbar-expand-lg navbar-light" style={navbarStyle}>
+            <div className="container-fluid">
+                <Link className="navbar-brand d-flex align-items-center" to="/adminhome" style={brandStyle}>
+                    <img src="https://wallpaperaccess.com/full/2723826.jpg" alt="Network Drivers" className="navbar-logo me-2" style={{width: '40px', height: '40px', objectFit: 'cover'}} />
+                    <span className="fw-bold">Admin Home</span>
+                </Link>
+                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span className="navbar-toggler-icon"></span>
+                </button>
 
-            <div className="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul className="navbar-nav mr-auto">
-                <li className="nav-item active">
-                    <a className="nav-link" href="/AdminHome">Home <span className="sr-only">(current)</span></a>
-                </li>
-                <li className="nav-item">
-                    <a className="nav-link" href="/AdminProfile">Profile</a>
-                </li>
-                <li className="nav-item">
-                    <a className="nav-link" href="#">User Management</a>
-                </li>
-                <li className="nav-item">
-                    <a className="nav-link" href="/MakeNewUser">Make New User</a>
-                </li>
-                {/* Commented out the unwanted parts, but left as a reference on how to make given elements since the bootstrap default example had to be slightly modified to work with react
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Dropdown
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item" href="#">Action</a>
-                    <a class="dropdown-item" href="#">Another action</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="#">Something else here</a>
+                <div className="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li className="nav-item">
+                            <Link className="nav-link" to="/adminhome" style={textStyle}>Home</Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link className="nav-link" to="/adminprofile" style={textStyle}>Profile</Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link className="nav-link" to="#" style={textStyle}>User Management</Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link className="nav-link" to="/MakeNewUser" style={textStyle}>Make New User</Link>
+                        </li>
+                    </ul>
+                    <div className="d-flex align-items-center">
+                        <span className="navbar-text me-3" style={{color: 'black', fontWeight: '500'}}>
+                            Hello, {firstName}!
+                        </span>
+                        <button className="btn btn-outline-dark btn-sm" onClick={handleLogout}>
+                            Logout
+                        </button>
                     </div>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled" href="#">Disabled</a>
-                </li>
-                */}
-                </ul>
-                <div className="d-flex align-items-center ms-auto">
-                    <span className="navbar-text me-3">
-                        Hello, {firstName}!
-                    </span>
-                    <button className="btn btn-outline-danger btn-sm me-4" onClick={handleLogout}>
-                        Logout
-                    </button>
                 </div>
             </div>
         </nav>

@@ -6,8 +6,8 @@ import SponsorNavbar from './SponsorNavbar';
 export default function SponsorHome() {
     return (
         <div>
-            {SponsorNavbar()}
-            {/* Place sponsor home page text below here */}
+            <SponsorNavbar />
+            {/* Place sponsor home page content below here */}
         </div>
     );
 }

@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 function MostOfTheText() {
   let navigate = useNavigate(); 
-  const GoLogin = () =>{ 
-    let path = `/login`; 
+  const GoHome = () =>{ 
+    let path = `/`; 
     navigate(path);
   }
 
@@ -13,7 +13,7 @@ function MostOfTheText() {
     <div style={{minHeight:"88vh",maxHeight:"88vh"}}>
       <h1>This will be the about page</h1>
       <br></br>
-      <button type="submit" onClick={GoLogin} className="btn btn-info">To Login</button>
+      <button type="submit" onClick={GoHome} className="btn btn-info">To Home</button>
       <br></br>
       <div className="spinner-border text-primary" role="status">
         <span className="sr-only"> </span>

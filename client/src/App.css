@@ -36,3 +36,38 @@
     transform: rotate(360deg);
   }
 }
+
+/* Custom styles for role-specific navbars */
+.admin-navbar .navbar-brand,
+.admin-navbar .nav-link,
+.admin-navbar .navbar-text {
+  color: #000000 !important;
+}
+
+.sponsor-navbar .navbar-brand,
+.sponsor-navbar .nav-link,
+.sponsor-navbar .navbar-text {
+  color: #000000 !important;
+}
+
+.driver-navbar .navbar-brand,
+.driver-navbar .nav-link,
+.driver-navbar .navbar-text {
+  color: #000000 !important;
+}
+
+/* Override the general navbar transparency for role-specific navbars */
+.admin-navbar,
+.sponsor-navbar,
+.driver-navbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Ensure buttons have proper contrast */
+.admin-navbar .btn-outline-dark,
+.sponsor-navbar .btn-outline-danger,
+.driver-navbar .btn-outline-danger {
+  border-color: #000000 !important;
+  color: #000000 !important;
+}

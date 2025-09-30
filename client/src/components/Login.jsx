@@ -132,7 +132,7 @@ export default function Login() {
             <Link to="/recover" className="btn btn-warning btn-sm flex-fill">Forgot Password?</Link>
           </div>
           <div className="text-center">
-            <Link to="/about" className="btn btn-secondary btn-sm">Back</Link>
+            <Link to="/" className="btn btn-secondary btn-sm">Back</Link>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 // client/src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import About from './components/About';
 import Login from './components/Login';
 import AdminHome from './components/AdminHome';
@@ -16,10 +16,11 @@ import MakeNewUser from './components/MakeNewUser';
 import CartPage from './components/CartPage';
 import DriverCart from './components/DriverCart';
 import DriverOrderConfirmation from './components/DriverOrderConfirmation';
-import Navbar from './components/Navbar';
+// import OrderConfirmation from './components/OrderConfirmation';
 import Home from './components/Home';
 
-function App() {
+function AppContent() {
+  const location = useLocation();
   // Simple auth check: presence of "user" in localStorage
   const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
   let user = null;
@@ -30,10 +31,7 @@ function App() {
   }
 
   return (
-    <Router>
-      {/* Show Navbar only when logged in */}
-      {user && <Navbar user={user} />}
-
+    <>
       <Routes>
         {/* General routes */}
         <Route path="/" element={<Home />} />
@@ -42,7 +40,7 @@ function App() {
         <Route path="/recover" element={<Recover />} />
         <Route path="/register" element={<Register />} />
         <Route path="/products" element={<Products />} />
-        <Route path="/OrderConfirmation" element={<OrderConfirmation/>}/>
+        {/* <Route path="/OrderConfirmation" element={<OrderConfirmation/>}/> */}
         <Route path="/Cart" element={<CartPage/>}/>
         <Route path="/MakeNewUser" element={<MakeNewUser />} /> 
 
@@ -65,6 +63,14 @@ function App() {
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
