@@ -11,30 +11,59 @@ import Register from './components/Register';
 import AdminProfile from './components/ProfilePages/AdminProfile'
 import DriverProfile from './components/ProfilePages/DriverProfile'
 import SponsorProfile from './components/ProfilePages/SponsorProfile';
-import CartPage from './components/DriverCart';
-import OrderConfirmation from './components/DriverOrderConfirmation';
 import Products from './components/Products';
-import MakeNewUser from './components/MakeNewUser'; // Add this import
+import MakeNewUser from './components/MakeNewUser'; 
+import CartPage from './components/CartPage';
+import DriverCart from './components/DriverCart';
+import DriverOrderConfirmation from './components/DriverOrderConfirmation';
+import Navbar from './components/Navbar';
+import Home from './components/Home';
 
 function App() {
+  // Simple auth check: presence of "user" in localStorage
+  const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+  let user = null;
+  try {
+    user = userRaw ? JSON.parse(userRaw) : null;
+  } catch (e) {
+    user = null;
+  }
+
   return (
     <Router>
+      {/* Show Navbar only when logged in */}
+      {user && <Navbar user={user} />}
+
       <Routes>
-        <Route path="/" element={<Navigate to="/about" />} />
+        {/* General routes */}
+        <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/recover" element={<Recover />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/AdminHome" element={<AdminHome/>} />
-        <Route path="/DriverHome" element={<DriverHome/>} />
-        <Route path="/SponsorHome" element={<SponsorHome/>} />
-        <Route path="/AdminProfile" element={<AdminProfile/>} />
-        <Route path="/DriverProfile" element={<DriverProfile/>} />
-        <Route path="/SponsorProfile" element={<SponsorProfile/>} />
         <Route path="/products" element={<Products />} />
         <Route path="/OrderConfirmation" element={<OrderConfirmation/>}/>
         <Route path="/Cart" element={<CartPage/>}/>
         <Route path="/MakeNewUser" element={<MakeNewUser />} /> 
+
+        {/* Admin routes */}
+        <Route path="/adminhome" element={<AdminHome />} />
+        <Route path="/adminprofile" element={<AdminProfile />} />
+
+        {/* Sponsor routes */}
+        <Route path="/sponsorhome" element={<SponsorHome />} />
+        <Route path="/sponsorprofile" element={<SponsorProfile />} />
+
+        {/* Driver routes */}
+        <Route path="/driverhome" element={<DriverHome />} />
+        <Route path="/driverprofile" element={<DriverProfile />} />
+        <Route path="/drivercart" element={<DriverCart />} />
+        <Route path="/driverorderconfirmation" element={<DriverOrderConfirmation />} />
+
+        {/* Shared pages */}
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

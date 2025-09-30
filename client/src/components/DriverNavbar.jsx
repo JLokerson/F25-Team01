@@ -7,7 +7,7 @@ export default function DriverNavbar() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const firstName = user?.FirstName || 'Driver';
 
-    // prevent navigation back to protected pages after logout
+    // Prevent navigation back to protected pages after logout
     const handleLogout = () => {
         localStorage.removeItem('user');
         window.history.pushState(null, '', window.location.href);
