@@ -8,7 +8,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
-  const [showRecovery, setShowRecovery] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -31,7 +30,7 @@ export default function Login() {
       let data;
       try {
         data = JSON.parse(responseText);
-        console.log('Parsed response data:', data); // <-- Add this line
+        console.log('Parsed response data:', data); 
       } catch (parseError) {
         console.error('Failed to parse JSON:', parseError);
         console.error('Raw response:', responseText);
@@ -42,7 +41,10 @@ export default function Login() {
       if (!response.ok) {
         setFailedAttempts(prev => {
           const next = prev + 1;
-          if (next >= 5) setShowRecovery(true);
+          if (next >= 5) {
+            navigate('/recover');
+            return next;
+          }
           return next;
         });
         alert(data.message || "Login failed. Please check your credentials.");
@@ -51,7 +53,6 @@ export default function Login() {
 
       // Login successful
       setFailedAttempts(0);
-      setShowRecovery(false);
 
       // Store user info in localStorage
       if (!data.user) {
@@ -78,10 +79,6 @@ export default function Login() {
       console.error('Login error:', error);
       alert("Network error. Please try again.");
     }
-  };
-
-  const handleRecovery = () => {
-    navigate('/recover');
   };
 
   return (
