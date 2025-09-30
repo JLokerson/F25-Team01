@@ -13,13 +13,17 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log('Sending login request with:', { Email: username, Password: password });
+
     try {
       const response = await fetch(`http://localhost:4000/userAPI/login?Email=${encodeURIComponent(username)}&Password=${encodeURIComponent(password)}`, {
-        method: 'GET',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         }
       });
+
+      console.log('Request URL:', `http://localhost:4000/userAPI/login?Email=${encodeURIComponent(username)}&Password=${encodeURIComponent(password)}`);
 
       // Debug: Log the response status and text
       console.log('Response status:', response.status);
