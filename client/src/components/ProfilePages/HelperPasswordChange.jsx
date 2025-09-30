@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
-import { HashPassword } from '../MiscellaneousParts/HashPass';
+import { HashPassword, GenerateSalt } from '../MiscellaneousParts/HashPass';
 
-export default function HelperPasswordChange(UserID = -1) {
+export default function HelperPasswordChange(UserID = 1) {
     const [newpass1, setnewpass1] = useState('');
     const [newpass2, setnewpass2] = useState('');
     const [oldpass, setoldpass] = useState('');
