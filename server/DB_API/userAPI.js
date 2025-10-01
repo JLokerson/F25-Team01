@@ -231,17 +231,30 @@ router.post("/addUser", async (req, res, next) => {
 
 
 router.post("/updatePassword", async (req, res, next) => {
-    const data = req.body;
-    console.log('Received POST data for password update: ', data);
+    console.log('--- /updatePassword route hit ---');
+    console.log('Raw req.body:', req.body);
+    console.log('Raw req.query:', req.query);
+    
+    // Prefer body, fallback to query for Postman compatibility
+    const source = (req.body && Object.keys(req.body).length > 0) ? req.body : req.query;
+    
+    const data = {
+        UserID: source.UserID,
+        Password: source.Password,
+        PasswordSalt: source.PasswordSalt
+    };
+    
+    console.log('Received POST data for password update:', data);
+    
     try {
         const result = await updatePassword(data);
         if (result.affectedRows > 0) {
             res.status(200).json({ message: 'Password updated successfully!' });
         } else {
-            res.status(404).json({ message: 'User not found, password not updated.' });
+            res.status(404).json({ message: 'User not found or password not updated.' });
         }
     } catch (error) {
-        // Handle specific errors like missing data
+        console.error('Password update error:', error);
         if (error.message.includes("required")) {
             return res.status(400).json({ message: error.message });
         }
@@ -249,7 +262,7 @@ router.post("/updatePassword", async (req, res, next) => {
     }
 });
 
-router.get("/login", async (req, res, next) => {
+router.post("/login", async (req, res, next) => {
     console.log('--- /login route hit ---');
     console.log('Raw req.query:', req.query);
     
