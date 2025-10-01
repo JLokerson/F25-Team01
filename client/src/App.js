@@ -13,10 +13,8 @@ import DriverProfile from './components/ProfilePages/DriverProfile'
 import SponsorProfile from './components/ProfilePages/SponsorProfile';
 import Products from './components/Products';
 import MakeNewUser from './components/MakeNewUser'; 
-// import CartPage from './components/CartPage';
 import DriverCart from './components/DriverCart';
 import DriverOrderConfirmation from './components/DriverOrderConfirmation';
-// import OrderConfirmation from './components/OrderConfirmation';
 import Home from './components/Home';
 
 function AppContent() {
