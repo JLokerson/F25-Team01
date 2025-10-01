@@ -13,7 +13,7 @@ import DriverProfile from './components/ProfilePages/DriverProfile'
 import SponsorProfile from './components/ProfilePages/SponsorProfile';
 import Products from './components/Products';
 import MakeNewUser from './components/MakeNewUser'; 
-import CartPage from './components/CartPage';
+// import CartPage from './components/CartPage';
 import DriverCart from './components/DriverCart';
 import DriverOrderConfirmation from './components/DriverOrderConfirmation';
 // import OrderConfirmation from './components/OrderConfirmation';
@@ -41,7 +41,7 @@ function AppContent() {
         <Route path="/register" element={<Register />} />
         <Route path="/products" element={<Products />} />
         {/* <Route path="/OrderConfirmation" element={<OrderConfirmation/>}/> */}
-        <Route path="/Cart" element={<CartPage/>}/>
+        {/* <Route path="/Cart" element={<CartPage/>}/> */}
         <Route path="/MakeNewUser" element={<MakeNewUser />} /> 
 
         {/* Admin routes */}
