@@ -8,23 +8,22 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
-  const [showRecovery, setShowRecovery] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
+    console.log('Sending login request with:', { Email: username, Password: password });
+
     try {
-      const response = await fetch("http://localhost:4000/userAPI/login", {
+      const response = await fetch(`http://localhost:4000/userAPI/login?Email=${encodeURIComponent(username)}&Password=${encodeURIComponent(password)}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          Email: username,
-          Password: password
-        })
+        }
       });
+
+      console.log('Request URL:', `http://localhost:4000/userAPI/login?Email=${encodeURIComponent(username)}&Password=${encodeURIComponent(password)}`);
 
       // Debug: Log the response status and text
       console.log('Response status:', response.status);
@@ -35,6 +34,7 @@ export default function Login() {
       let data;
       try {
         data = JSON.parse(responseText);
+        console.log('Parsed response data:', data); 
       } catch (parseError) {
         console.error('Failed to parse JSON:', parseError);
         console.error('Raw response:', responseText);
@@ -45,7 +45,10 @@ export default function Login() {
       if (!response.ok) {
         setFailedAttempts(prev => {
           const next = prev + 1;
-          if (next >= 5) setShowRecovery(true);
+          if (next >= 5) {
+            navigate('/recover');
+            return next;
+          }
           return next;
         });
         alert(data.message || "Login failed. Please check your credentials.");
@@ -54,19 +57,24 @@ export default function Login() {
 
       // Login successful
       setFailedAttempts(0);
-      setShowRecovery(false);
-      
-      // Store user info (consider using localStorage or context)
-      console.log('Login successful:', data.user);
+
+      // Store user info in localStorage
+      if (!data.user) {
+        alert("No user object in response! Check backend response format.");
+        console.error('No user object in response:', data);
+        return;
+      }
+      localStorage.setItem('user', JSON.stringify(data.user));
+      console.log('User stored in localStorage:', data.user); // <-- Add this line
       
       // Navigate based on user type
       const userType = data.user.UserType;
       if (userType === 1) {
-        navigate('/AdminHome'); // Admin user
+        navigate('/DriverHome'); // Driver user
       } else if (userType === 2) {
         navigate('/SponsorHome'); // Sponsor user
       } else if (userType === 3) {
-        navigate('/DriverHome'); // Driver user
+        navigate('/AdminHome'); // Admin user
       } else {
         navigate('/about'); // Default fallback
       }
@@ -75,10 +83,6 @@ export default function Login() {
       console.error('Login error:', error);
       alert("Network error. Please try again.");
     }
-  };
-
-  const handleRecovery = () => {
-    navigate('/recover');
   };
 
   return (
@@ -129,7 +133,7 @@ export default function Login() {
             <Link to="/recover" className="btn btn-warning btn-sm flex-fill">Forgot Password?</Link>
           </div>
           <div className="text-center">
-            <Link to="/about" className="btn btn-secondary btn-sm">Back</Link>
+            <Link to="/" className="btn btn-secondary btn-sm">Back</Link>
           </div>
         </div>
       </div>

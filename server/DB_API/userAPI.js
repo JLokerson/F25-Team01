@@ -65,17 +65,20 @@ async function getUser(data){
 async function addNewUser(data){
     try {
         console.log("Inserting new User to User Table");
-        console.log(data);
+        console.log("Data to insert:", data);
         const sql = "INSERT INTO USER (FirstName, LastName, Email, Password, PasswordSalt, UserType) VALUES (?, ?, ?, ?, ?, ?)";
         const values = [data.FirstName, data.LastName, data.Email, data.Password, data.PasswordSalt, data.UserType];
 
+        console.log("SQL:", sql);
+        console.log("Values:", values);
+
         const result = await db.executeQuery(sql, values);
 
-        console.log("Record inserted, ID: " + result.insertId);
+        console.log("Record inserted user, ID: " + result.insertId);
         return result; 
     }
     catch (error) {
-        console.error("Failed to add new user:", error);
+        console.error("Database query failed:", error);
         throw error;
     }
 };
@@ -150,7 +153,15 @@ async function loginUser(data) {
 }
 
 var express = require("express");
-var router=express.Router();
+var router = express.Router();
+
+router.use((req, res, next) => {
+    console.log('userAPI router middleware hit:', req.method, req.originalUrl);
+    next();
+});
+router.use(express.json()); // Ensure JSON body parsing for all routes in this router
+
+console.log("userAPI router loaded"); 
 
 router.get("/", async function(req, res, next) {
     try {
@@ -185,63 +196,65 @@ router.get("/getUser", async function(req, res, next) {
 });
 
 router.post("/addUser", async (req, res, next) => {
-    const data = req.body;
-    console.log('Received POST data: ', data);
+    console.log('--- /addUser route hit ---');
+    console.log('Raw req.body:', req.body);
+    console.log('Raw req.query:', req.query);
+
+    // Prefer body, fallback to query for Postman compatibility
+    const source = Object.keys(req.body).length > 0 ? req.body : req.query;
+
+    // Default fields to empty string or 1 for UserType if missing
+    const FirstName = source.FirstName ? String(source.FirstName).trim() : '';
+    const LastName = source.LastName ? String(source.LastName).trim() : '';
+    const Email = source.Email ? String(source.Email).trim() : '';
+    const Password = source.Password ? String(source.Password) : '';
+    const PasswordSalt = source.PasswordSalt ? String(source.PasswordSalt) : '';
+    const UserType = source.UserType && !isNaN(Number(source.UserType)) ? Number(source.UserType) : 1;
+
+    console.log('Parsed fields:', { FirstName, LastName, Email, Password, PasswordSalt, UserType });
+
+    // Validation: check for missing fields
+    if (!FirstName || !LastName || !Email || !Password || !PasswordSalt || !UserType) {
+        console.error('Missing required fields:', { FirstName, LastName, Email, Password, PasswordSalt, UserType });
+        return res.status(400).json({ message: 'Missing required fields.', body: source });
+    }
+
     try {
-        const result = await addNewUser(data);
+        const result = await addNewUser({ FirstName, LastName, Email, Password, PasswordSalt, UserType });
+        console.log('User added successfully, DB result:', result);
         res.status(200).json({ message: 'User added successfully!', id: result.insertId });
     } catch (error) {
-        res.status(500).send('Error adding user.');
+        console.error('Error in /addUser:', error); // Log the full error
+        res.status(500).json({ message: 'Error adding user.', error: error.message });
     }
 });
 
-// POST /userAPI/login
-// Accepts { Email, Password } and attempts to authenticate.
-// - If a DB is configured it will try to find the user by Email and compare Password (insecure plaintext compare for prototyping).
-// - If no DB row is found, it will accept a single demo credential so the frontend can be tested without a DB.
-router.post('/login', async (req, res, next) => {
-    const { Email, Password } = req.body || {};
-    if (!Email || !Password) return res.status(400).json({ message: 'Email and Password required' });
-
-    try {
-        // Try DB lookup first
-        const rows = await db.executeQuery('SELECT * FROM USER WHERE Email = ?', [Email]);
-        if (rows && rows.length > 0) {
-            const user = rows[0];
-            // WARNING: plaintext compare used for quick prototyping only. Replace with hashed password check.
-            if (user.Password === Password) {
-                // don't send password back
-                delete user.Password;
-                delete user.PasswordSalt;
-                return res.status(200).json({ message: 'Login successful', user });
-            }
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
-
-        // Fallback demo credential to make frontend testing easier when DB isn't configured
-        if (Email === 'fakeer@mail.com' && Password === 'password123') {
-            return res.status(200).json({ message: 'Demo login successful', demo: true });
-        }
-
-        return res.status(401).json({ message: 'Invalid credentials' });
-    } catch (error) {
-        console.error('Login error:', error);
-        return res.status(500).json({ message: 'Server error during login' });
-    }
-});
 
 router.post("/updatePassword", async (req, res, next) => {
-    const data = req.body;
-    console.log('Received POST data for password update: ', data);
+    console.log('--- /updatePassword route hit ---');
+    console.log('Raw req.body:', req.body);
+    console.log('Raw req.query:', req.query);
+    
+    // Prefer body, fallback to query for Postman compatibility
+    const source = (req.body && Object.keys(req.body).length > 0) ? req.body : req.query;
+    
+    const data = {
+        UserID: source.UserID,
+        Password: source.Password,
+        PasswordSalt: source.PasswordSalt
+    };
+    
+    console.log('Received POST data for password update:', data);
+    
     try {
         const result = await updatePassword(data);
         if (result.affectedRows > 0) {
             res.status(200).json({ message: 'Password updated successfully!' });
         } else {
-            res.status(404).json({ message: 'User not found, password not updated.' });
+            res.status(404).json({ message: 'User not found or password not updated.' });
         }
     } catch (error) {
-        // Handle specific errors like missing data
+        console.error('Password update error:', error);
         if (error.message.includes("required")) {
             return res.status(400).json({ message: error.message });
         }
@@ -250,9 +263,26 @@ router.post("/updatePassword", async (req, res, next) => {
 });
 
 router.post("/login", async (req, res, next) => {
-    const data = req.body;
-    console.log('Received login attempt for email:', data.Email);
+    console.log('--- /login route hit ---');
+    console.log('Raw req.query:', req.query);
     
+    const data = {
+        Email: req.query.Email,
+        Password: req.query.Password
+    };
+    
+    console.log('Final parsed data:', data);
+    console.log('Received login attempt for email:', data.Email);
+
+    // Check if data is valid before proceeding
+    if (!data.Email || !data.Password) {
+        console.log('Missing Email or Password in request');
+        return res.status(400).json({ 
+            message: "Email and Password are required for login.",
+            received: { Email: data.Email, Password: data.Password }
+        });
+    }
+
     try {
         const user = await loginUser(data);
         if (user) {
@@ -264,6 +294,7 @@ router.post("/login", async (req, res, next) => {
             res.status(401).json({ message: 'Invalid email or password.' });
         }
     } catch (error) {
+        console.error('Login error details:', error);
         if (error.message.includes("required")) {
             return res.status(400).json({ message: error.message });
         }
@@ -276,4 +307,49 @@ router.get("/test-login", (req, res) => {
     res.json({ message: "Login route is accessible" });
 });
 
-module.exports=router;
+/**
+ * Checks if an email already exists in the USER database
+ * @param {string} email - The email to check
+ * @returns {Promise<boolean>} True if email exists, false otherwise
+ */
+async function checkEmailExists(email) {
+    if (!email) {
+        throw new Error("Email is required to check for duplicates.");
+    }
+
+    try {
+        console.log(`Checking if email exists: ${email}`);
+        const sql = "SELECT COUNT(*) as count FROM USER WHERE Email = ?";
+        const values = [email];
+
+        const result = await db.executeQuery(sql, values);
+        const exists = result[0].count > 0;
+        
+        console.log(`Email ${email} exists: ${exists}`);
+        return exists;
+    } catch (error) {
+        console.error("Failed to check email existence:", error);
+        throw error;
+    }
+}
+
+router.get("/checkEmail", async (req, res, next) => {
+    console.log('--- /checkEmail route hit ---');
+    console.log('Raw req.query:', req.query);
+    
+    const { email } = req.query;
+    
+    if (!email) {
+        return res.status(400).json({ exists: false, message: 'Email parameter is required' });
+    }
+
+    try {
+        const exists = await checkEmailExists(email);
+        res.json({ exists });
+    } catch (error) {
+        console.error('Error checking email:', error);
+        res.status(500).json({ exists: false, message: 'Internal server error' });
+    }
+});
+
+module.exports={router, addNewUser};

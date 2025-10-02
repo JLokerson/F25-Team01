@@ -5,16 +5,17 @@
         "ITEM_IMG": "https://imgs.search.brave.com/hXBos9k0W8SVG4qcQtqPU4bMGqXGxUkeOmYZc6vsFwk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMtbmEuc3NsLWlt/YWdlcy1hbWF6b24u/Y29tL2ltYWdlcy9J/LzYxMzA0TG02WVVM/LmpwZw",
         "ITEM_DES": "Sony xxx headphones with xxx 18 hour battery life.",
         "ITEM_PRICE": 800,
-        "ITEM_STOCK": 10
-    }
-    ,
+        "ITEM_STOCK": 10,
+        "ITEM_POPULARITY": 0
+    },
     {
         "ITEM_ID": 18646,
         "ITEM_NAME": "Starbucks Gift Card",
         "ITEM_IMG": "https://imgs.search.brave.com/WLAJYegtsrqfytQSrK2Ls4z0vA-53po82ofwbJDtuXg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9yZXZp/ZXdlZC1jb20tcmVz/LmNsb3VkaW5hcnku/Y29tL2ltYWdlL2Zl/dGNoL3MtLUN6MFRi/eDZqLS0vYl93aGl0/ZSxjX2ZpbGxfcGFk/LGNzX3NyZ2IsZl9h/dXRvLGZsX3Byb2dy/ZXNzaXZlLnN0cmlw/X3Byb2ZpbGUsZ19h/dXRvLGhfMjIwLHFf/YXV0byx3XzIyMC9o/dHRwczovL3Jldmll/d2VkLXByb2R1Y3Rp/b24uczMuYW1hem9u/YXdzLmNvbS9hdHRh/Y2htZW50L2M1NzQ5/ZjVjNDU1NjRjZTYv/YmVzdC1naWZ0LWNh/cmRzLWFtYXpvbi1z/dGFyYnVja3MuanBn",
         "ITEM_DES": "A $25 Starbucks gift card for coffee lovers.",
         "ITEM_PRICE": 200,
-        "ITEM_STOCK": 50
+        "ITEM_STOCK": 50,
+        "ITEM_POPULARITY": 0
     },
     {
         "ITEM_ID": 18647,
@@ -22,7 +23,8 @@
         "ITEM_IMG": "https://imgs.search.brave.com/4UxoPhkByrhtHa8X-wsq0RdgsRx3KXLaKHmX5nyDPB0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NjE2TDgyWkVjbUwu/anBn",
         "ITEM_DES": "Set of 2 soft cotton pillow cases, standard size.",
         "ITEM_PRICE": 500,
-        "ITEM_STOCK": 20
+        "ITEM_STOCK": 20,
+        "ITEM_POPULARITY": 0
     },
     {
         "ITEM_ID": 18648,
@@ -30,7 +32,8 @@
         "ITEM_IMG": "",
         "ITEM_DES": "Durable backpack with multiple compartments with a built-in lunchbox, ideal for school or travel.",
         "ITEM_PRICE": 150,
-        "ITEM_STOCK": 3
+        "ITEM_STOCK": 3,
+        "ITEM_POPULARITY": 0
     },
     {
         "ITEM_ID": 18649,
@@ -38,7 +41,8 @@
         "ITEM_IMG": "https://imgs.search.brave.com/b1Vn5fU20X5eZVWEFzC_be3xLTrH-7Ah8p4TtYRKoAo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYXJ0cy5jb20v/ZmlsZXMvMTIvQmx1/ZXRvb3RoLVNwZWFr/ZXItUE5HLURvd25s/b2FkLUltYWdlLnBu/Zw",
         "ITEM_DES": "Portable Bluetooth speaker with 360° sound and 12-hour battery life.",
         "ITEM_PRICE": 350,
-        "ITEM_STOCK": 15
+        "ITEM_STOCK": 15,
+        "ITEM_POPULARITY": 0
     },
     {
         "ITEM_ID": 18650,
@@ -46,7 +50,8 @@
         "ITEM_IMG": "https://imgs.search.brave.com/gXcavI39G9EirzLjt_aHOLbogHIJ-zx8vKu1SvptClI/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4z/ZC5pY29uc2NvdXQu/Y29tLzNkL3ByZW1p/dW0vdGh1bWIveW9n/YS1tYXQtM2QtaWxs/dXN0cmF0aW9uLWRv/d25sb2FkLWluLXBu/Zy1ibGVuZC1mYngt/Z2x0Zi1maWxlLWZv/cm1hdHMtLXNwb3J0/LXBhY2stc3BvcnRz/LWdhbWVzLWlsbHVz/dHJhdGlvbnMtNDQ1/NTU0OS5wbmc",
         "ITEM_DES": "Non-slip yoga mat, 6mm thick, perfect for home workouts.",
         "ITEM_PRICE": 120,
-        "ITEM_STOCK": 25
+        "ITEM_STOCK": 25,
+        "ITEM_POPULARITY": 0
     },
     {
         "ITEM_ID": 18651,
@@ -54,7 +59,8 @@
         "ITEM_IMG": "https://imgs.search.brave.com/gAdsBz3yqkHjXtZuPTHkZaXW_-siKGfDe6aRVjebtkE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5naXRlbS5jb20v/cGltZ3MvbS8xMzgt/MTM4NzM0Nl9jb21w/dXRlci13aXJlbGVz/cy1tb3VzZS1wbmct/dHJhbnNwYXJlbnQt/cG5nLnBuZw",
         "ITEM_DES": "Ergonomic wireless mouse with adjustable DPI and silent clicks.",
         "ITEM_PRICE": 90,
-        "ITEM_STOCK": 40
+        "ITEM_STOCK": 40,
+        "ITEM_POPULARITY": 0
     },
     {
         "ITEM_ID": 18652,
@@ -62,7 +68,8 @@
         "ITEM_IMG": "https://imgs.search.brave.com/6CR6PmuxQJkpd6ovO1kQjAY6p6Ati_e1aIxkM4kIBeA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/cG5nZ2FsbGVyeS5j/b20vd3AtY29udGVu/dC91cGxvYWRzL3N0/YWlubGVzcy1zdGVl/bC13YXRlci1ib3R0/bGUtMDQucG5n",
         "ITEM_DES": "Stainless steel water bottle, 750ml, keeps drinks cold for 24 hours.",
         "ITEM_PRICE": 60,
-        "ITEM_STOCK": 30
+        "ITEM_STOCK": 30,
+        "ITEM_POPULARITY": 0
     },
     {
         "ITEM_ID": 18653,
@@ -70,6 +77,7 @@
         "ITEM_IMG": "https://imgs.search.brave.com/QPPHaVDZpmkNxarWDFBwxLfP798_PMYcKJbESaX9_g4/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9hdGxh/cy1jb250ZW50LWNk/bi5waXhlbHNxdWlk/LmNvbS9zdG9jay1p/bWFnZXMvZGVzay1z/dGF0aW9uZXJ5LW9y/Z2FuaXplci13aXRo/LW9mZmljZS1zdXBw/bGllcy1pbi1ib3gt/UE8xMDl5Mi02MDAu/anBn",
         "ITEM_DES": "Multi-compartment desk organizer for pens, notes, and gadgets.",
         "ITEM_PRICE": 80,
-        "ITEM_STOCK": 22
+        "ITEM_STOCK": 22,
+        "ITEM_POPULARITY": 0
     }
 ]

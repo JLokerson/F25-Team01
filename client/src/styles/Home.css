@@ -1,0 +1,27 @@
+/* Planning on this to be the theme for the app */
+:root{
+	--accent:#ffb400;
+	--accent-dark:#ff9800;
+	--bg-overlay: rgba(10,10,10,0.55);
+	--text: #ffffff;
+}
+
+.landing{
+	position:relative;
+	min-height:100vh;
+	color:var(--text);
+	overflow:hidden;
+	display:flex;
+	flex-direction:column;
+}
+
+.landing__bg{
+	position: absolute;
+	inset: 0;
+	background-image: url('https://wallpaperaccess.com/full/2723826.jpg');
+	background-size: cover;
+	background-position: center center;
+	filter: brightness(0.45) contrast(1.05);
+	transform: scale(1.02);
+	z-index:0;
+}

@@ -5,6 +5,7 @@ import AdminNavbar from '../AdminNavbar';
 import HelperPasswordChange from './HelperPasswordChange';
 
 export default function AdminProfile() {
+    console.log('AdminProfile rendered');
     return (
         <div>
             {AdminNavbar()}
