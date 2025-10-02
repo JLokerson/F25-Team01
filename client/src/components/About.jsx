@@ -26,9 +26,10 @@ function MostOfTheText() {
           throw new Error(`Failed to fetch sponsors: ${response.status}`);
         }
         
-        const sponsorData = await response.json();
+        const sponsorData = await response.text();
         console.log('Fetched sponsor data:', sponsorData);
-        setSponsors(sponsorData);
+        const parsedSponsors = JSON.parse(sponsorData);
+        setSponsors(parsedSponsors);
       } catch (err) {
         console.error('Error fetching sponsors:', err);
         setError(err.message);
