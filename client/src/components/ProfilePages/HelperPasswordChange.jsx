@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
 import { HashPassword, GenerateSalt } from '../MiscellaneousParts/HashPass';
+import { CookiesProvider, useCookies } from 'react-cookie';
 
 export default function HelperPasswordChange(UserID = 1) {
     const [newpass1, setnewpass1] = useState('');
@@ -12,6 +13,9 @@ export default function HelperPasswordChange(UserID = 1) {
     const [showOldPass, setShowOldPass] = useState(false);
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState(''); // 'success' or 'error' messages
+
+    // Cookies
+    const [cookies, setCookie] = useCookies(['password'])
 
     async function AttemptUpdate(newpass){
         let salt = GenerateSalt();
@@ -56,6 +60,10 @@ export default function HelperPasswordChange(UserID = 1) {
         console.log('Password change successful.');
         setMessage("Password changed successfully!");
         setMessageType("success");
+
+        // Set password cookie to new password
+        setCookie('password', newpass1, { path: '/' })
+
         // Clear form fields
         setnewpass1('');
         setnewpass2('');
