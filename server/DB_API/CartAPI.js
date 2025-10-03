@@ -28,10 +28,15 @@ async function getCartItems(data){
 async function removeAllCartItems(data){
     let sql;
     let values;
-
-    if (data.DriverID) {
+    try{ 
+        values = data.DriverID;
+    }catch(error){
+        values = null;
+    }
+    //console.log("attempting to delete along" + data);
+    if (values != null) {
         console.log(`Removing from CART_MAPPINGS by DriverID: ${data.DriverID}`);
-        sql = "DELETE * FROM CART_MAPPINGS WHERE DriverID = ?";
+        sql = "DELETE FROM CART_MAPPINGS WHERE DriverID = ?";
         values = [data.DriverID];
     }
 
@@ -94,10 +99,11 @@ async function getCartsFromItems(data){
 var express = require("express");
 var router=express.Router();
 
-router.get("/removeCartItems", async (req, res, next) => {
+router.post("/removeCartItems", async (req, res, next) => {
+    //console.log(req);
     try {
         await removeAllCartItems(req.query);
-        res.status(200).json({ message: 'Cart item added successfully!'});
+        res.status(200).json({ message: 'Cart items removed successfully!'});
     }catch(error){
         res.status(500).send('Unknown error in deletion process.')
     }
