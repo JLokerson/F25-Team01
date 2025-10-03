@@ -65,7 +65,7 @@ export default function Login() {
         return;
       }
       localStorage.setItem('user', JSON.stringify(data.user));
-      console.log('User stored in localStorage:', data.user); // <-- Add this line
+      console.log('User stored in localStorage:', data.user); 
       
       // Navigate based on user type
       const userType = data.user.UserType;
