@@ -17,12 +17,8 @@ function MostOfTheText() {
     const fetchSponsors = async () => {
       try {
         setLoading(true);
-        // Use environment-based URL for AWS deployment
-        const baseUrl = process.env.NODE_ENV === 'production' 
-          ? '' // Empty string for relative URL in production
-          : 'http://localhost:4000';
-        
-        const response = await fetch(`${baseUrl}/sponsorAPI/getAllSponsors`);
+        // Try the standard API pattern first
+        const response = await fetch('http://localhost:4000/sponsorAPI/getAllSponsors');
         
         console.log('Sponsor fetch response status:', response.status);
         
@@ -30,10 +26,10 @@ function MostOfTheText() {
           throw new Error(`Failed to fetch sponsors: ${response.status}`);
         }
         
-        // Use response.json() directly instead of .text() + JSON.parse()
-        const sponsorData = await response.json();
+        const sponsorData = await response.text();
         console.log('Fetched sponsor data:', sponsorData);
-        setSponsors(sponsorData);
+        const parsedSponsors = JSON.parse(sponsorData);
+        setSponsors(parsedSponsors);
       } catch (err) {
         console.error('Error fetching sponsors:', err);
         setError(err.message);
