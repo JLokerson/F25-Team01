@@ -25,3 +25,103 @@
 	transform: scale(1.02);
 	z-index:0;
 }
+
+/* Landing content styles for main page and About page */
+.landing__content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.landing__title {
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    animation: fadeInUp 1s ease-out;
+}
+
+.landing__subtitle {
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+    animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+.btn-getstarted {
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    transition: all 0.3s ease;
+    animation: fadeInUp 1s ease-out 0.6s both;
+}
+
+.btn-getstarted:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* About page specific animations */
+.about-content {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.about-section {
+    animation: slideInLeft 0.8s ease-out 0.2s both;
+}
+
+.sponsor-item {
+    animation: fadeInUp 0.6s ease-out both;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sponsor-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 180, 0, 0.3);
+}
+
+/* Stagger animation delays for sponsor items */
+.sponsor-item:nth-child(1) { animation-delay: 0.1s; }
+.sponsor-item:nth-child(2) { animation-delay: 0.2s; }
+.sponsor-item:nth-child(3) { animation-delay: 0.3s; }
+.sponsor-item:nth-child(4) { animation-delay: 0.4s; }
+.sponsor-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* Loading spinner animation */
+.loading-spinner {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}

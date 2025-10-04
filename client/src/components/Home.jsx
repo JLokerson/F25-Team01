@@ -25,6 +25,9 @@ export default function Home() {
                     <div className="collapse navbar-collapse" id="landingNav">
                         <ul className="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
                             <li className="nav-item">
+                                <button className="nav-link btn btn-link text-white" onClick={() => navigate('/')}>Home</button>
+                            </li>
+                            <li className="nav-item">
                                 <button className="nav-link btn btn-link text-white" onClick={() => navigate('/about')}>About</button>
                             </li>
                             <li className="nav-item">
