@@ -9,7 +9,7 @@ export default function DriverCart() {
     // read user from localStorage to determine availability
     let user = null;
     try { user = JSON.parse(localStorage.getItem('user')); } catch(e) { user = null; }
-    const userType = 1 /*user?.UserType ?? user?.accountType ?? null*/;
+    const userType = user?.UserType ?? user?.accountType ?? null;
 
     // Cart is stored as an array of ITEM_IDs
     const [cart, setCart] = useState([]);
@@ -52,14 +52,14 @@ export default function DriverCart() {
 
     async function RemoveAllCartItems(){
         try {
-        const response = await fetch(`http://localhost:4000/userAPI/updatePassword?UserID=${1}`, {
+        const response = await fetch(`http://localhost:4000/userAPI/updatePassword?UserID=${user?.UserID}`, {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
             }
         });
 
-        console.log('Request URL:', `http://localhost:4000/userAPI/updatePassword?UserID=${1}`);
+        console.log('Request URL:', `http://localhost:4000/userAPI/updatePassword?UserID=${user?.UserID}`);
 
         // Debug: Log the response status and text
         console.log('Response status:', response.status);
@@ -101,7 +101,7 @@ export default function DriverCart() {
             'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-            userID: /*user?.UserID || user?.ID*/1
+            userID: user?.UserID || user?.ID
             })
         });
 
