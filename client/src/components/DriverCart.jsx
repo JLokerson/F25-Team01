@@ -250,6 +250,7 @@ export default function DriverCart() {
                         )}
                         <div className="d-flex">
                             <button type="submit" onClick={OrderConfirm} className="btn btn-info me-2">Order All</button>
+                            <button type="submit" onClick={RemoveAllCartItems} className="btn btn-info me-2">Empty Cart</button>
                             <Link to="/DriverHome" className="btn btn-secondary">Back</Link>
                         </div>
                     </>
