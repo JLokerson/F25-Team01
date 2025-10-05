@@ -10,7 +10,6 @@ export default function DriverCart() {
     let user = null;
     try { user = JSON.parse(localStorage.getItem('user')); } catch(e) { user = null; }
     const userType = 1 /*user?.UserType ?? user?.accountType ?? null*/;
-    user.userID = 1;
 
     // Cart is stored as an array of ITEM_IDs
     const [cart, setCart] = useState([]);
@@ -63,7 +62,7 @@ export default function DriverCart() {
             'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-            userID: user?.UserID || user?.ID
+            userID: /*user?.UserID || user?.ID*/1
             })
         });
 
@@ -169,7 +168,7 @@ export default function DriverCart() {
 
 
             // Remove items from cart. I can't test this because I can't actually reach this version of the page rn so here's hoping.
-
+            
 
             navigate('/DriverOrderConfirmation');
         }
