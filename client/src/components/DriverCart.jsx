@@ -10,6 +10,7 @@ export default function DriverCart() {
     let user = null;
     try { user = JSON.parse(localStorage.getItem('user')); } catch(e) { user = null; }
     const userType = 1 /*user?.UserType ?? user?.accountType ?? null*/;
+    user.userID = 1;
 
     // Cart is stored as an array of ITEM_IDs
     const [cart, setCart] = useState([]);
