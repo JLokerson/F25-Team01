@@ -50,6 +50,10 @@ export default function DriverCart() {
         });
     };
 
+    async function RemoveAllCartItems(){
+        
+    }
+
     async function OrderConfirm(){
         // Use local cart to determine items to order
         let CartItems = cart;
@@ -168,7 +172,7 @@ export default function DriverCart() {
 
 
             // Remove items from cart. I can't test this because I can't actually reach this version of the page rn so here's hoping.
-            
+            RemoveAllCartItems();
 
             navigate('/DriverOrderConfirmation');
         }
