@@ -52,7 +52,7 @@ export default function HelperPasswordChange(UserID = 1) {
             return;
         }
         
-        // Store user info (consider using localStorage or context)
+        // Store user info TODO: MAKE THIS USE COOKIES
         console.log('Password change successful.');
         setMessage("Password changed successfully!");
         setMessageType("success");

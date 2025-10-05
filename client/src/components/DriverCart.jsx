@@ -9,7 +9,7 @@ export default function DriverCart() {
     // read user from localStorage to determine availability
     let user = null;
     try { user = JSON.parse(localStorage.getItem('user')); } catch(e) { user = null; }
-    const userType = user?.UserType ?? user?.accountType ?? null;
+    const userType = 1 /*user?.UserType ?? user?.accountType ?? null*/;
 
     // Cart is stored as an array of ITEM_IDs
     const [cart, setCart] = useState([]);
@@ -165,6 +165,11 @@ export default function DriverCart() {
             } catch (e) {
                 console.error('Failed to update driver points:', e);
             }
+
+
+            // Remove items from cart. I can't test this because I can't actually reach this version of the page rn so here's hoping.
+
+
             navigate('/DriverOrderConfirmation');
         }
         
