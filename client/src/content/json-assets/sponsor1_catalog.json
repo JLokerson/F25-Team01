@@ -1,0 +1,84 @@
+
+[
+	{
+		"ITEM_ID": 18654,
+		"ITEM_NAME": "Fitness Resistance Bands",
+		"ITEM_IMG": "https://imgs.search.brave.com/cq0QrY5jlI7M4jQaC_HiP_LPYqAJ5x17d7aMUZdQxBc/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NzFHQ3lrZmV3Mkwu/anBnc",
+		"ITEM_DES": "Set of 5 resistance bands with varying tension levels for workouts and physical therapy.",
+		"ITEM_PRICE": 220,
+		"ITEM_STOCK": 60,
+		"ITEM_POPULARITY": 0
+	},
+	{
+		"ITEM_ID": 18655,
+		"ITEM_NAME": "Wireless Charger Pad",
+		"ITEM_IMG": "https://imgs.search.brave.com/0ijv7oBfnUSZ30WNoG43-ARjamOVdOyZgFX4klDg0-E/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMtbmEuc3NsLWlt/YWdlcy1hbWF6b24u/Y29tL2ltYWdlcy9J/LzMxOGZkWG5sUHNT/LmpwZw",
+		"ITEM_DES": "Qi-certified wireless charging pad compatible with most smartphones.",
+		"ITEM_PRICE": 300,
+		"ITEM_STOCK": 45,
+		"ITEM_POPULARITY": 0
+	},
+	{
+		"ITEM_ID": 18656,
+		"ITEM_NAME": "Organic Tea Sampler",
+		"ITEM_IMG": "https://frasertea.com/cdn/shop/files/greenteasampler_grande.png?v=1754045202",
+		"ITEM_DES": "Assortment of 12 organic tea bags including green, chamomile, and black blends.",
+		"ITEM_PRICE": 140,
+		"ITEM_STOCK": 80,
+		"ITEM_POPULARITY": 0
+	},
+	{
+		"ITEM_ID": 18657,
+		"ITEM_NAME": "Pocket Flashlight",
+		"ITEM_IMG": "https://www.aoe.net/wp-content/uploads/2024/05/81eb0RskpML__AC_SL1500_.webp",
+		"ITEM_DES": "Compact LED flashlight with high/low modes and rechargeable battery.",
+		"ITEM_PRICE": 160,
+		"ITEM_STOCK": 90,
+		"ITEM_POPULARITY": 0
+	},
+	{
+		"ITEM_ID": 18658,
+		"ITEM_NAME": "Magnetic Phone Mount",
+		"ITEM_IMG": "https://aicdn.speedsize.com/be9d134b-a342-47d7-bd5b-bf753f6bded2/www.scosche.com/media/catalog/product/m/e/meqmrwd_ps1-_1_.gif?speedsize=w_700",
+		"ITEM_DES": "Magnetic car phone mount with 360° rotation and strong hold.",
+		"ITEM_PRICE": 180,
+		"ITEM_STOCK": 70,
+		"ITEM_POPULARITY": 0
+	},
+	{
+		"ITEM_ID": 18659,
+		"ITEM_NAME": "Bamboo Cutlery Set",
+		"ITEM_IMG": "https://m.media-amazon.com/images/I/81JPUvZ3AhS._UF894,1000_QL80_.jpg",
+		"ITEM_DES": "Eco-friendly bamboo cutlery set (fork, knife, spoon, chopsticks) with carrying pouch.",
+		"ITEM_PRICE": 90,
+		"ITEM_STOCK": 150,
+		"ITEM_POPULARITY": 0
+	},
+	{
+		"ITEM_ID": 18669,
+		"ITEM_NAME": "Screen Cleaning Kit",
+		"ITEM_IMG": "https://m.media-amazon.com/images/I/71DplVF8lAL._UF894,1000_QL80_.jpg",
+		"ITEM_DES": "Microfiber cleaning cloth and gentle cleaning solution for screens and lenses.",
+		"ITEM_PRICE": 70,
+		"ITEM_STOCK": 130,
+		"ITEM_POPULARITY": 0
+	},
+	{
+		"ITEM_ID": 18679,
+		"ITEM_NAME": "Mini Plant Pot",
+		"ITEM_IMG": "https://i5.walmartimages.com/seo/10-Pack-1-5-Inch-Mini-Terracotta-Plants-Pots-Drainage-Holes-Cactus-Succulents-Tiny-Clay-Terra-Cotta-Flower-Pot-Planters-Gardening-Nursery-Indoor-Gard_988002c5-bb39-44e9-b961-15e676ec8e4b.bb1706812fed86bfc2080ae4ead44955.jpeg",
+		"ITEM_DES": "Ceramic mini plant pot for small succulents, comes with drainage hole and saucer.",
+		"ITEM_PRICE": 110,
+		"ITEM_STOCK": 95,
+		"ITEM_POPULARITY": 0
+	},
+	{
+		"ITEM_ID": 18680,
+		"ITEM_NAME": "Travel Shoe Bag",
+		"ITEM_IMG": "https://images.thdstatic.com/productImages/066c152c-4fa9-430b-81e4-c442258bd745/svn/black-gforce-luggage-racks-6064-64_1000.jpg",
+		"ITEM_DES": "Lightweight, breathable shoe bag to keep shoes separate in luggage.",
+		"ITEM_PRICE": 85,
+		"ITEM_STOCK": 140,
+		"ITEM_POPULARITY": 0
+	}
+]
