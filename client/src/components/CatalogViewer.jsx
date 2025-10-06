@@ -19,7 +19,13 @@ function ProductCard({p}){
 
 /*  This file is used to view catalog stuff from json-assets  for sponsors
     This is for demo purposes only, to show how catalogs would look like
-    In a real app, you would fetch the catalog from the server based on the logged-in sponsor */
+    In a real app, you would fetch the catalog from the server based on the logged-in sponsor 
+    DEMO DIRECTIONS: 
+        Navigate to: 
+            http://localhost:3000/SponsorHome
+            - see a component that uses this CatalogViewer component
+            - click the buttons to switch between sponsors and see their local JSON catalogs
+*/
 export default function CatalogViewer(){
   const [sponsor, setSponsor] = useState('1');
 
@@ -27,17 +33,17 @@ export default function CatalogViewer(){
 
   return (
     <div style={{padding:20}}>
-      <h3>Catalog Viewer (client-only)</h3>
-      <p>Select a sponsor to load their local JSON catalog (no server needed):</p>
-      <div style={{display:'flex', gap:8, marginBottom:12}}>
-        <button className={sponsor==='1' ? 'btn btn-primary' : 'btn btn-outline-primary'} onClick={()=>setSponsor('1')}>RandTruckCompany (1)</button>
-        <button className={sponsor==='3' ? 'btn btn-primary' : 'btn btn-outline-primary'} onClick={()=>setSponsor('3')}>CoolTruckCompany (3)</button>
-        <button className={sponsor==='4' ? 'btn btn-primary' : 'btn btn-outline-primary'} onClick={()=>setSponsor('4')}>AwesomeTruckCompany (4)</button>
-      </div>
+        <h3>Catalog Viewer (client-only)</h3>
+        <p>Select a sponsor to load their local JSON catalog (no server needed):</p>
+        <div style={{display:'flex', gap:8, marginBottom:12}}>
+            <button className={ sponsor==='1' ? 'btn btn-primary' : 'btn btn-outline-primary'} onClick = {() => setSponsor('1')}>RandTruckCompany</button>
+            <button className={ sponsor==='3' ? 'btn btn-primary' : 'btn btn-outline-primary'} onClick = {() => setSponsor('3')}>CoolTruckCompany</button>
+            <button className={ sponsor==='4' ? 'btn btn-primary' : 'btn btn-outline-primary'} onClick = {() => setSponsor('4')}>AwesomeTruckCompany</button>
+        </div>
 
-      <div style={{display:'flex', flexWrap:'wrap'}}>
-        {data.map(p => <ProductCard key={p.ITEM_ID} p={p} />)}
-      </div>
+        <div style={{display:'flex', flexWrap:'wrap'}}>
+            {data.map(p => <ProductCard key={p.ITEM_ID} p={p} />)}
+        </div>
     </div>
   );
 }
