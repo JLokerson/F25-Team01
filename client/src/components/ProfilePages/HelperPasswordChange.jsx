@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
 import { HashPassword, GenerateSalt } from '../MiscellaneousParts/HashPass';
 
-export default function HelperPasswordChange(UserID = 1) {
+export default function HelperPasswordChange() {
     const [newpass1, setnewpass1] = useState('');
     const [newpass2, setnewpass2] = useState('');
     const [oldpass, setoldpass] = useState('');
@@ -12,6 +12,18 @@ export default function HelperPasswordChange(UserID = 1) {
     const [showOldPass, setShowOldPass] = useState(false);
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState(''); // 'success' or 'error' messages
+    const [userID, setUserID] = useState(null);
+    const [currentPassword, setCurrentPassword] = useState('');
+
+    useEffect(() => {
+        // Get user info from localStorage
+        const userString = localStorage.getItem('user');
+        if (userString) {
+            const user = JSON.parse(userString);
+            setUserID(user.UserID);
+            setCurrentPassword(user.Password); // Store current password for verification
+        }
+    }, []);
 
     async function AttemptUpdate(newpass){
         let salt = GenerateSalt();
@@ -20,14 +32,14 @@ export default function HelperPasswordChange(UserID = 1) {
         setMessageType("info");
             
         try {
-        const response = await fetch(`http://localhost:4000/userAPI/updatePassword?UserID=${UserID}&Password=${encodeURIComponent(newpass)}&PasswordSalt=${encodeURIComponent(salt)}`, {
+        const response = await fetch(`http://localhost:4000/userAPI/updatePassword?UserID=${userID}&Password=${encodeURIComponent(newpass)}&PasswordSalt=${encodeURIComponent(salt)}`, {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
             }
         });
 
-        console.log('Request URL:', `http://localhost:4000/userAPI/updatePassword?UserID=${UserID}&Password=${encodeURIComponent(newpass)}&PasswordSalt=${encodeURIComponent(salt)}`);
+        console.log('Request URL:', `http://localhost:4000/userAPI/updatePassword?UserID=${userID}&Password=${encodeURIComponent(newpass)}&PasswordSalt=${encodeURIComponent(salt)}`);
 
         // Debug: Log the response status and text
         console.log('Response status:', response.status);
@@ -56,6 +68,15 @@ export default function HelperPasswordChange(UserID = 1) {
         console.log('Password change successful.');
         setMessage("Password changed successfully!");
         setMessageType("success");
+        
+        // Update the user object in localStorage with new password
+        const userString = localStorage.getItem('user');
+        if (userString) {
+            const user = JSON.parse(userString);
+            user.Password = newpass; // Update stored password
+            localStorage.setItem('user', JSON.stringify(user));
+        }
+        
         // Clear form fields
         setnewpass1('');
         setnewpass2('');
@@ -73,8 +94,8 @@ export default function HelperPasswordChange(UserID = 1) {
         setMessage(''); // Clear previous messages
         
         if(newpass1 === newpass2){
-            // ATTEMPT TO UPDATE PASSWORD IF OLDPASS CORRECT
-            if(oldpass){
+            // Verify old password matches current password
+            if(oldpass === currentPassword){
                 AttemptUpdate(newpass1);
                 return;
             }
