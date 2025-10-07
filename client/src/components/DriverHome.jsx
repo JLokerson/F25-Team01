@@ -1,9 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
 import DriverNavbar from './DriverNavbar';
+import PasswordChangeModal from './PasswordChangeModal';
 
 export default function DriverHome() {
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+    useEffect(() => {
+        // Check if user needs password change reminder
+        const checkPasswordReminder = () => {
+            const userString = localStorage.getItem('user');
+            const reminderDate = localStorage.getItem('passwordChangeReminder');
+            
+            console.log('DriverHome - User data:', userString);
+            console.log('DriverHome - Reminder date:', reminderDate);
+            
+            if (userString) {
+                const user = JSON.parse(userString);
+                const lastLoginDate = user.LastLogin ? new Date(user.LastLogin) : null;
+                const now = new Date();
+                
+                console.log('DriverHome - LastLoginDate:', lastLoginDate);
+                console.log('DriverHome - User object:', user);
+                
+                // If there's a reminder set and it's in the future, don't show modal
+                if (reminderDate && new Date(reminderDate) > now) {
+                    console.log('DriverHome - Reminder is set for future, skipping modal');
+                    return;
+                }
+                
+                // Check if it's been more than 3 months since last login OR if LastLogin is missing
+                if (lastLoginDate) {
+                    const threeMonthsAgo = new Date();
+                    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+                    
+                    if (lastLoginDate < threeMonthsAgo) {
+                        console.log('DriverHome - LastLogin is older than 3 months, showing modal');
+                        setShowPasswordModal(true);
+                    }
+                } else {
+                    // If LastLogin is missing, show the modal (useful for admin assuming identity)
+                    console.log('DriverHome - LastLogin is missing, showing modal');
+                    setShowPasswordModal(true);
+                }
+            }
+        };
+
+        checkPasswordReminder();
+    }, []);
+
     return (
         <div>
             <DriverNavbar />
@@ -12,6 +58,11 @@ export default function DriverHome() {
                 <h1>Welcome to the Driver Home Page</h1>
                 <p>This is where drivers can see their dashboard and relevant information.</p>
             </div>
+            
+            <PasswordChangeModal 
+                show={showPasswordModal} 
+                onClose={() => setShowPasswordModal(false)} 
+            />
         </div>
     );
 }

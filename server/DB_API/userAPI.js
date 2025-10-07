@@ -96,12 +96,14 @@ async function updatePassword(data){
 
     try {
         console.log(`Updating password for UserID: ${data.UserID}`);
-        const sql = "UPDATE USER SET Password = ?, PasswordSalt = ? WHERE UserID = ?";
+        // Update both password and LastLogin when password is changed
+        const sql = "UPDATE USER SET Password = ?, PasswordSalt = ?, LastLogin = NOW() WHERE UserID = ?";
         const values = [data.Password, data.PasswordSalt, data.UserID];
 
         const result = await db.executeQuery(sql, values);
 
         console.log(`Update result: ${result.affectedRows} rows affected.`);
+        console.log(`Updated password and LastLogin for UserID: ${data.UserID}`);
         return result;
     } catch (error) {
         console.error("Failed to update password:", error);
@@ -139,6 +141,19 @@ async function loginUser(data) {
         // For now, comparing plain text (NOT SECURE - for development only)
         if (user.Password === data.Password) {
             console.log("Login successful for user:", user.Email);
+            
+            // Only update LastLogin if it's null (first login)
+            if (user.LastLogin === null) {
+                const updateSql = "UPDATE USER SET LastLogin = NOW() WHERE UserID = ?";
+                await db.executeQuery(updateSql, [user.UserID]);
+                console.log(`Set initial LastLogin for UserID: ${user.UserID}`);
+                
+                // Update the user object to reflect the new LastLogin
+                user.LastLogin = new Date().toISOString();
+            } else {
+                console.log(`LastLogin already set for UserID: ${user.UserID}, not updating`);
+            }
+            
             // Remove password from returned user object for security
             const { Password, PasswordSalt, ...userWithoutPassword } = user;
             return userWithoutPassword;
