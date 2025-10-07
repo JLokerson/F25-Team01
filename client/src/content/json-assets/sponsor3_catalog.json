@@ -1,0 +1,83 @@
+[
+    {
+        "ITEM_ID": 18670,
+        "ITEM_NAME": "Compact Umbrella",
+        "ITEM_IMG": "https://imgs.search.brave.com/3tO_-W8yaNDqY1wc71t2SdYGO-DU8zxiMRiyo66xADE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NjEyTXlwcFlTVEwu/anBn",
+        "ITEM_DES": "Windproof compact umbrella that fits into a handbag, with auto-open feature.",
+        "ITEM_PRICE": 180,
+        "ITEM_STOCK": 55,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18671,
+        "ITEM_NAME": "Scented Candle",
+        "ITEM_IMG": "https://imgs.search.brave.com/yXmQat1oDeppsDRxo0jUZPJfcL7TACWedLJPxUC6MJ8/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzA1LzAyLzcyLzM2/LzM2MF9GXzUwMjcy/MzY1OF9mQ3pFdm9S/ZTk4d3NQejZCY3cz/UzZ6SGoyQ2tMU1Z0/TS5qcGc",
+        "ITEM_DES": "Soy wax scented candle, 250g, burn time approx. 40 hours.",
+        "ITEM_PRICE": 220,
+        "ITEM_STOCK": 90,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18672,
+        "ITEM_NAME": "Bluetooth Key Finder",
+        "ITEM_IMG": "https://imgs.search.brave.com/OBDCcSAhb5krKFSin4nkqSS2B_-KxxuH3GRKrHXKneQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9mYW1p/c2FmZS53b25kZXJz/aGFyZS5jb20vaW1h/Z2VzL2FydGljbGUv/MjAyMi8xMS9iZXN0/LWdwcy1rZXktZmlu/ZGVycy0xLmpwZw",
+        "ITEM_DES": "Small Bluetooth tracker to locate keys or belongings via phone app.",
+        "ITEM_PRICE": 300,
+        "ITEM_STOCK": 65,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18673,
+        "ITEM_NAME": "Travel Adapter",
+        "ITEM_IMG": "https://imgs.search.brave.com/MB-uA1M6Y2KUx74hAunBJugwC3n_pgS_V7GjVWgKBoA/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9jZG4u/dGhld2lyZWN1dHRl/ci5jb20vd3AtY29u/dGVudC91cGxvYWRz/LzIwMTgvMTIvdHJh/dmVsLWFkYXB0ZXJz/LTIwMTgtbG93cmVz/LTUwOTguanBnP2F1/dG89d2VicCZxdWFs/aXR5PTYwJndpZHRo/PTU3MA",
+        "ITEM_DES": "Universal travel adapter with USB ports supporting multiple plug types.",
+        "ITEM_PRICE": 350,
+        "ITEM_STOCK": 30,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18674,
+        "ITEM_NAME": "Snack Box",
+        "ITEM_IMG": "https://imgs.search.brave.com/C3KZnlqUf-CY6XCRUdTtg9cT3r9qUQuzlUX6Ed0LFcM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tdW5j/aGFkZGljdC5jb20v/Y2RuL3Nob3AvZmls/ZXMvRFNDMDk0Nzlf/MTAwMHguanBnP3Y9/MTczMjA2NDQ3NQ",
+        "ITEM_DES": "Curated snack box with assorted sweet and savory treats.",
+        "ITEM_PRICE": 400,
+        "ITEM_STOCK": 25,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18675,
+        "ITEM_NAME": "Pocket Notebook",
+        "ITEM_IMG": "https://imgs.search.brave.com/qN5cYWs1kFwaqiXoDoV6YPkvdjLsDqcNmWLI9aT48rU/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9wYXBl/cmFnZS5jby9jZG4v/c2hvcC9maWxlcy9Q/b2NrZXRfTGluZWRf/QU1aX1NIQVJFRF9J/TjAzX21lZGl1bS5q/cGc_dj0xNzUzMTIz/MjMz",
+        "ITEM_DES": "Small pocket-sized notebook with durable cover for quick notes.",
+        "ITEM_PRICE": 50,
+        "ITEM_STOCK": 150,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18676,
+        "ITEM_NAME": "Stylus Pen",
+        "ITEM_IMG": "https://imgs.search.brave.com/42EBVY6Ek9rGiosVi3sPnZQMwzre1kwJfiv2FzgrLr4/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NDFsUjJaRldMTUwu/anBn",
+        "ITEM_DES": "Precision stylus pen compatible with most touchscreens.",
+        "ITEM_PRICE": 130,
+        "ITEM_STOCK": 85,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18677,
+        "ITEM_NAME": "Phone Camera Lens Kit",
+        "ITEM_IMG": "https://imgs.search.brave.com/eFmnxJIgNNy3ntZfdIz4fKHnhgtyhiRod4GI8sRpS44/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9uZWV3/ZXIuY29tL2Nkbi9z/aG9wL3Byb2R1Y3Rz/L2xRRFBKeGFQSUtC/c1J4bk5Ca0ROQmtD/d3RwWTd4Nmd1Q1BJ/QzY1RDVhY0NIQUFf/MTYwMF8xNjAwLmpw/Zz92PTE3MDkwMDQ0/NTcmd2lkdGg9MTYw/MA",
+        "ITEM_DES": "Clip-on lens kit for smartphone photography including wide-angle and macro lenses.",
+        "ITEM_PRICE": 520,
+        "ITEM_STOCK": 40,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18678,
+        "ITEM_NAME": "Eco-Friendly Straws",
+        "ITEM_IMG": "https://imgs.search.brave.com/AeyYb394i64XFH9kF23-e93iPxd4spKCTeWn0brV6N8/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NjFvN3dtcWtwbEwu/anBn",
+        "ITEM_DES": "Set of reusable stainless steel straws with cleaning brush and carrying pouch.",
+        "ITEM_PRICE": 90,
+        "ITEM_STOCK": 180,
+        "ITEM_POPULARITY": 0
+    }
+]
