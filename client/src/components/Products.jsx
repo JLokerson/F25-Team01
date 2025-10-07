@@ -120,7 +120,7 @@ export default function Products() {
                                 <p className="card-text" style={{flex: 1}}>{item.ITEM_DES}</p>
                                 <div className="d-flex justify-content-between align-items-center mt-2">
                                     <div>
-                                        <strong>${item.ITEM_PRICE}</strong>
+                                        <strong>{item.ITEM_PRICE} pts</strong>
                                         <div className="text-muted small">Stock: {item.ITEM_STOCK}</div>
                                         <div className="text-muted small">Popularity: {item.ITEM_POPULARITY}</div>
                                     </div>

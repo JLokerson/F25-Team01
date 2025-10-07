@@ -50,6 +50,45 @@ export default function DriverCart() {
         });
     };
 
+    async function RemoveAllCartItems(){
+        try {
+        const response = await fetch(`http://localhost:4000/userAPI/updatePassword?UserID=${user?.UserID}`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            }
+        });
+
+        console.log('Request URL:', `http://localhost:4000/userAPI/updatePassword?UserID=${user?.UserID}`);
+
+        // Debug: Log the response status and text
+        console.log('Response status:', response.status);
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+
+        // Try to parse as JSON only if we got a response
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('Failed to parse JSON:', parseError);
+            console.error('Raw response:', responseText);
+            return;
+        }
+
+        if (!response.ok) {
+            console.error('Cart item removal failed');
+            return;
+        }
+        
+        // Store user info TODO: MAKE THIS USE COOKIES
+        console.log('Password change successful.');
+
+        } catch (error) {
+        console.error('Unknown error:', error);
+        }
+    }
+
     async function OrderConfirm(){
         // Use local cart to determine items to order
         let CartItems = cart;
@@ -165,6 +204,11 @@ export default function DriverCart() {
             } catch (e) {
                 console.error('Failed to update driver points:', e);
             }
+
+
+            // Remove items from cart. I can't test this because I can't actually reach this version of the page rn so here's hoping.
+            RemoveAllCartItems();
+
             navigate('/DriverOrderConfirmation');
         }
         
@@ -206,6 +250,7 @@ export default function DriverCart() {
                         )}
                         <div className="d-flex">
                             <button type="submit" onClick={OrderConfirm} className="btn btn-info me-2">Order All</button>
+                            <button type="submit" onClick={RemoveAllCartItems} className="btn btn-info me-2">Empty Cart</button>
                             <Link to="/DriverHome" className="btn btn-secondary">Back</Link>
                         </div>
                     </>

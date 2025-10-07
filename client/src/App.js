@@ -16,6 +16,7 @@ import MakeNewUser from './components/MakeNewUser';
 import DriverCart from './components/DriverCart';
 import DriverOrderConfirmation from './components/DriverOrderConfirmation';
 import Home from './components/Home';
+import Testing from './components/Testing.jsx';
 
 function AppContent() {
   const location = useLocation();
@@ -38,6 +39,7 @@ function AppContent() {
         <Route path="/recover" element={<Recover />} />
         <Route path="/register" element={<Register />} />
         <Route path="/products" element={<Products />} />
+        <Route path="/testing" element={<Testing />} />
         {/* <Route path="/OrderConfirmation" element={<OrderConfirmation/>}/> */}
         {/* <Route path="/Cart" element={<CartPage/>}/> */}
         <Route path="/MakeNewUser" element={<MakeNewUser />} /> 
