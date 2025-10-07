@@ -21,7 +21,7 @@ export default function DriverProfile() {
 
         // find userid === 1
         const d = list.find(
-            x => Number(x.userid) === 1 || x.userid === 1
+            x => Number(x.userid) === 3 || x.userid === 3
         );
         setDriver(d || null);
     };
@@ -36,9 +36,33 @@ export default function DriverProfile() {
 
         window.addEventListener('storage', onStorage);
         window.addEventListener('driversUpdated', onCustom);
+        // Also listen for a short-lived update key to show notifications across tabs
+        const onLastUpdate = (e) => {
+            if (e.key === 'drivers_last_update' || e.key === null) {
+                try {
+                    const raw = localStorage.getItem('drivers_last_update');
+                    if (!raw) return;
+                    const upd = JSON.parse(raw);
+                    // if update is for this driver, show a browser notification
+                    const myid = driver ? Number(driver.userid) : 3; // fallback
+                    if (Number(upd.userid) === myid) {
+                        // Ask permission if needed
+                        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                            new Notification('Points updated', { body: `Your points are now ${upd.points}` });
+                        } else if (typeof Notification !== 'undefined' && Notification.permission !== 'denied') {
+                            Notification.requestPermission().then(p => {
+                                if (p === 'granted') new Notification('Points updated', { body: `Your points are now ${upd.points}` });
+                            });
+                        }
+                    }
+                } catch (e) { /* ignore */ }
+            }
+        };
+        window.addEventListener('storage', onLastUpdate);
         return () => {
             window.removeEventListener('storage', onStorage);
             window.removeEventListener('driversUpdated', onCustom);
+            window.removeEventListener('storage', onLastUpdate);
         };
     }, []);
 
