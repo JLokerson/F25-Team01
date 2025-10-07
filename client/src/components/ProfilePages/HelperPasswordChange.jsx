@@ -98,6 +98,7 @@ export default function HelperPasswordChange(UserID = 1) {
 
     return (
         <div>
+            <CookiesProvider>
                 <form onSubmit={ChangePassword}>
                 <div className="mb-3">
                 <label htmlFor="newpass1" className="form-label">New password</label>
@@ -174,6 +175,7 @@ export default function HelperPasswordChange(UserID = 1) {
                     {message}
                 </div>
             )}
+            </CookiesProvider>
         </div>
     );
 }
