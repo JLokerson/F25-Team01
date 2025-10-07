@@ -86,27 +86,27 @@ export default function CatalogViewer(){
             <h3>Catalog Viewer (client/server)</h3>
             <p>Select a sponsor to load their catalog (server if available, otherwise local JSON):</p>
             <div style={{display:'flex', gap:8, marginBottom:12}}>
-                <button className={sponsor==='1' ? 'btn btn-primary' : 'btn btn-outline-primary'} onClick={()=>setSponsor('1')}>RandTruckCompany (1)</button>
-                <button className={sponsor==='3' ? 'btn btn-primary' : 'btn btn-outline-primary'} onClick={()=>setSponsor('3')}>CoolTruckCompany (3)</button>
-                <button className={sponsor==='4' ? 'btn btn-primary' : 'btn btn-outline-primary'} onClick={()=>setSponsor('4')}>AwesomeTruckCompany (4)</button>
+                <button className = { sponsor === '1' ? 'btn btn-primary' : 'btn btn-outline-primary' } onClick = { () => setSponsor('1') }>RandTruckCompany</button>
+                <button className = { sponsor === '3' ? 'btn btn-primary' : 'btn btn-outline-primary' } onClick = { () => setSponsor('3') }>CoolTruckCompany</button>
+                <button className = { sponsor === '4' ? 'btn btn-primary' : 'btn btn-outline-primary' } onClick = { () => setSponsor('4') }>AwesomeTruckCompany</button>
             </div>
 
             {loading ? <div>Loading...</div> : (
-                <div style={{display:'flex', flexWrap:'wrap'}}>
-                    {data.map(p => <ProductCard key={p.ITEM_ID} p={p} onClick={openEditor} />)}
+                <div style = {{ display:'flex', flexWrap:'wrap' }}>
+                    {data.map(p => <ProductCard key = {p.ITEM_ID} p = {p} onClick = {openEditor} />)}
                 </div>
             )}
 
             {editing && (
-                <div style={{position:'fixed', left:'50%', top:'50%', transform:'translate(-50%,-50%)', background:'#fff', padding:20, borderRadius:8, boxShadow:'0 4px 20px rgba(0,0,0,.3)', zIndex:9999, width:360}}>
-                    <h5>Edit price — {editing.item.ITEM_NAME}</h5>
-                    <div style={{marginTop:8}}>
+                <div style = {{ position:'fixed', left:'50%', top:'50%', transform:'translate(-50%,-50%)', background:'#fff', padding:20, borderRadius:8, boxShadow:'0 4px 20px rgba(0,0,0,.3)', zIndex:9999, width:360 }}>
+                    <h5>Edit price — { editing.item.ITEM_NAME }</h5>
+                    <div style={{ marginTop:8 }}>
                         <label>New price</label>
-                        <input type="number" value={editing.newPrice} onChange={e=>setEditing({...editing, newPrice: e.target.value})} className="form-control" />
+                        <input type = "number" value = { editing.newPrice } onChange = {e => setEditing({ ...editing, newPrice: e.target.value })} className = "form-control" />
                     </div>
-                    <div style={{display:'flex', gap:8, marginTop:12, justifyContent:'flex-end'}}>
-                        <button className="btn btn-secondary" onClick={()=>setEditing(null)}>Cancel</button>
-                        <button className="btn btn-primary" onClick={saveEdit}>Save</button>
+                    <div style = {{ display:'flex', gap:8, marginTop:12, justifyContent:'flex-end' }}>
+                        <button className = "btn btn-secondary" onClick = {() => setEditing(null)}>Cancel</button>
+                        <button className = "btn btn-primary" onClick = {saveEdit}>Save</button>
                     </div>
                 </div>
             )}
