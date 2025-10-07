@@ -1,0 +1,83 @@
+[
+    {
+        "ITEM_ID": 18660,
+        "ITEM_NAME": "Insulated Travel Mug",
+        "ITEM_IMG": "https://m.media-amazon.com/images/I/61I3+k8y6EL._AC_SX679_.jpg",
+        "ITEM_DES": "Stainless steel insulated travel mug, 350ml, leak-resistant lid.",
+        "ITEM_PRICE": 250,
+        "ITEM_STOCK": 40,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18661,
+        "ITEM_NAME": "Wireless Earbuds",
+        "ITEM_IMG": "https://imgs.search.brave.com/MVhSjCnxnJqcPZmlh6JeqAqU4rJJdkzZYBR0Ndyl030/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cHJlbWl1bS1waG90/by93aXJlbGVzcy1h/Y291c3RpYy1oZWFk/cGhvbmVzLXdoaXRl/LWJhY2tncm91bmQt/aXNvbGF0aW9uXzE4/NTY2Ny0xNjc0NC5q/cGc_c2VtdD1haXNf/aHlicmlkJnc9NzQw/JnE9ODA",
+        "ITEM_DES": "True wireless earbuds with charging case and noise reduction.",
+        "ITEM_PRICE": 1200,
+        "ITEM_STOCK": 18,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18662,
+        "ITEM_NAME": "Ceramic Coffee Mug",
+        "ITEM_IMG": "https://imgs.search.brave.com/6sWXyk-GWHWUcGMz5iWMfk9zbN65G8hK1XU3eSBgVn0/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9hcGku/dG90YWxseXByb21v/dGlvbmFsLmNvbS9E/YXRhL01lZGlhLzhh/ZThkMjM2LTRlMDMt/NDU0My04NGNhLWRj/NGY2YzY0NDU3Zlox/MDIyLTE2LW96Li1O/ZW90ZXJpYy1NdWcu/anBn",
+        "ITEM_DES": "12oz ceramic mug with matte finish and comfortable handle.",
+        "ITEM_PRICE": 80,
+        "ITEM_STOCK": 75,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18663,
+        "ITEM_NAME": "LED Desk Lamp",
+        "ITEM_IMG": "https://imgs.search.brave.com/rQnrWWOuxpzgsaOGMew6kXcCpHGYtdpTeSYmwDaVDeM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/bGFtcHNleHBvLmNv/bS9jZG4vc2hvcC9m/aWxlcy85ODA5ODZf/NTEyeDU5Ny5qcGc_/dj0xNzI2MTczMTYx",
+        "ITEM_DES": "Adjustable LED desk lamp with touch controls and USB charging port.",
+        "ITEM_PRICE": 450,
+        "ITEM_STOCK": 22,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18664,
+        "ITEM_NAME": "Phone Stand",
+        "ITEM_IMG": "https://imgs.search.brave.com/smrBHUpT4FRtZf8apuDqtYlIvitG9FCCwp7fvtFOomc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/bW9mdC51cy9jZG4v/c2hvcC9maWxlcy9t/YWdzYWZlX3Rvb2xz/NF8xYTVmMGI4OS03/YmU2LTRjNmEtODc0/My0yNWVkMzg4NzI5/NWYuanBnP3Y9MTc1/NzUyODIzNCZ3aWR0/aD0xMDkw",
+        "ITEM_DES": "Aluminum adjustable phone stand for desk or bedside use.",
+        "ITEM_PRICE": 150,
+        "ITEM_STOCK": 60,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18665,
+        "ITEM_NAME": "Reusable Grocery Bag",
+        "ITEM_IMG": "https://imgs.search.brave.com/NgWZ5xOrDZnhpyadASmFUx9hjHTUMJsPKYmx0qr3MMw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMtbmEuc3NsLWlt/YWdlcy1hbWF6b24u/Y29tL2ltYWdlcy9J/LzcxWDNhTnQ4cFlM/LmpwZw",
+        "ITEM_DES": "Foldable, washable reusable grocery bag with reinforced handles.",
+        "ITEM_PRICE": 60,
+        "ITEM_STOCK": 200,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18666,
+        "ITEM_NAME": "Mini First Aid Kit",
+        "ITEM_IMG": "https://imgs.search.brave.com/0yWQebSlomuuSUqOO_7BDy25qo909HPr2wmlhrbHvyk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMtbmEuc3NsLWlt/YWdlcy1hbWF6b24u/Y29tL2ltYWdlcy9J/LzcxRUtCRFZDeDBM/LmpwZw",
+        "ITEM_DES": "Compact first aid kit for car or travel with essential supplies.",
+        "ITEM_PRICE": 180,
+        "ITEM_STOCK": 35,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18667,
+        "ITEM_NAME": "Notebook Journal",
+        "ITEM_IMG": "https://imgs.search.brave.com/sHBuXtMXDf4WN9HrZh9UwWPZlo19vbG_QGLw-uOCClM/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/ODFoRUd4c1pZTkwu/anBn",
+        "ITEM_DES": "Hardcover A5 notebook with 200 lined pages and elastic band.",
+        "ITEM_PRICE": 95,
+        "ITEM_STOCK": 120,
+        "ITEM_POPULARITY": 0
+    },
+    {
+        "ITEM_ID": 18668,
+        "ITEM_NAME": "Keychain Multi-Tool",
+        "ITEM_IMG": "https://imgs.search.brave.com/dFBQadwO6OCmppxz_931037USHavvDX4Ty0GANI9eTg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NjFVWkJkK3R4UEwu/anBn",
+        "ITEM_DES": "Pocket-sized keychain multi-tool with bottle opener and screwdriver.",
+        "ITEM_PRICE": 140,
+        "ITEM_STOCK": 80,
+        "ITEM_POPULARITY": 0
+    }
+]

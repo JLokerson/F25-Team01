@@ -74,6 +74,22 @@ export default function Login() {
       console.log('User stored in localStorage:', data.user);
       console.log('Password change suggestion:', shouldSuggestPasswordChange);
       
+      // If user is a sponsor, fetch their sponsor record so we know which catalog to load
+      if (data.user.UserType === 2) {
+        try {
+          const sponsorResp = await fetch(`http://localhost:4000/sponsorAPI/getSponsorForUser?UserID=${encodeURIComponent(data.user.UserID)}`);
+          if (sponsorResp.ok) {
+            const sponsor = await sponsorResp.json();
+            localStorage.setItem('sponsor', JSON.stringify(sponsor));
+            console.log('Sponsor stored in localStorage:', sponsor);
+          } else {
+            console.warn('No sponsor record found for user');
+          }
+        } catch (err) {
+          console.error('Failed to fetch sponsor record:', err);
+        }
+      }
+      
       // Navigate based on user type
       const userType = data.user.UserType;
       if (userType === 1) {
