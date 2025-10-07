@@ -17,6 +17,7 @@ import DriverCart from './components/DriverCart';
 import DriverOrderConfirmation from './components/DriverOrderConfirmation';
 import Home from './components/Home';
 import Testing from './components/Testing.jsx';
+import { CookiesProvider, useCookies } from 'react-cookie';
 
 function AppContent() {
   const location = useLocation();
@@ -69,9 +70,11 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <CookiesProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </CookiesProvider>
   );
 }
 
