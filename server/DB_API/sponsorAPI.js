@@ -104,10 +104,15 @@ router.get("/getAllSponsors", async (req, res, next) => {
 /**
  * Get the sponsor record associated with a given UserID
  * Expects: /getSponsorForUser?UserID=123
+ * This is ABSOLUTELY TEMPORARY until we implement proper authentication and sesh management
  */
 router.get("/getSponsorForUser", async (req, res, next) => {
     const userID = req.query.UserID;
-    if (!userID) return res.status(400).json({ message: 'UserID required' });
+
+    if (!userID) {
+        return res.status(400).json({ message: 'UserID required' });
+    }
+
     try {
         const sql = `SELECT S.* FROM SPONSOR_USER SU INNER JOIN SPONSOR S ON SU.SponsorID = S.SponsorID WHERE SU.UserID = ?`;
         const rows = await db.executeQuery(sql, [userID]);
@@ -131,7 +136,7 @@ router.get("/getCatalogForSponsor", async (req, res, next) => {
     const sponsorID = req.query.SponsorID;
     if (!sponsorID) return res.status(400).json({ message: 'SponsorID required' });
 
-    // hardcoded mapping based on current DB sample sponsors
+    // hardcoded mapping based on current DB sample sponsors, this is TEMPORARY
     const mapping = {
         '1': 'sponsor1_catalog.json', // RandTruckCompany
         '3': 'sponsor2_catalog.json', // CoolTruckCompany
@@ -139,7 +144,9 @@ router.get("/getCatalogForSponsor", async (req, res, next) => {
     };
 
     const filename = mapping[String(sponsorID)];
-    if (!filename) return res.status(404).json({ message: 'No catalog mapped for this sponsor' });
+    if (!filename) {
+        return res.status(404).json({ message: 'No catalog mapped for this sponsor' });
+    }
 
     try {
         const filePath = path.resolve(__dirname, '../../client/src/content/json-assets', filename);
@@ -180,6 +187,52 @@ router.post("/addSponsorUser", async (req, res, next) => {
         res.status(200).json({ message: 'Sponsor user added successfully!', id: result.insertId });
     } catch (error) {
         res.status(500).send('Error adding sponsor user.');
+    }
+});
+
+/**
+ * Update product price in sponsor catalog JSON.
+ * Expects JSON body: { SponsorID, ITEM_ID, newPrice }
+ * This is VERY TEMPORARY and insecure, just to demonstrate updating the JSON file
+ * Demo directions:
+ *      URL: http://localhost:4000/sponsorAPI/updateProductPrice
+ */
+router.post('/updateProductPrice', async (req, res, next) => {
+    try {
+        const source = (req.body && Object.keys(req.body).length > 0) ? req.body : req.query;
+        const SponsorID = source.SponsorID;
+        const ITEM_ID = Number(source.ITEM_ID);
+        const newPrice = Number(source.newPrice);
+
+        if (!SponsorID || !ITEM_ID || isNaN(newPrice)) {
+            return res.status(400).json({ message: 'SponsorID, ITEM_ID and newPrice are required and must be valid' });
+        }
+
+        const mapping = {
+            '1': 'sponsor1_catalog.json',
+            '3': 'sponsor2_catalog.json',
+            '4': 'sponsor3_catalog.json'
+        };
+
+        const filename = mapping[String(SponsorID)];
+        if (!filename) return res.status(404).json({ message: 'No catalog mapped for this sponsor' });
+
+        const filePath = path.resolve(__dirname, '../../client/src/content/json-assets', filename);
+        const fileContents = await fs.readFile(filePath, 'utf8');
+        const json = JSON.parse(fileContents);
+
+        const idx = json.findIndex(it => Number(it.ITEM_ID) === ITEM_ID);
+        if (idx === -1) return res.status(404).json({ message: 'Item not found in catalog' });
+
+        json[idx].ITEM_PRICE = newPrice;
+
+        // write back
+        await fs.writeFile(filePath, JSON.stringify(json, null, 4), 'utf8');
+
+        res.json({ message: 'Price updated', item: json[idx] });
+    } catch (error) {
+        console.error('Error in updateProductPrice:', error);
+        res.status(500).json({ message: 'Failed to update product price' });
     }
 });
 
