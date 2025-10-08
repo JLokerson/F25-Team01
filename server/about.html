@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Network Drivers Server App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 2em auto;
+            padding: 1.5em;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5em;
+            margin-top: 1.5em;
+        }
+        h1 {
+            text-align: center;
+            border-bottom: none;
+            padding-bottom: 0;
+            font-size: 2.5em;
+            color: #3498db;
+        }
+        h2 {
+            font-size: 1.8em;
+            color: #2980b9;
+        }
+        h3 {
+            font-size: 1.4em;
+            color: #34495e;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            margin-bottom: 1em;
+        }
+        ol {
+            list-style-type: decimal;
+            margin-left: 20px;
+            margin-bottom: 1em;
+        }
+        code {
+            background-color: #eef;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            color: #c7254e;
+        }
+        pre {
+            background-color: #eef;
+            padding: 1em;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin-bottom: 1em;
+        }
+        .container {
+            padding: 1em;
+            background-color: #fff;
+            border-radius: 6px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        }
+        .team-members ul {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            list-style: none;
+            padding: 0;
+        }
+        .team-members li {
+            background-color: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <h1>Network Drivers Server Application (In-Progress)</h1>
+
+    <div class="container">
+        <section>
+            <h2>Project Overview</h2>
+            <p>Welcome to the server application for the Clemson CPSC 4910 project. This server acts as the backend for our application, handling data processing, API requests, and managing the core logic required for our project's functionality. Its primary goal is to provide a robust, scalable, and secure backend for our client-side applications.</p>
+        </section>
+
+        <section class="team-members">
+            <h2>Our Team: Network Drivers</h2>
+            <p>We are a team of four:</p>
+            <ul>
+                <li>Ohm Patel</li>
+                <li>Julia Lokerson</li>
+                <li>Emerson Khan</li>
+                <li>Jason Lin</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Current Server API Endpoints (Paths)</h2>
+            <p>Below is a description of the currently implemented API endpoints that the server exposes. These paths allow various client applications (web, mobile, etc.) to interact with our backend services.</p>
+
+            <ol>
+                <li>
+                    <h3><code>GET /api/status</code></h3>
+                    <p><strong>Description:</strong> Provides a simple health check for the server. Returns the server's current status and possibly a timestamp, indicating that the server is up and running.</p>
+                    <p><strong>Response Example:</strong></p>
+                    <pre><code>{
+    "status": "operational",
+    "message": "Network Drivers server is online!",
+    "timestamp": "2023-10-27T10:30:00Z"
+}</code></pre>
+                </li>
+                <li>
+                    <h3><code>POST /api/users/register</code></h3>
+                    <p><strong>Description:</strong> Handles new user registration. Expects user credentials (e.g., username, email, password) in the request body to create a new user account.</p>
+                    <p><strong>Request Body Example:</strong></p>
+                    <pre><code>{
+    "username": "newuser",
+    "email": "newuser@example.com",
+    "password": "securePassword123"
+}</code></pre>
+                    <p><strong>Response Example (Success):</strong></p>
+                    <pre><code>{
+    "success": true,
+    "message": "User registered successfully",
+    "userId": "uuid-of-new-user"
+}</code></pre>
+                </li>
+                <li>
+                    <h3><code>POST /api/users/login</code></h3>
+                    <p><strong>Description:</strong> Authenticates existing users. Expects username/email and password. On successful authentication, it typically returns an authentication token (e.g., JWT).</p>
+                    <p><strong>Request Body Example:</strong></p>
+                    <pre><code>{
+    "email": "existing@example.com",
+    "password": "securePassword123"
+}</code></pre>
+                    <p><strong>Response Example (Success):</strong></p>
+                    <pre><code>{
+    "success": true,
+    "message": "Login successful",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}</code></pre>
+                </li>
+                <li>
+                    <h3><code>GET /api/data/fetch/:id</code> (Requires Authentication)</h3>
+                    <p><strong>Description:</strong> Retrieves specific data by its ID. This endpoint requires user authentication (e.g., a valid JWT in the `Authorization` header). Replaces <code>:id</code> with the actual data identifier.</p>
+                    <p><strong>Headers:</strong> <code>Authorization: Bearer [your_token]</code></p>
+                    <p><strong>Response Example:</strong></p>
+                    <pre><code>{
+    "id": "data-item-123",
+    "owner": "uuid-of-user",
+    "content": "This is protected data.",
+    "creationDate": "2023-10-26T15:00:00Z"
+}</code></pre>
+                </li>
+                <li>
+                    <h3><code>POST /api/data/submit</code> (Requires Authentication)</h3>
+                    <p><strong>Description:</strong> Allows authenticated users to submit new data to the server. The data structure will depend on the project's specific requirements.</p>
+                    <p><strong>Headers:</strong> <code>Authorization: Bearer [your_token]</code></p>
+                    <p><strong>Request Body Example:</strong></p>
+                    <pre><code>{
+    "dataType": "sensorReading",
+    "value": 25.5,
+    "unit": "Celcius",
+    "timestamp": "2023-10-27T11:00:00Z"
+}</code></pre>
+                    <p><strong>Response Example (Success):</strong></p>
+                    <pre><code>{
+    "success": true,
+    "message": "Data submitted successfully",
+    "dataId": "uuid-of-new-data"
+}</code></pre>
+                </li>
+                </ol>
+        </section>
+
+        <section>
+            <h2>Key Packages and Technologies Used</h2>
+            <p>Our server application leverages the following significant packages and technologies to achieve its functionality:</p>
+            <ul>
+                <li><strong>Express.js:</strong> A fast, unopinionated, minimalist web framework for Node.js, forming the backbone of our API.</li>
+                <li><strong>Node.js:</strong> The JavaScript runtime environment that executes our server-side code.</li>
+                <li><strong>Mongoose:</strong> An elegant MongoDB object modeling tool, used for interacting with our NoSQL database.</li>
+                <li><strong>MongoDB:</strong> Our chosen NoSQL database for flexible and scalable data storage.</li>
+                <li><strong>bcrypt.js:</strong> A library for hashing passwords, ensuring user credentials are stored securely.</li>
+                <li><strong>jsonwebtoken (JWT):</strong> Used for implementing token-based authentication, allowing secure stateless user sessions.</li>
+                <li><strong>cors:</strong> A Node.js package for providing a Connect/Express middleware that can be used to enable Cross-Origin Resource Sharing (CORS).</li>
+                <li><strong>dotenv:</strong> Loads environment variables from a <code>.env</code> file, crucial for managing sensitive configuration data.</li>
+                <li>**Nodemon:** (Development dependency) Automatically restarts the node application when file changes are detected, speeding up development.</li>
+                </ul>
+            <p>This list will be updated as our project progresses and new technologies or libraries are integrated.</p>
+        </section>
+
+        <section>
+            <h2>Contact & Support</h2>
+            <p>For any inquiries regarding the Network Drivers server application or our CPSC 4910 project, please reach out to our team.</p>
+            <p><em>This document was last updated: [Current Date, e.g., October 27, 2023]</em></p>
+        </section>
+    </div>
+</body>
+</html>

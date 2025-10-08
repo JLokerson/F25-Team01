@@ -176,7 +176,7 @@ router.use((req, res, next) => {
 });
 router.use(express.json()); // Ensure JSON body parsing for all routes in this router
 
-console.log("userAPI router loaded"); 
+//console.log("userAPI router loaded"); 
 
 router.get("/", async function(req, res, next) {
     try {

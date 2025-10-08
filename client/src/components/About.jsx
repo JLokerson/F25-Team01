@@ -27,7 +27,7 @@ function MostOfTheText() {
       try {
         setLoading(true);
         // Try the standard API pattern first
-        const response = await fetch('sponsorAPI/getAllSponsors');
+        const response = await fetch('https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsors');
         
         console.log('Sponsor fetch response status:', response.status);
         
