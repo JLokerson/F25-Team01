@@ -1,10 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config(); // Add this line to load .env variables
-
+require('dotenv').config();
 const app = express();
-const port = process.env.SERVER_PORT || 4000; // Use environment variable
+const port = process.env.SERVER_PORT; // Im using this port variable to check if local or not
 
 app.use(cors()); // Enable CORS for cross-origin requests
 app.use(express.json()); // Enable parsing JSON request bodies
@@ -43,17 +42,30 @@ app.use("/cartAPI", cartAPIRouter);
 
 // Serve about.html at the root URL
 app.get('/', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../public/about.html'));
+  res.sendFile(path.resolve(__dirname, './about.html'));
 });
 
 // Example API endpoint
-app.get('/api/data', (req, res) => {
+app.get('/hello/ohm', (req, res) => {
   res.json({ message: 'Ohm says hello from the Node.js backend!' });
 });
 
-// Optional: Handle favicon.ico requests to avoid 404 errors in browser
+app.get("/hello", (req, res) => {
+  res.send("Hello World");
+});
+
+// // Optional: Handle favicon.ico requests to avoid 404 errors in browser
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+if(port)
+  {
+  console.log("Port found - Running local host server");
+  app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+  });
+}
+else
+{
+  console.log("Port undefined - Running serverless server");
+  module.exports = app;
+}
