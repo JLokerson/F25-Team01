@@ -64,8 +64,15 @@ export default function Login() {
         console.error('No user object in response:', data);
         return;
       }
+      
+      // Check if password is older than 3 months
+      const shouldSuggestPasswordChange = checkPasswordAge(data.user.LastLogin);
+      
+      // Store user info and password change suggestion flag
       localStorage.setItem('user', JSON.stringify(data.user));
-      console.log('User stored in localStorage:', data.user); 
+      localStorage.setItem('suggestPasswordChange', shouldSuggestPasswordChange.toString());
+      console.log('User stored in localStorage:', data.user);
+      console.log('Password change suggestion:', shouldSuggestPasswordChange);
       
       // If user is a sponsor, fetch their sponsor record so we know which catalog to load
       if (data.user.UserType === 2) {
@@ -99,6 +106,22 @@ export default function Login() {
       console.error('Login error:', error);
       alert("Network error. Please try again.");
     }
+  };
+
+  // Function to check if password is older than 3 months
+  const checkPasswordAge = (lastLogin) => {
+    if (!lastLogin) {
+      // If no LastLogin date, this is likely the first login, don't suggest password change
+      return false;
+    }
+    
+    const lastLoginDate = new Date(lastLogin);
+    const currentDate = new Date();
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(currentDate.getMonth() - 3);
+    
+    // If last login (password change) was more than 3 months ago, suggest password change
+    return lastLoginDate < threeMonthsAgo;
   };
 
   return (
