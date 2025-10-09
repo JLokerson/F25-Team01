@@ -5,7 +5,14 @@ require('dotenv').config();
 const app = express();
 const port = process.env.SERVER_PORT; // Im using this port variable to check if local or not
 
-app.use(cors()); // Enable CORS for cross-origin requests
+// More specific CORS configuration
+const corsOptions = {
+  origin: '*', // You can restrict this to 'http://localhost:3000' for better security
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: ['Content-Type', 'Authorization'], // Explicitly allow Content-Type
+};
+
+app.use(cors(corsOptions)); // Enable CORS for cross-origin requests
 app.use(express.json()); // Enable parsing JSON request bodies
 
 // Log every request and its body (for debugging)
