@@ -22,6 +22,7 @@ After cloning the repository, you need to install dependencies for both the fron
    ```sh
    cd client
    npm install
+   npm install react-cookies
    ```
 
 2. **Install backend dependencies:**
