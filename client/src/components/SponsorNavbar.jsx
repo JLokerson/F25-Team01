@@ -7,10 +7,20 @@ export default function SponsorNavbar() {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const firstName = user?.FirstName || 'Sponsor';
+    
+    // Check if admin is in impostor mode
+    const impostorMode = localStorage.getItem('impostorMode');
+    const isAdminImpostor = impostorMode && localStorage.getItem('impostorType') === 'sponsor';
 
     // prevent navigation back to protected pages after logout
     const handleLogout = () => {
         localStorage.removeItem('user');
+        // Clear impostor mode on logout
+        if (isAdminImpostor) {
+            localStorage.removeItem('impostorMode');
+            localStorage.removeItem('impostorType');
+            localStorage.removeItem('impostorSponsorOrg');
+        }
         window.history.pushState(null, '', window.location.href);
         window.onpopstate = function () {
             window.history.go(1);

@@ -8,6 +8,15 @@ export default function SponsorHome() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
 
     useEffect(() => {
+        // Check if admin is in impostor mode - don't show password modal for admin impostor
+        const impostorMode = localStorage.getItem('impostorMode');
+        const isAdminImpostor = impostorMode && localStorage.getItem('impostorType') === 'sponsor';
+        
+        if (isAdminImpostor) {
+            // Skip password modal for admin in impostor mode
+            return;
+        }
+
         // Check if user needs password change reminder
         const checkPasswordReminder = () => {
             const userString = localStorage.getItem('user');
@@ -40,7 +49,7 @@ export default function SponsorHome() {
                         setShowPasswordModal(true);
                     }
                 } else {
-                    // If LastLogin is missing, show the modal (useful for admin assuming identity)
+                    // If LastLogin is missing, show the modal (but not for admin impostor)
                     console.log('SponsorHome - LastLogin is missing, showing modal');
                     setShowPasswordModal(true);
                 }
@@ -54,6 +63,32 @@ export default function SponsorHome() {
         <div>
             <SponsorNavbar />
             {/* Place sponsor home page content below here */}
+            <div className="container my-5">
+                <h1>Welcome to the Sponsor Home Page</h1>
+                <p>This is where sponsors can manage their drivers and catalog.</p>
+                
+                {/* Quick access to sponsor features */}
+                <div className="row mt-4">
+                    <div className="col-md-6 mb-3">
+                        <div className="card">
+                            <div className="card-body">
+                                <h5 className="card-title">Driver Management</h5>
+                                <p className="card-text">Manage your drivers and their accounts.</p>
+                                <Link to="#" className="btn btn-primary">Manage Drivers</Link>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-md-6 mb-3">
+                        <div className="card">
+                            <div className="card-body">
+                                <h5 className="card-title">Catalog Management</h5>
+                                <p className="card-text">Manage your product catalog and pricing.</p>
+                                <Link to="#" className="btn btn-primary">Manage Catalog</Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <PasswordChangeModal 
                 show={showPasswordModal} 

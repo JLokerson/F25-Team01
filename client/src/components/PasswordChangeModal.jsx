@@ -8,6 +8,16 @@ export default function PasswordChangeModal({ show, onClose }) {
   const handleChangePassword = () => {
     onClose();
     
+    // Check if admin is in impostor mode
+    const impostorMode = localStorage.getItem('impostorMode');
+    const impostorType = localStorage.getItem('impostorType');
+    
+    if (impostorMode) {
+      // In impostor mode, navigate to admin profile since admin can't change other users' passwords
+      navigate('/adminprofile');
+      return;
+    }
+    
     // Get user info to determine correct profile page
     const userString = localStorage.getItem('user');
     if (userString) {

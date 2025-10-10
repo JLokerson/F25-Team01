@@ -7,10 +7,20 @@ export default function DriverNavbar() {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const firstName = user?.FirstName || 'Driver';
+    
+    // Check if admin is in impostor mode
+    const impostorMode = localStorage.getItem('impostorMode');
+    const isAdminImpostor = impostorMode && localStorage.getItem('impostorType') === 'driver';
 
     // Prevent navigation back to protected pages after logout
     const handleLogout = () => {
         localStorage.removeItem('user');
+        // Clear impostor mode on logout
+        if (isAdminImpostor) {
+            localStorage.removeItem('impostorMode');
+            localStorage.removeItem('impostorType');
+            localStorage.removeItem('impostorSponsorOrg');
+        }
         window.history.pushState(null, '', window.location.href);
         window.onpopstate = function () {
             window.history.go(1);
@@ -52,6 +62,13 @@ export default function DriverNavbar() {
                         </li>
                     </ul>
                     <div className="d-flex align-items-center">
+                        {isAdminImpostor && (
+                            <>
+                                <span className="badge bg-warning text-dark me-2">
+                                    Admin Impostor Mode
+                                </span>
+                            </>
+                        )}
                         <span className="navbar-text me-3">
                             Hello, {firstName}!
                         </span>

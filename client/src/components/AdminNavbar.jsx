@@ -2,15 +2,34 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../App.css';
 import { Link, useNavigate } from 'react-router-dom';
+import DriverNavbar from './DriverNavbar';
+import SponsorNavbar from './SponsorNavbar';
 
 export default function AdminNavbar() {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const firstName = user?.FirstName || 'Admin';
+    
+    // Check if admin is in impostor mode
+    const impostorMode = localStorage.getItem('impostorMode');
+    const impostorType = localStorage.getItem('impostorType');
+
+    // If in impostor mode, render the appropriate navbar
+    if (impostorMode) {
+        if (impostorType === 'driver') {
+            return <DriverNavbar />;
+        } else if (impostorType === 'sponsor') {
+            return <SponsorNavbar />;
+        }
+    }
 
     // prevent navigation back to protected pages after logout
     const handleLogout = () => {
         localStorage.removeItem('user');
+        // Clear impostor mode on logout
+        localStorage.removeItem('impostorMode');
+        localStorage.removeItem('impostorType');
+        localStorage.removeItem('impostorSponsorOrg');
         // Prevent back navigation after logout
         window.history.pushState(null, '', window.location.href);
         window.onpopstate = function () {
