@@ -88,8 +88,7 @@ export default function AdminNavbar() {
         }
         setImpostorMode('true');
         setShowImpostorModal(false);
-        // Force a re-render by updating state immediately
-        window.location.reload();
+        // Don't reload here - navigation is handled in the modal
     };
 
     const navbarStyle = {

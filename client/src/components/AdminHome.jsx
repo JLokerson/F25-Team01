@@ -41,6 +41,10 @@ export default function AdminHome() {
             <div className="container mt-4">
                 <div className="row">
                     <div className="col-md-12">
+                        <p className="mb-2">
+                            <i className="fas fa-user-shield me-2"></i>
+                            <strong>You are logged in as: Admin</strong>
+                        </p>
                         <h2>Admin Dashboard</h2>
                         {/* Impostor mode controls moved to navbar */}
                     </div>

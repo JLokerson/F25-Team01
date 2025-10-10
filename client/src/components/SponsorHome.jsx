@@ -7,6 +7,11 @@ import PasswordChangeModal from './PasswordChangeModal';
 export default function SponsorHome() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
 
+    // Check if admin is in impostor mode
+    const impostorMode = localStorage.getItem('impostorMode');
+    const isAdminImpostor = impostorMode && localStorage.getItem('impostorType') === 'sponsor';
+    const sponsorOrg = localStorage.getItem('impostorSponsorOrg') || 'Generic Sponsor';
+
     useEffect(() => {
         // Check if admin is in impostor mode - don't show password modal for admin impostor
         const impostorMode = localStorage.getItem('impostorMode');
@@ -64,6 +69,17 @@ export default function SponsorHome() {
             <SponsorNavbar />
             {/* Place sponsor home page content below here */}
             <div className="container my-5">
+                <p className="mb-3">
+                    <i className="fas fa-handshake me-2"></i>
+                    <strong>
+                        You are logged in as: Sponsor
+                        {isAdminImpostor && (
+                            <span className="badge bg-warning text-dark ms-2">
+                                (Admin Impostor Mode - {sponsorOrg})
+                            </span>
+                        )}
+                    </strong>
+                </p>
                 <h1>Welcome to the Sponsor Home Page</h1>
                 <p>This is where sponsors can manage their drivers and catalog.</p>
                 

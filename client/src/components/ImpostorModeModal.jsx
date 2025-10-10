@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function ImpostorModeModal({ show, onClose, onSetImpostorMode }) {
+    const navigate = useNavigate();
     const [sponsors, setSponsors] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -81,14 +83,17 @@ export default function ImpostorModeModal({ show, onClose, onSetImpostorMode }) 
 
     const handleDriverMode = () => {
         onSetImpostorMode('driver');
+        navigate('/DriverHome', { replace: true });
     };
 
     const handleSponsorMode = (sponsorOrg) => {
         onSetImpostorMode('sponsor', sponsorOrg);
+        navigate('/SponsorHome', { replace: true });
     };
 
     const handleGenericSponsorMode = () => {
         onSetImpostorMode('sponsor', 'Generic Sponsor');
+        navigate('/SponsorHome', { replace: true });
     };
 
     if (!show) {

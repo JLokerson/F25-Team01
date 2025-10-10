@@ -56,7 +56,12 @@ export default function DriverNavbar() {
             localStorage.setItem('impostorSponsorOrg', sponsorOrg);
         }
         setShowImpostorModal(false);
-        window.location.reload(); // Refresh to update navbar
+        // Navigate to appropriate home page
+        if (type === 'driver') {
+            navigate('/DriverHome', { replace: true });
+        } else if (type === 'sponsor') {
+            navigate('/SponsorHome', { replace: true });
+        }
     };
 
     return (

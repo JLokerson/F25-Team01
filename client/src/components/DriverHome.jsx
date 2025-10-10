@@ -7,6 +7,10 @@ import PasswordChangeModal from './PasswordChangeModal';
 export default function DriverHome() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
 
+    // Check if admin is in impostor mode
+    const impostorMode = localStorage.getItem('impostorMode');
+    const isAdminImpostor = impostorMode && localStorage.getItem('impostorType') === 'driver';
+
     useEffect(() => {
         // Check if admin is in impostor mode - don't show password modal for admin impostor
         const impostorMode = localStorage.getItem('impostorMode');
@@ -64,6 +68,17 @@ export default function DriverHome() {
             <DriverNavbar />
             {/* Place driver home page content below here */}
             <div className="container my-5">
+                <p className="mb-3">
+                    <i className="fas fa-user me-2"></i>
+                    <strong>
+                        You are logged in as: Driver
+                        {isAdminImpostor && (
+                            <span className="badge bg-warning text-dark ms-2">
+                                (Admin Impostor Mode)
+                            </span>
+                        )}
+                    </strong>
+                </p>
                 <h1>Welcome to the Driver Home Page</h1>
                 <p>This is where drivers can see their dashboard and relevant information.</p>
                 
