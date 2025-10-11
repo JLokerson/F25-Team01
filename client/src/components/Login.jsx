@@ -9,6 +9,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const navigate = useNavigate();
+  const [cookies, setCookie] = useCookies(['password'])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,7 +58,7 @@ export default function Login() {
 
       // Login successful
       setFailedAttempts(0);
-
+      setCookie('password', password, { path: '/' })
       // Store user info in localStorage
       if (!data.user) {
         alert("No user object in response! Check backend response format.");
