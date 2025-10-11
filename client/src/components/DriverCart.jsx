@@ -11,6 +11,13 @@ export default function DriverCart() {
     try { user = JSON.parse(localStorage.getItem('user')); } catch(e) { user = null; }
     const userType = user?.UserType ?? user?.accountType ?? null;
 
+
+    // Fetch the user from password
+
+    // How do we convert the returned value to a usable format?
+    // I have no idea, apparently not necessary.
+
+
     // Cart is stored as an array of ITEM_IDs
     const [cart, setCart] = useState([]);
     const [productsMap, setProductsMap] = useState({});

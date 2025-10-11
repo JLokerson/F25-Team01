@@ -9,6 +9,7 @@ export default function DriverProfile() {
 
     const loadDrivers = () => {
         // prefer drivers persisted in localStorage (so points changes persist)
+        // TODO: MAKE POINTS CHANGES ON BACKEND WHY WOULD THAT BE ON CLIENT WHAT
         let list = null;
         try {
             const raw = localStorage.getItem('drivers');
