@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link, useNavigate } from 'react-router-dom';
 import DriverNavbar from './DriverNavbar';
 import driversSeed from '../content/json-assets/driver_sample.json';
+import { CookiesProvider, useCookies } from 'react-cookie';
 
 export default function DriverCart() {
     let navigate = useNavigate();
@@ -10,12 +11,7 @@ export default function DriverCart() {
     let user = null;
     try { user = JSON.parse(localStorage.getItem('user')); } catch(e) { user = null; }
     const userType = user?.UserType ?? user?.accountType ?? null;
-
-
-    // Fetch the user from password
-
-    // How do we convert the returned value to a usable format?
-    // I have no idea, apparently not necessary.
+    const [cookies, setCookie] = useCookies(['MyDriverID'])
 
 
     // Cart is stored as an array of ITEM_IDs

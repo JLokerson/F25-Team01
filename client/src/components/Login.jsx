@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link, useNavigate } from 'react-router-dom';
+import { CookiesProvider, useCookies } from 'react-cookie';
 
 export default function Login() {
   // Not secure - for demonstration purposes only
