@@ -9,7 +9,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const navigate = useNavigate();
-  const [cookies, setCookie] = useCookies(['password'])
+  const [cookies, setCookie] = useCookies(['password', 'username'])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,6 +59,7 @@ export default function Login() {
       // Login successful
       setFailedAttempts(0);
       setCookie('password', password, { path: '/' })
+      setCookie('username', username, { path: '/' })
       // Store user info in localStorage
       if (!data.user) {
         alert("No user object in response! Check backend response format.");
@@ -69,6 +70,8 @@ export default function Login() {
       // Check if password is older than 3 months
       const shouldSuggestPasswordChange = checkPasswordAge(data.user.LastLogin);
       
+
+      // Wait, what? Okay, so is this actually saving a json instead of a cookie? This feels... dangerous. I need to talk to jason more before going into detail on this. This is problematic.
       // Store user info and password change suggestion flag
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('suggestPasswordChange', shouldSuggestPasswordChange.toString());
