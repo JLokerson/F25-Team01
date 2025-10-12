@@ -7,7 +7,7 @@ import { CookiesProvider, useCookies } from 'react-cookie';
 
 export default function DriverProfile() {
     const [driver, setDriver] = useState(null);
-    const [cookies, setCookie] = useCookies(['MyDriverID']);
+    const [cookies, setCookie] = useCookies(['driverinfo']);
 
     const loadDrivers = () => {
         // prefer drivers persisted in localStorage (so points changes persist)
@@ -28,7 +28,11 @@ export default function DriverProfile() {
         );
         setDriver(d || null);
         if (driver == null){
-            setDriver(cookies.Driver);
+            try{
+                setDriver(cookies.driverinfo);
+            }catch(e){
+                // Do Nothing
+            }
         }else{
             setCookie('driverinfo', driver, { path: '/' })
         }
