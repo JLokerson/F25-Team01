@@ -13,6 +13,53 @@ export default function DriverCart() {
     const userType = user?.UserType ?? user?.accountType ?? null;
     const [cookies, setCookie] = useCookies(['MyDriverID'])
 
+    // Not sure how to tie this into the existing setup, try this for now though:
+    async function GetCartFromDB(){
+        try {
+        const response = await fetch(`http://localhost:4000/userAPI/updatePassword?DriverID=${cookies.MyDriverID}`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            }
+        });
+
+        console.log('Request URL:', `http://localhost:4000/userAPI/updatePassword?DriverID=${cookies.MyDriverID}`);
+
+        // Debug: Log the response status and text
+        console.log('Response status:', response.status);
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+
+        // Try to parse as JSON only if we got a response
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('Failed to parse JSON:', parseError);
+            console.error('Raw response:', responseText);
+            setMessage("Server error. Check console for details.");
+            setMessageType("error");
+            return;
+        }
+
+        if (!response.ok) {
+            setMessage(data.message || "Cart fetch failed. Please check your credentials.");
+            setMessageType("error");
+            return;
+        }
+        
+        // Store user info TODO: MAKE THIS USE COOKIES
+        console.log('Cart fetch successful.');
+        setMessage("Cart fetched successfully!");
+        setMessageType("success");
+        
+        } catch (error) {
+        console.error('Unknown error:', error);
+        setMessage("Network error. Please try again.");
+        setMessageType("error");
+        }
+    }
+
 
     // Cart is stored as an array of ITEM_IDs
     const [cart, setCart] = useState([]);
