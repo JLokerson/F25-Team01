@@ -4,7 +4,12 @@ const user = require('./userAPI');
 
 
 // Add order
+async function AddOrder(){
 
+}
 
 
 // Update order state
+async function UpdateOrderState(){
+    
+}
