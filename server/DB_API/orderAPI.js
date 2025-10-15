@@ -50,6 +50,37 @@ async function UpdateOrderState(){
     }
 }
 
+router.post("/addOrder", async (req, res, next) => {
+    console.log('--- /addOrder route hit ---');
+    console.log('Raw req.body:', req.body);
+    console.log('Raw req.query:', req.query);
+
+    // Prefer body, fallback to query for Postman compatibility
+    const source = Object.keys(req.body).length > 0 ? req.body : req.query;
+
+    const data = {
+        ProductID: source.ProductID,
+        DriverID: source.DriverID,
+        PurchasedAtPrice: source.PurchasedAtPrice
+    };
+
+
+    // Validation: check for missing fields
+    if (!data.DriverID || !data.ProductID || !data.PurchasedAtPrice) {
+        console.error('Missing required field(s).');
+        return res.status(400).json({ message: 'Missing required fields.', body: source });
+    }
+
+    try {
+        const result = await AddOrder(data);
+        console.log('Order added successfully, DB result:', result);
+        res.status(200).json({ message: 'Order added successfully!', id: result.insertId });
+    } catch (error) {
+        console.error('Error in /addOrder:', error); // Log the full error
+        res.status(500).json({ message: 'Error adding order.', error: error.message });
+    }
+});
+
 router.post("/updateOrderStatus", async (req, res, next) => {
     console.log('--- /updateOrderStatus route hit ---');
     console.log('Raw req.body:', req.body);
@@ -66,7 +97,7 @@ router.post("/updateOrderStatus", async (req, res, next) => {
     console.log('Received POST data for status update:', data);
     
     try {
-        const result = await updatePassword(data);
+        const result = await UpdateOrderState(data);
         if (result.affectedRows > 0) {
             res.status(200).json({ message: 'status updated successfully!' });
         } else {
