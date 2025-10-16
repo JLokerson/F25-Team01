@@ -12,13 +12,14 @@ export default function SponsorProfile() {
     const [cookies, setCookie] = useCookies(['username', 'password']);
     
     // Ensure this is actually a sponsor user.
-    // TO-DO: verify the login returned success and not fail, rn only checks if error.
-    function VerifyLogin(){
+    // TO-DO: verify the login returned success and not fail, rn only checks if error on retrieval.
+    async function VerifyLogin(){
         try{
             let userinfo = {
             "email": cookies.username,
             "password": cookies.password,
             };
+            await login(userinfo);
             return true;
         }catch(e){
             return false;
