@@ -12,6 +12,15 @@ export default function DriverCart() {
     try { user = JSON.parse(localStorage.getItem('user')); } catch(e) { user = null; }
     const userType = user?.UserType ?? user?.accountType ?? null;
     const [cookies, setCookie] = useCookies(['MyDriverID'])
+    
+    // Check if admin is in impostor mode as driver
+    const impostorMode = localStorage.getItem('impostorMode');
+    const impostorType = localStorage.getItem('impostorType');
+    const isAdminImpostorAsDriver = impostorMode && impostorType === 'driver';
+
+    // Cart is stored as an array of ITEM_IDs
+    const [cart, setCart] = useState([]);
+    const [productsMap, setProductsMap] = useState({});
 
     // Not sure how to tie this into the existing setup, try this for now though:
     async function GetCartFromDB(){
@@ -59,11 +68,6 @@ export default function DriverCart() {
         setMessageType("error");
         }
     }
-
-
-    // Cart is stored as an array of ITEM_IDs
-    const [cart, setCart] = useState([]);
-    const [productsMap, setProductsMap] = useState({});
 
     useEffect(() => {
         const raw = localStorage.getItem('cart') || '[]';
@@ -277,7 +281,7 @@ export default function DriverCart() {
             {DriverNavbar()}
             <div className="container my-5">
                 <h3>Your Cart</h3>
-                {userType !== 1 ? (
+                {(userType !== 1 && !isAdminImpostorAsDriver) ? (
                     <p>The cart is only available to drivers. If you believe this is an error, please contact an administrator.</p>
                 ) : (
                     <>
