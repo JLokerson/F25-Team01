@@ -5,7 +5,7 @@ import HelperPasswordChange from './HelperPasswordChange';
 import sponsors from '../../content/json-assets/sponsor-user_sample.json';
 import driversSeed from '../../content/json-assets/driver_sample.json';
 import { CookiesProvider, useCookies } from 'react-cookie';
-import login from '../MiscellaneousParts/ServerCall';
+import { login } from '../MiscellaneousParts/ServerCall';
 
 export default function SponsorProfile() {
     // use this info to try a login.
