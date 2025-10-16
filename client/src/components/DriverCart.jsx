@@ -13,6 +13,10 @@ export default function DriverCart() {
     const userType = user?.UserType ?? user?.accountType ?? null;
     const [cookies, setCookie] = useCookies(['MyDriverID'])
     
+    // Bugfix
+    const [message, setMessage] = useState('');
+    const [messageType, setMessageType] = useState('');
+
     // Check if admin is in impostor mode as driver
     const impostorMode = localStorage.getItem('impostorMode');
     const impostorType = localStorage.getItem('impostorType');
