@@ -223,7 +223,7 @@ export default function SponsorHome() {
                             <div className="card-body">
                                 <h5 className="card-title">Driver Management</h5>
                                 <p className="card-text">Manage your drivers and their accounts.</p>
-                                <Link to="#" className="btn btn-primary">Manage Drivers</Link>
+                                <Link to="/sponsor-driver-management" className="btn btn-primary">Manage Drivers</Link>
                             </div>
                         </div>
                     </div>
