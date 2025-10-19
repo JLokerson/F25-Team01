@@ -3,12 +3,15 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import DriverNavbar from '../DriverNavbar';
 import HelperPasswordChange from './HelperPasswordChange';
 import driversSeed from '../../content/json-assets/driver_sample.json';
+import { CookiesProvider, useCookies } from 'react-cookie';
 
 export default function DriverProfile() {
     const [driver, setDriver] = useState(null);
+    const [cookies, setCookie] = useCookies(['driverinfo']);
 
     const loadDrivers = () => {
         // prefer drivers persisted in localStorage (so points changes persist)
+        // TODO: MAKE POINTS CHANGES ON BACKEND WHY WOULD THAT BE ON CLIENT WHAT
         let list = null;
         try {
             const raw = localStorage.getItem('drivers');
@@ -24,6 +27,15 @@ export default function DriverProfile() {
             x => Number(x.userid) === 3 || x.userid === 3
         );
         setDriver(d || null);
+        if (driver == null){
+            try{
+                setDriver(cookies.driverinfo);
+            }catch(e){
+                // Do Nothing
+            }
+        }else{
+            setCookie('driverinfo', driver, { path: '/' })
+        }
     };
 
     useEffect(() => {

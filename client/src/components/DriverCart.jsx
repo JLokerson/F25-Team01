@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link, useNavigate } from 'react-router-dom';
 import DriverNavbar from './DriverNavbar';
 import driversSeed from '../content/json-assets/driver_sample.json';
+import { CookiesProvider, useCookies } from 'react-cookie';
 
 export default function DriverCart() {
     let navigate = useNavigate();
@@ -10,10 +11,67 @@ export default function DriverCart() {
     let user = null;
     try { user = JSON.parse(localStorage.getItem('user')); } catch(e) { user = null; }
     const userType = user?.UserType ?? user?.accountType ?? null;
+    const [cookies, setCookie] = useCookies(['MyDriverID'])
+    
+    // Bugfix
+    const [message, setMessage] = useState('');
+    const [messageType, setMessageType] = useState('');
+
+    // Check if admin is in impostor mode as driver
+    const impostorMode = localStorage.getItem('impostorMode');
+    const impostorType = localStorage.getItem('impostorType');
+    const isAdminImpostorAsDriver = impostorMode && impostorType === 'driver';
 
     // Cart is stored as an array of ITEM_IDs
     const [cart, setCart] = useState([]);
     const [productsMap, setProductsMap] = useState({});
+
+    // Not sure how to tie this into the existing setup, try this for now though:
+    async function GetCartFromDB(){
+        try {
+        const response = await fetch(`http://localhost:4000/userAPI/updatePassword?DriverID=${cookies.MyDriverID}`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            }
+        });
+
+        console.log('Request URL:', `http://localhost:4000/userAPI/updatePassword?DriverID=${cookies.MyDriverID}`);
+
+        // Debug: Log the response status and text
+        console.log('Response status:', response.status);
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+
+        // Try to parse as JSON only if we got a response
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('Failed to parse JSON:', parseError);
+            console.error('Raw response:', responseText);
+            setMessage("Server error. Check console for details.");
+            setMessageType("error");
+            return;
+        }
+
+        if (!response.ok) {
+            setMessage(data.message || "Cart fetch failed. Please check your credentials.");
+            setMessageType("error");
+            return;
+        }
+        
+        // Store user info TODO: MAKE THIS USE COOKIES
+        console.log('Cart fetch successful.');
+        setMessage("Cart fetched successfully!");
+        setMessageType("success");
+        
+        } catch (error) {
+        console.error('Unknown error:', error);
+        setMessage("Network error. Please try again.");
+        setMessageType("error");
+        }
+    }
 
     useEffect(() => {
         const raw = localStorage.getItem('cart') || '[]';
@@ -227,7 +285,7 @@ export default function DriverCart() {
             {DriverNavbar()}
             <div className="container my-5">
                 <h3>Your Cart</h3>
-                {userType !== 1 ? (
+                {(userType !== 1 && !isAdminImpostorAsDriver) ? (
                     <p>The cart is only available to drivers. If you believe this is an error, please contact an administrator.</p>
                 ) : (
                     <>

@@ -7,7 +7,20 @@ import PasswordChangeModal from './PasswordChangeModal';
 export default function DriverHome() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
 
+    // Check if admin is in impostor mode
+    const impostorMode = localStorage.getItem('impostorMode');
+    const isAdminImpostor = impostorMode && localStorage.getItem('impostorType') === 'driver';
+
     useEffect(() => {
+        // Check if admin is in impostor mode - don't show password modal for admin impostor
+        const impostorMode = localStorage.getItem('impostorMode');
+        const isAdminImpostor = impostorMode && localStorage.getItem('impostorType') === 'driver';
+        
+        if (isAdminImpostor) {
+            // Skip password modal for admin in impostor mode
+            return;
+        }
+
         // Check if user needs password change reminder
         const checkPasswordReminder = () => {
             const userString = localStorage.getItem('user');
@@ -40,7 +53,7 @@ export default function DriverHome() {
                         setShowPasswordModal(true);
                     }
                 } else {
-                    // If LastLogin is missing, show the modal (useful for admin assuming identity)
+                    // If LastLogin is missing, show the modal (but not for admin impostor)
                     console.log('DriverHome - LastLogin is missing, showing modal');
                     setShowPasswordModal(true);
                 }
@@ -55,8 +68,41 @@ export default function DriverHome() {
             <DriverNavbar />
             {/* Place driver home page content below here */}
             <div className="container my-5">
+                <p className="mb-3">
+                    <i className="fas fa-user me-2"></i>
+                    <strong>
+                        You are logged in as: Driver
+                        {isAdminImpostor && (
+                            <span className="badge bg-warning text-dark ms-2">
+                                (Admin Impostor Mode)
+                            </span>
+                        )}
+                    </strong>
+                </p>
                 <h1>Welcome to the Driver Home Page</h1>
                 <p>This is where drivers can see their dashboard and relevant information.</p>
+                
+                {/* Quick access to driver features */}
+                <div className="row mt-4">
+                    <div className="col-md-6 mb-3">
+                        <div className="card">
+                            <div className="card-body">
+                                <h5 className="card-title">Shopping Cart</h5>
+                                <p className="card-text">View and manage items in your shopping cart.</p>
+                                <Link to="/drivercart" className="btn btn-primary">Go to Cart</Link>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-md-6 mb-3">
+                        <div className="card">
+                            <div className="card-body">
+                                <h5 className="card-title">Product Catalog</h5>
+                                <p className="card-text">Browse available products and add them to your cart.</p>
+                                <Link to="/products" className="btn btn-primary">Browse Catalog</Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <PasswordChangeModal 
