@@ -109,10 +109,10 @@ export default function SponsorHome() {
     return (
         <div>
             <SponsorNavbar />
-            {/* Place sponsor home page content below here */}
-            <div className="container my-5">
-                {/* User Information Section */}
-                {userInfo && !isAdminImpostor && (
+            
+            {/* User Information Section */}
+            {userInfo && !isAdminImpostor && (
+                <div className="container mt-4">
                     <div className="card mb-4">
                         <div className="card-header">
                             <h4 className="mb-0">
@@ -147,8 +147,11 @@ export default function SponsorHome() {
                             </div>
                         </div>
                     </div>
-                )}
+                </div>
+            )}
 
+            {/* Place sponsor home page content below here */}
+            <div className="container my-5">
                 <p className="mb-3">
                     <i className="fas fa-handshake me-2"></i>
                     <strong>

@@ -10,6 +10,7 @@ import { login } from '../MiscellaneousParts/ServerCall';
 export default function SponsorProfile() {
     // use this info to try a login.
     const [cookies, setCookie] = useCookies(['username', 'password']);
+    const [showPasswordChangeButton, setShowPasswordChangeButton] = useState(false);
     
     // Ensure this is actually a sponsor user.
     // TO-DO: verify the login returned success and not fail, rn only checks if error on retrieval.
@@ -33,22 +34,88 @@ export default function SponsorProfile() {
         // Hardcoded to the first sponsor
         return sponsors[0];
     });
-    const [driversList, setDriversList] = useState([]);
+    const [driversList, setDriversList] = useState([]); // Initialize as empty array instead of null
     const [editing, setEditing] = useState(null); // { driver, newPoints }
+
+    const getUserInfo = () => {
+        const userString = localStorage.getItem('user');
+        if (userString) {
+            try {
+                return JSON.parse(userString);
+            } catch (e) {
+                return null;
+            }
+        }
+        return null;
+    };
+
+    const getTimeSinceLastLogin = (lastLoginDate) => {
+        const now = new Date();
+        const diffTime = Math.abs(now - lastLoginDate);
+        const diffMonths = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30.44)); // Average days per month
+        
+        if (diffMonths >= 12) {
+            const years = Math.floor(diffMonths / 12);
+            const remainingMonths = diffMonths % 12;
+            return years === 1 
+                ? `over 1 year${remainingMonths > 0 ? ` and ${remainingMonths} month${remainingMonths > 1 ? 's' : ''}` : ''}`
+                : `over ${years} years${remainingMonths > 0 ? ` and ${remainingMonths} month${remainingMonths > 1 ? 's' : ''}` : ''}`;
+        } else {
+            return `${diffMonths} month${diffMonths !== 1 ? 's' : ''}`;
+        }
+    };
+
+    const getUserTypeString = (userType) => {
+        switch (userType) {
+            case 1: return 'Driver';
+            case 2: return 'Sponsor';
+            case 3: return 'Admin';
+            default: return `Unknown (${userType})`;
+        }
+    };
+
+    const checkLastLogin = () => {
+        const userString = localStorage.getItem('user');
+        if (userString) {
+            try {
+                const user = JSON.parse(userString);
+                const lastLoginDate = user.LastLogin ? new Date(user.LastLogin) : null;
+                
+                if (lastLoginDate) {
+                    const threeMonthsAgo = new Date();
+                    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+                    
+                    if (lastLoginDate < threeMonthsAgo) {
+                        setShowPasswordChangeButton(true);
+                    }
+                } else {
+                    setShowPasswordChangeButton(true);
+                }
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+            }
+        }
+    };
 
     // Load drivers from content/json-assets/driver_sample.json
     useEffect(() => {
-        let list = null;
+        checkLastLogin();
+        
+        let list = [];
         try { 
             const raw = localStorage.getItem('drivers'); 
             if (raw) {
                 list = JSON.parse(raw); 
             }
         } catch (e) { 
-            list = null;
+            list = [];
             console.log('There are no drivers in the local storage, please check content/json-assets/driver_sample.json');
         }
         
+        // Ensure list is an array
+        if (!Array.isArray(list)) {
+            list = [];
+        }
 
         setDriversList(list);
     }, []);
@@ -72,6 +139,8 @@ export default function SponsorProfile() {
         setEditing(null);
     }
 
+    const userInfo = getUserInfo();
+
     if (!sponsor) {
         return (
             <div>
@@ -85,19 +154,52 @@ export default function SponsorProfile() {
         return (
             <div>
                 {SponsorNavbar()}
+                
+                {/* User Information Section */}
+                {userInfo && (
+                    <div className="container mt-4">
+                        <div className="card mb-4">
+                            <div className="card-header">
+                                <h4 className="mb-0">
+                                    <i className="fas fa-user me-2"></i>
+                                    Current User Information
+                                </h4>
+                            </div>
+                            <div className="card-body">
+                                <div className="row">
+                                    <div className="col-md-6">
+                                        <p><strong>User ID:</strong> {userInfo.UserID}</p>
+                                        <p><strong>Name:</strong> {userInfo.FirstName} {userInfo.LastName}</p>
+                                        <p><strong>Email:</strong> {userInfo.Email}</p>
+                                    </div>
+                                    <div className="col-md-6">
+                                        <p><strong>User Type:</strong> {getUserTypeString(userInfo.UserType)}</p>
+                                        {showPasswordChangeButton && (
+                                            <div className="alert alert-warning mt-2">
+                                                <i className="fas fa-exclamation-triangle me-2"></i>
+                                                <strong>Security Notice:</strong>
+                                                <p className="mb-2 mt-1">
+                                                    {userInfo.LastLogin 
+                                                        ? `It has been ${getTimeSinceLastLogin(new Date(userInfo.LastLogin))} since your last login.`
+                                                        : 'We have no record of your last login.'
+                                                    }
+                                                    <br />
+                                                    We recommend updating your password for security.
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {HelperPasswordChange(sponsor.userid)}
 
                 <div className="container mt-4">
-                    <h2>Sponsor Profile</h2>
-                    <ul className="list-group mb-3">
-                        <li className="list-group-item"><strong>User ID:</strong> {sponsor.userid}</li>
-                        <li className="list-group-item"><strong>Name:</strong> {sponsor.firstName} {sponsor.lastName}</li>
-                        <li className="list-group-item"><strong>Email:</strong> {sponsor.email}</li>
-                        <li className="list-group-item"><strong>Birthday:</strong> {sponsor.birthday}</li>
-                    </ul>
-
                     <h5>Sponsored Drivers</h5>
-                    {driversList.length > 0 ? (
+                    {Array.isArray(driversList) && driversList.length > 0 ? (
                         <ul className="list-group">
                             {driversList.map((d) => (
                                 <li key={d.userid} className="list-group-item d-flex justify-content-between align-items-center">

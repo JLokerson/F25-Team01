@@ -145,11 +145,10 @@ export default function DriverProfile() {
     return (
         <div>
             {DriverNavbar()}
-            {HelperPasswordChange(driver?.userid ?? 4)}
-
-            <div className="container mt-4">
-                {/* User Information Section */}
-                {userInfo && (
+            
+            {/* User Information Section */}
+            {userInfo && (
+                <div className="container mt-4">
                     <div className="card mb-4">
                         <div className="card-header">
                             <h4 className="mb-0">
@@ -184,8 +183,12 @@ export default function DriverProfile() {
                             </div>
                         </div>
                     </div>
-                )}
+                </div>
+            )}
 
+            {HelperPasswordChange(driver?.userid ?? 4)}
+
+            <div className="container mt-4">
                 <h2>Driver Profile</h2>
                 {!driver ? (
                     <div className="alert alert-warning">Driver with userid=1 not found.</div>
