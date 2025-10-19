@@ -130,7 +130,7 @@ export default function Login() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100">
+    <div className="d-flex justify-content-center align-items-center">
       <div
         className="card p-4 shadow w-100 h-100 d-flex flex-column justify-content-between"
         style={{ maxWidth: '32em', height: '28em' }}
