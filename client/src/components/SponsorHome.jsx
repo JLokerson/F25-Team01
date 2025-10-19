@@ -6,11 +6,40 @@ import PasswordChangeModal from './PasswordChangeModal';
 
 export default function SponsorHome() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [showPasswordChangeButton, setShowPasswordChangeButton] = useState(false);
 
     // Check if admin is in impostor mode
     const impostorMode = localStorage.getItem('impostorMode');
     const isAdminImpostor = impostorMode && localStorage.getItem('impostorType') === 'sponsor';
     const sponsorOrg = localStorage.getItem('impostorSponsorOrg') || 'Generic Sponsor';
+
+    const getUserInfo = () => {
+        const userString = localStorage.getItem('user');
+        if (userString) {
+            try {
+                return JSON.parse(userString);
+            } catch (e) {
+                return null;
+            }
+        }
+        return null;
+    };
+
+    const getTimeSinceLastLogin = (lastLoginDate) => {
+        const now = new Date();
+        const diffTime = Math.abs(now - lastLoginDate);
+        const diffMonths = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30.44)); // Average days per month
+        
+        if (diffMonths >= 12) {
+            const years = Math.floor(diffMonths / 12);
+            const remainingMonths = diffMonths % 12;
+            return years === 1 
+                ? `over 1 year${remainingMonths > 0 ? ` and ${remainingMonths} month${remainingMonths > 1 ? 's' : ''}` : ''}`
+                : `over ${years} years${remainingMonths > 0 ? ` and ${remainingMonths} month${remainingMonths > 1 ? 's' : ''}` : ''}`;
+        } else {
+            return `${diffMonths} month${diffMonths !== 1 ? 's' : ''}`;
+        }
+    };
 
     useEffect(() => {
         // Check if admin is in impostor mode - don't show password modal for admin impostor
@@ -52,11 +81,13 @@ export default function SponsorHome() {
                     if (lastLoginDate < threeMonthsAgo) {
                         console.log('SponsorHome - LastLogin is older than 3 months, showing modal');
                         setShowPasswordModal(true);
+                        setShowPasswordChangeButton(true);
                     }
                 } else {
                     // If LastLogin is missing, show the modal (but not for admin impostor)
                     console.log('SponsorHome - LastLogin is missing, showing modal');
                     setShowPasswordModal(true);
+                    setShowPasswordChangeButton(true);
                 }
             }
         };
@@ -64,11 +95,60 @@ export default function SponsorHome() {
         checkPasswordReminder();
     }, []);
 
+    const getUserTypeString = (userType) => {
+        switch (userType) {
+            case 1: return 'Driver';
+            case 2: return 'Sponsor';
+            case 3: return 'Admin';
+            default: return `Unknown (${userType})`;
+        }
+    };
+
+    const userInfo = getUserInfo();
+ 
     return (
         <div>
             <SponsorNavbar />
             {/* Place sponsor home page content below here */}
             <div className="container my-5">
+                {/* User Information Section */}
+                {userInfo && !isAdminImpostor && (
+                    <div className="card mb-4">
+                        <div className="card-header">
+                            <h4 className="mb-0">
+                                <i className="fas fa-user me-2"></i>
+                                Current User Information
+                            </h4>
+                        </div>
+                        <div className="card-body">
+                            <div className="row">
+                                <div className="col-md-6">
+                                    <p><strong>User ID:</strong> {userInfo.UserID}</p>
+                                    <p><strong>Name:</strong> {userInfo.FirstName} {userInfo.LastName}</p>
+                                    <p><strong>Email:</strong> {userInfo.Email}</p>
+                                </div>
+                                <div className="col-md-6">
+                                    <p><strong>User Type:</strong> {getUserTypeString(userInfo.UserType)}</p>
+                                    {showPasswordChangeButton && (
+                                        <div className="alert alert-warning mt-2">
+                                            <i className="fas fa-exclamation-triangle me-2"></i>
+                                            <strong>Security Notice:</strong>
+                                            <p className="mb-2 mt-1">
+                                                {userInfo.LastLogin 
+                                                    ? `It has been ${getTimeSinceLastLogin(new Date(userInfo.LastLogin))} since your last login.`
+                                                    : 'We have no record of your last login.'
+                                                }
+                                                <br />
+                                                We recommend updating your password for security.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <p className="mb-3">
                     <i className="fas fa-handshake me-2"></i>
                     <strong>

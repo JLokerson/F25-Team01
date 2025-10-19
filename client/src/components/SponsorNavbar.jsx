@@ -60,7 +60,7 @@ export default function SponsorNavbar() {
             navigate('/SponsorHome', { replace: true });
         }
     };
-
+ 
     return (
         <>
             <nav className="sponsor-navbar navbar navbar-expand-lg navbar-light bg-light">

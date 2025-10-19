@@ -16,7 +16,8 @@ const Testing = () => {
     getCartItems: { DriverID: 1 },
     getItemMappings: { ProductID: 1 },
     checkEmail: { email: 'test@example.com' },
-    login: { Email: 'test@example.com', Password: 'password123' }
+    login: { Email: 'test@example.com', Password: 'password123' },
+    updateLastLogin: { UserID: 1 }
   });
 
   const addResult = (method, endpoint, status, data) => {
@@ -85,12 +86,55 @@ const Testing = () => {
     setResults([]);
   };
 
+  const setOldLastLogin = () => {
+    // Create a date that's 4 months ago
+    const fourMonthsAgo = new Date();
+    fourMonthsAgo.setMonth(fourMonthsAgo.getMonth() - 4);
+    
+    const testUserData = {
+      UserID: formData.updateLastLogin.UserID,
+      FirstName: "Julia",
+      LastName: "Lokerson", 
+      Email: "fakeer@mail.com",
+      Password: "newPass345",
+      PasswordSalt: "ijdfj",
+      UserType: 3,
+      LastLogin: fourMonthsAgo.toISOString()
+    };
+
+    // Store in localStorage to simulate the user data
+    localStorage.setItem('user', JSON.stringify(testUserData));
+    
+    addResult('LOCAL', 'localStorage.setItem("user")', 200, {
+      message: 'User data set in localStorage with LastLogin 4 months ago',
+      userData: testUserData
+    });
+  };
+
   return (
     <div className="testing-container">
       <h1>API Testing Page</h1>
 
       <div className="endpoints-grid">
         
+        {/* Password Reminder Testing */}
+        <div className="endpoint-section">
+          <h3>Password Reminder Testing</h3>
+          
+          <div className="form-section">
+            <h4>Test Old Last Login</h4>
+            <input 
+              placeholder="User ID for test data" 
+              type="number"
+              value={formData.updateLastLogin.UserID}
+              onChange={(e) => updateFormData('updateLastLogin', 'UserID', parseInt(e.target.value))}
+            />
+            <button onClick={setOldLastLogin}>
+              Set Old Last Login (4 months ago)
+            </button>
+          </div>
+        </div>
+
         {/* User/Auth Tests */}
         <div className="endpoint-section">
           <h3>User/Auth Endpoints</h3>
