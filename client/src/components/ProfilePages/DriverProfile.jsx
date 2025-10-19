@@ -9,6 +9,9 @@ export default function DriverProfile() {
     const [driver, setDriver] = useState(null);
     const [cookies, setCookie] = useCookies(['driverinfo']);
     const [showPasswordChangeButton, setShowPasswordChangeButton] = useState(false);
+    const [driverInfo, setDriverInfo] = useState(null);
+    const [sponsorName, setSponsorName] = useState(null);
+    const [driverInfoLoading, setDriverInfoLoading] = useState(true);
 
     const loadDrivers = () => {
         // prefer drivers persisted in localStorage (so points changes persist)
@@ -62,9 +65,61 @@ export default function DriverProfile() {
         }
     };
 
+    const fetchDriverInfo = async () => {
+        const userInfo = getUserInfo();
+        console.log('DriverProfile - UserInfo:', userInfo); // Debug log
+        if (userInfo && userInfo.UserID) {
+            try {
+                const response = await fetch(`http://localhost:4000/driverAPI/getAllDrivers`);
+                if (response.ok) {
+                    const allDrivers = await response.json();
+                    console.log('DriverProfile - All drivers:', allDrivers); // Debug log
+                    console.log('DriverProfile - Looking for UserID:', userInfo.UserID, 'Type:', typeof userInfo.UserID); // Debug log
+                    
+                    // Log each driver's UserID for comparison
+                    allDrivers.forEach((driver, index) => {
+                        console.log(`DriverProfile - Driver ${index} UserID:`, driver.UserID, 'Type:', typeof driver.UserID);
+                    });
+                    
+                    const currentDriverInfo = allDrivers.find(d => Number(d.UserID) === Number(userInfo.UserID));
+                    console.log('DriverProfile - Current driver info:', currentDriverInfo); // Debug log
+                    setDriverInfo(currentDriverInfo || false); // Set to false if not found
+                    
+                    // Fetch sponsor name if we have driver info
+                    if (currentDriverInfo && currentDriverInfo.SponsorID) {
+                        fetchSponsorName(currentDriverInfo.SponsorID);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching driver info:', error);
+                setDriverInfo(false);
+            } finally {
+                setDriverInfoLoading(false);
+            }
+        } else {
+            setDriverInfoLoading(false);
+        }
+    };
+
+    const fetchSponsorName = async (sponsorID) => {
+        try {
+            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+            if (response.ok) {
+                const allSponsors = await response.json();
+                console.log('DriverProfile - All sponsors:', allSponsors); // Debug log
+                const sponsor = allSponsors.find(s => s.SponsorID === sponsorID);
+                console.log('DriverProfile - Found sponsor:', sponsor); // Debug log
+                setSponsorName(sponsor ? sponsor.Name : null);
+            }
+        } catch (error) {
+            console.error('Error fetching sponsor name:', error);
+        }
+    };
+
     useEffect(() => {
         loadDrivers();
         checkLastLogin();
+        fetchDriverInfo();
 
         const onStorage = (e) => {
             if (e.key === 'drivers' || e.key === null) loadDrivers();
@@ -162,9 +217,22 @@ export default function DriverProfile() {
                                     <p><strong>User ID:</strong> {userInfo.UserID}</p>
                                     <p><strong>Name:</strong> {userInfo.FirstName} {userInfo.LastName}</p>
                                     <p><strong>Email:</strong> {userInfo.Email}</p>
+                                    <p><strong>User Type:</strong> {getUserTypeString(userInfo.UserType)}</p>
                                 </div>
                                 <div className="col-md-6">
-                                    <p><strong>User Type:</strong> {getUserTypeString(userInfo.UserType)}</p>
+                                    {driverInfoLoading ? (
+                                        <p><em>Loading driver information...</em></p>
+                                    ) : driverInfo ? (
+                                        <>
+                                            <p><strong>Driver ID:</strong> {driverInfo.DriverID}</p>
+                                            <p><strong>Sponsor ID:</strong> {driverInfo.SponsorID}{sponsorName ? ` (${sponsorName})` : ''}</p>
+                                        </>
+                                    ) : (
+                                        <div className="alert alert-info">
+                                            <p><strong>No driver record found.</strong></p>
+                                            <p className="small">Your user account (UserID: {userInfo.UserID}) is not associated with a driver record. Contact your administrator or use the Testing page to create a driver entry.</p>
+                                        </div>
+                                    )}
                                     {showPasswordChangeButton && (
                                         <div className="alert alert-warning mt-2">
                                             <i className="fas fa-exclamation-triangle me-2"></i>

@@ -111,6 +111,50 @@ const Testing = () => {
     });
   };
 
+  const createTestDriverForCurrentUser = () => {
+    const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!userInfo.UserID) {
+      addResult('LOCAL', 'createTestDriverForCurrentUser', 'ERROR', { error: 'No user found in localStorage' });
+      return;
+    }
+
+    // Create a test driver entry for the current user
+    const testDriverData = {
+      SponsorID: 1,
+      FirstName: userInfo.FirstName || 'Test',
+      LastName: userInfo.LastName || 'Driver',
+      Email: userInfo.Email || 'test@example.com',
+      Password: 'password123',
+      PasswordSalt: 'salt123',
+      UserType: 1
+    };
+
+    // Make API call to create driver
+    testRequest('POST', `/driverAPI/addDriver?${buildQueryString(testDriverData)}`);
+  };
+
+  const createTestSponsorUserForCurrentUser = () => {
+    const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!userInfo.UserID) {
+      addResult('LOCAL', 'createTestSponsorUserForCurrentUser', 'ERROR', { error: 'No user found in localStorage' });
+      return;
+    }
+
+    // Create a test sponsor user entry for the current user
+    const testSponsorUserData = {
+      SponsorID: 1,
+      FirstName: userInfo.FirstName || 'Test',
+      LastName: userInfo.LastName || 'Sponsor',
+      Email: userInfo.Email || 'test@example.com',
+      Password: 'password123',
+      PasswordSalt: 'salt123',
+      UserType: 2
+    };
+
+    // Make API call to create sponsor user
+    testRequest('POST', `/sponsorAPI/addSponsorUser?${buildQueryString(testSponsorUserData)}`);
+  };
+
   return (
     <div className="testing-container">
       <h1>API Testing Page</h1>
@@ -131,6 +175,22 @@ const Testing = () => {
             />
             <button onClick={setOldLastLogin}>
               Set Old Last Login (4 months ago)
+            </button>
+          </div>
+          
+          <div className="form-section">
+            <h4>Create Test Driver for Current User</h4>
+            <p>Creates a driver entry for the currently logged in user (UserID: {JSON.parse(localStorage.getItem('user') || '{}').UserID || 'Unknown'})</p>
+            <button onClick={createTestDriverForCurrentUser}>
+              Create Test Driver Entry
+            </button>
+          </div>
+          
+          <div className="form-section">
+            <h4>Create Test Sponsor User for Current User</h4>
+            <p>Creates a sponsor user entry for the currently logged in user (UserID: {JSON.parse(localStorage.getItem('user') || '{}').UserID || 'Unknown'})</p>
+            <button onClick={createTestSponsorUserForCurrentUser}>
+              Create Test Sponsor User Entry
             </button>
           </div>
         </div>

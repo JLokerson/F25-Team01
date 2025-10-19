@@ -7,6 +7,8 @@ import PasswordChangeModal from './PasswordChangeModal';
 export default function SponsorHome() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [showPasswordChangeButton, setShowPasswordChangeButton] = useState(false);
+    const [sponsorInfo, setSponsorInfo] = useState(null);
+    const [sponsorName, setSponsorName] = useState(null);
 
     // Check if admin is in impostor mode
     const impostorMode = localStorage.getItem('impostorMode');
@@ -92,7 +94,47 @@ export default function SponsorHome() {
             }
         };
 
+        const fetchSponsorInfo = async () => {
+            const userInfo = getUserInfo();
+            console.log('SponsorHome - UserInfo:', userInfo); // Debug log
+            if (userInfo && userInfo.UserID && !isAdminImpostor) {
+                try {
+                    const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+                    if (response.ok) {
+                        const allSponsorUsers = await response.json();
+                        console.log('SponsorHome - All sponsor users:', allSponsorUsers); // Debug log
+                        const currentSponsorInfo = allSponsorUsers.find(s => s.UserID === userInfo.UserID);
+                        console.log('SponsorHome - Current sponsor info:', currentSponsorInfo); // Debug log
+                        setSponsorInfo(currentSponsorInfo);
+                        
+                        // Fetch sponsor name if we have sponsor info
+                        if (currentSponsorInfo && currentSponsorInfo.SponsorID) {
+                            fetchSponsorName(currentSponsorInfo.SponsorID);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching sponsor info:', error);
+                }
+            }
+        };
+
+        const fetchSponsorName = async (sponsorID) => {
+            try {
+                const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+                if (response.ok) {
+                    const allSponsors = await response.json();
+                    console.log('SponsorHome - All sponsors:', allSponsors); // Debug log
+                    const sponsor = allSponsors.find(s => s.SponsorID === sponsorID);
+                    console.log('SponsorHome - Found sponsor:', sponsor); // Debug log
+                    setSponsorName(sponsor ? sponsor.Name : null);
+                }
+            } catch (error) {
+                console.error('Error fetching sponsor name:', error);
+            }
+        };
+
         checkPasswordReminder();
+        fetchSponsorInfo();
     }, []);
 
     const getUserTypeString = (userType) => {
@@ -126,9 +168,17 @@ export default function SponsorHome() {
                                     <p><strong>User ID:</strong> {userInfo.UserID}</p>
                                     <p><strong>Name:</strong> {userInfo.FirstName} {userInfo.LastName}</p>
                                     <p><strong>Email:</strong> {userInfo.Email}</p>
+                                    <p><strong>User Type:</strong> {getUserTypeString(userInfo.UserType)}</p>
                                 </div>
                                 <div className="col-md-6">
-                                    <p><strong>User Type:</strong> {getUserTypeString(userInfo.UserType)}</p>
+                                    {sponsorInfo ? (
+                                        <>
+                                            <p><strong>Sponsor User ID:</strong> {sponsorInfo.SponsorUserID}</p>
+                                            <p><strong>Sponsor ID:</strong> {sponsorInfo.SponsorID}{sponsorName ? ` (${sponsorName})` : ''}</p>
+                                        </>
+                                    ) : (
+                                        <p><em>Loading sponsor information...</em></p>
+                                    )}
                                     {showPasswordChangeButton && (
                                         <div className="alert alert-warning mt-2">
                                             <i className="fas fa-exclamation-triangle me-2"></i>
