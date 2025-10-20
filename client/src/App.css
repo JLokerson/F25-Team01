@@ -256,3 +256,7 @@
 .form-section button:hover {
   background-color: #218838 !important;
 }
+
+.profilespacinghelper {
+  align-self: left;
+}
