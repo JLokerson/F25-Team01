@@ -262,6 +262,12 @@
 }
 
 .passwordchangecategory{
-  max-width: 283px;
+  max-width: 100%;
   margin: auto;
+}
+
+@media only screen and (max-width: 400px) {
+  .passwordchangecategory {
+    max-width: 283px;
+  }
 }
