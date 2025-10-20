@@ -11,6 +11,7 @@ import Register from './components/Register';
 import AdminProfile from './components/ProfilePages/AdminProfile'
 import DriverProfile from './components/ProfilePages/DriverProfile'
 import SponsorProfile from './components/ProfilePages/SponsorProfile';
+import CatalogBuilder from './components/SponsorCatalog/CatalogBuilder';
 import Products from './components/Products';
 import MakeNewUser from './components/MakeNewUser'; 
 import DriverCart from './components/DriverCart';
@@ -52,6 +53,7 @@ function AppContent() {
         {/* Sponsor routes */}
         <Route path="/sponsorhome" element={<SponsorHome />} />
         <Route path="/sponsorprofile" element={<SponsorProfile />} />
+  <Route path="/sponsorcatalog" element={<CatalogBuilder />} />
 
         {/* Driver routes */}
         <Route path="/driverhome" element={<DriverHome />} />

@@ -85,7 +85,7 @@ export default function SponsorNavbar() {
                                 <Link className="nav-link" to="#">Driver Management</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to="#">Catalog Management</Link>
+                                <Link className="nav-link" to="/sponsorcatalog">Catalog Management</Link>
                             </li>
                         </ul>
                         <div className="d-flex align-items-center">
