@@ -19,17 +19,50 @@ export default function BestBuyBrowser({ onAdd }){
             setLoading(false); return;
         }
 
+        const searchFilter = searchTerm ? `(search=${encodeURIComponent(searchTerm)})` : '';
+        const proxyPath = `/v1/products${searchFilter}?format=json&show=sku,name,salePrice,image&page=${page}&pageSize=20&apiKey=${key}`;
+        const directUrl = `https://api.bestbuy.com/v1/products${searchFilter}?format=json&show=sku,name,salePrice,image&page=${page}&pageSize=20&apiKey=${key}`;
+
         try{
-            const searchFilter = searchTerm ? `(search=${encodeURIComponent(searchTerm)})` : '';
-            // Use proxy path if server proxy is implemented; fall back to direct BestBuy URL
-            const proxy = `/v1/products${searchFilter}?format=json&show=sku,name,salePrice,image&page=${page}&pageSize=20&apiKey=${key}`;
-            const resp = await fetch(proxy);
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            const json = await resp.json();
-            setProducts(json.products || []);
+            // Try proxy first (secure when server proxy exists). If it returns 404, fall back to direct BestBuy API.
+            const resp = await fetch(proxyPath);
+            if (resp.ok) {
+                const json = await resp.json();
+                setProducts(json.products || []);
+                setLoading(false);
+                return;
+            }
+
+            // If proxy responded but not OK, and was 404 specifically, attempt direct request
+            if (resp.status === 404) {
+                // Attempt direct call to BestBuy API (may be blocked by CORS in browser)
+                try{
+                    const directResp = await fetch(directUrl);
+                    if (!directResp.ok) throw new Error('HTTP ' + directResp.status);
+                    const json = await directResp.json();
+                    setProducts(json.products || []);
+                    setLoading(false);
+                    return;
+                }catch(directErr){
+                    setError(`Failed to fetch BestBuy products. Proxy returned 404 and direct request failed: ${directErr.message}`);
+                    setLoading(false);
+                    return;
+                }
+            }
+
+            // Other non-OK proxy response
+            throw new Error('Proxy HTTP ' + resp.status);
         }catch(err){
-            setError('Failed to fetch BestBuy products: ' + err.message);
-        }finally{ setLoading(false); }
+            // Network/CORS errors or thrown above
+            // If it's a CORS error when calling direct URL, the message may be generic; give guidance.
+            const isCORS = /Failed to fetch|NetworkError|TypeError/.test(err.message || '');
+            if (isCORS) {
+                setError('Failed to fetch BestBuy products: network/CORS error. Consider running a server proxy or check your API key. Details: ' + err.message);
+            } else {
+                setError('Failed to fetch BestBuy products: ' + err.message);
+            }
+            setLoading(false);
+        }
     }
 
     const handleSearch = (e) => { e.preventDefault(); setPage(1); setSearchTerm(query); };
