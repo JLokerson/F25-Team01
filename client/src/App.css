@@ -260,3 +260,8 @@
 .profilespacinghelper {
   align-self: left;
 }
+
+.passwordchangecategory{
+  max-width: 283px;
+  margin: auto;
+}

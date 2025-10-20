@@ -97,7 +97,7 @@ export default function HelperPasswordChange(UserID = 4) {
     }
 
     return (
-        <div style="max-width:283px">
+        <div className="passwordchangecategory">
             <form onSubmit={ChangePassword}>
             <div className="mb-3">
             <label htmlFor="newpass1" className="form-label">New password</label>
