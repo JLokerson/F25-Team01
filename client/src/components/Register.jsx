@@ -14,6 +14,7 @@ export default function Register() {
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [acceptedTOS, setAcceptedTOS] = useState(false);
+  const [readTOS, setreadTOS] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
@@ -65,7 +66,7 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!acceptedTOS) return;
+    if (!acceptedTOS || !readTOS) return;
     if (password !== confirm) {
       setError("Passwords do not match.");
       return;
@@ -225,6 +226,18 @@ export default function Register() {
           />
           <label className="form-check-label" htmlFor="acceptTOS">
             I understand and accept the Terms of Service
+          </label>
+        </div>
+        <div className="mb-3 form-check">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            id="readTOS"
+            checked={readTOS}
+            onChange={e => setreadTOS(true)}
+          />
+          <label className="form-check-label" htmlFor="readTOS">
+            I have in fact read the terms of service.
           </label>
         </div>
         <button

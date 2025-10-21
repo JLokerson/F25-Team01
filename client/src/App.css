@@ -256,3 +256,18 @@
 .form-section button:hover {
   background-color: #218838 !important;
 }
+
+.profilespacinghelper {
+  align-self: left;
+}
+
+.passwordchangecategory{
+  max-width: 100%;
+  margin: auto;
+}
+
+@media only screen and (max-width: 400px) {
+  .passwordchangecategory {
+    max-width: 283px;
+  }
+}

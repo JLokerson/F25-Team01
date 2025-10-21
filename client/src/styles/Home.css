@@ -32,14 +32,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem 1rem;
+    padding: 2rem 1%;
     position: relative;
     z-index: 1;
 }
 
 .landing__title {
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 1%;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
     animation: fadeInUp 1s ease-out;
 }
