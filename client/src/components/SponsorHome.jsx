@@ -152,54 +152,6 @@ export default function SponsorHome() {
         <div>
             <SponsorNavbar />
             
-            {/* User Information Section */}
-            {userInfo && !isAdminImpostor && (
-                <div className="container mt-4">
-                    <div className="card mb-4">
-                        <div className="card-header">
-                            <h4 className="mb-0">
-                                <i className="fas fa-user me-2"></i>
-                                Current User Information
-                            </h4>
-                        </div>
-                        <div className="card-body">
-                            <div className="row">
-                                <div className="col-md-6">
-                                    <p><strong>User ID:</strong> {userInfo.UserID}</p>
-                                    <p><strong>Name:</strong> {userInfo.FirstName} {userInfo.LastName}</p>
-                                    <p><strong>Email:</strong> {userInfo.Email}</p>
-                                    <p><strong>User Type:</strong> {getUserTypeString(userInfo.UserType)}</p>
-                                </div>
-                                <div className="col-md-6">
-                                    {sponsorInfo ? (
-                                        <>
-                                            <p><strong>Sponsor User ID:</strong> {sponsorInfo.SponsorUserID}</p>
-                                            <p><strong>Sponsor ID:</strong> {sponsorInfo.SponsorID}{sponsorName ? ` (${sponsorName})` : ''}</p>
-                                        </>
-                                    ) : (
-                                        <p><em>Loading sponsor information...</em></p>
-                                    )}
-                                    {showPasswordChangeButton && (
-                                        <div className="alert alert-warning mt-2">
-                                            <i className="fas fa-exclamation-triangle me-2"></i>
-                                            <strong>Security Notice:</strong>
-                                            <p className="mb-2 mt-1">
-                                                {userInfo.LastLogin 
-                                                    ? `It has been ${getTimeSinceLastLogin(new Date(userInfo.LastLogin))} since your last login.`
-                                                    : 'We have no record of your last login.'
-                                                }
-                                                <br />
-                                                We recommend updating your password for security.
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Place sponsor home page content below here */}
             <div className="container my-5">
                 <p className="mb-3">
@@ -224,6 +176,15 @@ export default function SponsorHome() {
                                 <h5 className="card-title">Driver Management</h5>
                                 <p className="card-text">Manage your drivers and their accounts.</p>
                                 <Link to="/sponsor-driver-management" className="btn btn-primary">Manage Drivers</Link>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-md-6 mb-3">
+                        <div className="card">
+                            <div className="card-body">
+                                <h5 className="card-title">Pending Applications</h5>
+                                <p className="card-text">Review and approve driver applications.</p>
+                                <Link to="/pending-applications" className="btn btn-primary">View Applications</Link>
                             </div>
                         </div>
                     </div>
