@@ -11,6 +11,8 @@ import Register from './components/Register';
 import AdminProfile from './components/ProfilePages/AdminProfile'
 import DriverProfile from './components/ProfilePages/DriverProfile'
 import SponsorProfile from './components/ProfilePages/SponsorProfile';
+import SponsorDriverManagement from './components/SponsorDriverManagement';
+import PendingApplications from './components/PendingApplications';
 import CatalogBuilder from './components/SponsorCatalog/CatalogBuilder';
 import Products from './components/Products';
 import MakeNewUser from './components/MakeNewUser'; 
@@ -53,7 +55,9 @@ function AppContent() {
         {/* Sponsor routes */}
         <Route path="/sponsorhome" element={<SponsorHome />} />
         <Route path="/sponsorprofile" element={<SponsorProfile />} />
-  <Route path="/sponsorcatalog" element={<CatalogBuilder />} />
+        <Route path="/sponsor-driver-management" element={<SponsorDriverManagement />} />
+        <Route path="/pending-applications" element={<PendingApplications />} />
+        <Route path="/sponsorcatalog" element={<CatalogBuilder />} />
 
         {/* Driver routes */}
         <Route path="/driverhome" element={<DriverHome />} />
