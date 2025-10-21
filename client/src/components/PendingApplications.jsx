@@ -10,7 +10,7 @@ export default function PendingApplications() {
             id: 1,
             firstName: 'John',
             lastName: 'Doe',
-            email: 'john.doe@email.com',
+            email: 'jdoe@email.com',
             phone: '(555) 123-4567',
             dateOfBirth: '1990-05-15',
             licenseNumber: 'DL123456789',
@@ -18,13 +18,13 @@ export default function PendingApplications() {
             requestedOrganization: 'RandTruckCompany',
             applicationDate: '2024-01-15',
             status: 'pending',
-            tempPassword: 'TempPass123!' // Temporary password for new users
+            tempPassword: 'password' // Temporary password for new users
         },
         {
             id: 2,
             firstName: 'Jane',
             lastName: 'Smith',
-            email: 'jane.smith@email.com',
+            email: 'jsmith@email.com',
             phone: '(555) 987-6543',
             dateOfBirth: '1988-09-22',
             licenseNumber: 'DL987654321',
@@ -32,21 +32,7 @@ export default function PendingApplications() {
             requestedOrganization: 'RandTruckCompany',
             applicationDate: '2024-01-18',
             status: 'pending',
-            tempPassword: 'TempPass456!'
-        },
-        {
-            id: 3,
-            firstName: 'Mike',
-            lastName: 'Johnson',
-            email: 'mike.johnson@email.com',
-            phone: '(555) 555-0123',
-            dateOfBirth: '1992-03-10',
-            licenseNumber: 'DL555123789',
-            address: '789 Pine St, City, State 67890',
-            requestedOrganization: 'RandTruckCompany',
-            applicationDate: '2024-01-20',
-            status: 'pending',
-            tempPassword: 'TempPass789!'
+            tempPassword: 'password'
         }
     ]);
 
