@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 const app = express();
-const port = process.env.SERVER_PORT; // Im using this port variable to check if local or not
+const port = process.env.SERVER_PORT || 4000; 
 
 // More specific CORS configuration
 const corsOptions = {
@@ -15,12 +15,17 @@ const corsOptions = {
 app.use(cors(corsOptions)); // Enable CORS for cross-origin requests
 app.use(express.json()); // Enable parsing JSON request bodies
 
+// Add body parser middleware for form data as well
+app.use(express.urlencoded({ extended: true }));
+
 // Log every request and its body (for debugging)
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
   // Only log body for POST/PUT
   if (req.method === 'POST' || req.method === 'PUT') {
+    console.log('Request headers:', req.headers['content-type']);
     console.log('Parsed body:', req.body);
+    console.log('Query params:', req.query);
   }
   // Log response status after response is sent
   res.on('finish', () => {
@@ -64,15 +69,18 @@ app.get("/hello", (req, res) => {
 // // Optional: Handle favicon.ico requests to avoid 404 errors in browser
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
-if(port)
-  {
+// Test route to verify driverAPI is mounted correctly
+app.get('/test-driver-api', (req, res) => {
+  res.json({ message: 'Driver API test route working' });
+});
+
+if (port) {
   console.log("Port found - Running local host server");
   app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
   });
-}
-else
-{
+} else {
+  // This block will never be reached now, but you can keep it for serverless compatibility
   console.log("Port undefined - Running serverless server");
   module.exports = app;
 }

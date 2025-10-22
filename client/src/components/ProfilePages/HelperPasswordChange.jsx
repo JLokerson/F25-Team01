@@ -97,7 +97,7 @@ export default function HelperPasswordChange(UserID = 4) {
     }
 
     return (
-        <div>
+        <div className="passwordchangecategory">
             <form onSubmit={ChangePassword}>
             <div className="mb-3">
             <label htmlFor="newpass1" className="form-label">New password</label>
@@ -105,7 +105,7 @@ export default function HelperPasswordChange(UserID = 4) {
                 <input
                     type={showNewPass1 ? "text" : "password"}
                     id="newpass1"
-                    className="form-control"
+                    className="form-control profilespacinghelper"
                     value={newpass1}
                     onChange={e => setnewpass1(e.target.value)}
                     required
@@ -126,7 +126,7 @@ export default function HelperPasswordChange(UserID = 4) {
                 <input
                     type={showNewPass2 ? "text" : "password"}
                     id="newpass2"
-                    className="form-control"
+                    className="form-control profilespacinghelper"
                     value={newpass2}
                     onChange={e => setnewpass2(e.target.value)}
                     required
@@ -147,7 +147,7 @@ export default function HelperPasswordChange(UserID = 4) {
                 <input
                     type={showOldPass ? "text" : "password"}
                     id="oldpass"
-                    className="form-control"
+                    className="form-control profilespacinghelper"
                     value={oldpass}
                     onChange={e => setoldpass(e.target.value)}
                     required
