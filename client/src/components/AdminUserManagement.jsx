@@ -11,7 +11,9 @@ export default function AdminUserManagement() {
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showEditSponsorModal, setShowEditSponsorModal] = useState(false);
     const [editingDriver, setEditingDriver] = useState(null);
+    const [editingSponsor, setEditingSponsor] = useState(null);
     const [newDriver, setNewDriver] = useState({
         FirstName: '',
         LastName: '',
@@ -65,19 +67,22 @@ export default function AdminUserManagement() {
                 ...driver,
                 userType: 'Driver',
                 displayId: driver.DriverID,
-                sponsorName: getSponsorName(driver.SponsorID)
+                sponsorName: getSponsorName(driver.SponsorID),
+                uniqueKey: `Driver-${driver.DriverID}-${driver.UserID}` // Add unique key
             })),
             ...sponsors.map(sponsor => ({
                 ...sponsor,
                 userType: 'Sponsor',
                 displayId: sponsor.SponsorID,
-                sponsorName: 'N/A'
+                sponsorName: 'N/A',
+                uniqueKey: `Sponsor-${sponsor.SponsorID}-${sponsor.UserID}` // Add unique key
             })),
             ...admins.map(admin => ({
                 ...admin,
                 userType: 'Admin',
                 displayId: admin.AdminID,
-                sponsorName: 'N/A'
+                sponsorName: 'N/A',
+                uniqueKey: `Admin-${admin.AdminID}-${admin.UserID}` // Add unique key
             }))
         ];
         setAllUsers(combinedUsers);
@@ -190,6 +195,124 @@ export default function AdminUserManagement() {
         }
     };
 
+    const handleEditSponsor = (sponsor) => {
+        setEditingSponsor({
+            ...sponsor,
+            Password: '',
+            PasswordSalt: 'auto-generated'
+        });
+        setShowEditSponsorModal(true);
+    };
+
+    const handleUpdateSponsor = async (e) => {
+        e.preventDefault();
+        
+        try {
+            // Generate salt if password is provided
+            const updateData = {
+                UserID: editingSponsor.UserID,
+                FirstName: editingSponsor.FirstName,
+                LastName: editingSponsor.LastName,
+                Email: editingSponsor.Email,
+                SponsorID: editingSponsor.SponsorID
+            };
+
+            // Only include password fields if a new password is provided
+            if (editingSponsor.Password && editingSponsor.Password.trim() !== '') {
+                updateData.Password = editingSponsor.Password;
+                updateData.PasswordSalt = GenerateSalt();
+            }
+
+            console.log('Sending sponsor update data:', updateData);
+
+            // Test if we can reach the getAllSponsorUsers endpoint (which we know works)
+            console.log('Testing getAllSponsorUsers endpoint...');
+            try {
+                const testGetUsers = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+                console.log('getAllSponsorUsers test status:', testGetUsers.status);
+                if (testGetUsers.ok) {
+                    const userData = await testGetUsers.json();
+                    console.log('getAllSponsorUsers works, got', userData.length, 'users');
+                } else {
+                    console.log('getAllSponsorUsers test failed');
+                }
+            } catch (getUsersError) {
+                console.error('getAllSponsorUsers test error:', getUsersError);
+            }
+
+            // Test the debug route
+            console.log('Testing debug route...');
+            try {
+                const debugTest = await fetch(`http://localhost:4000/sponsorAPI/debug`);
+                console.log('Debug test status:', debugTest.status);
+                if (debugTest.ok) {
+                    const debugData = await debugTest.json();
+                    console.log('Debug test data:', debugData);
+                } else {
+                    console.log('Debug test failed');
+                }
+            } catch (debugError) {
+                console.error('Debug test error:', debugError);
+            }
+
+            // Now try the update
+            console.log('Attempting sponsor update...');
+            const response = await fetch(`http://localhost:4000/sponsorAPI/updateSponsorUser`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            console.log('Response status:', response.status);
+            
+            if (response.ok) {
+                const responseData = await response.json();
+                console.log('Response data:', responseData);
+                alert('Sponsor updated successfully!');
+                setShowEditSponsorModal(false);
+                setEditingSponsor(null);
+                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllAdmins()]);
+            } else {
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                alert(`Error updating sponsor (${response.status}): Check console for details`);
+            }
+        } catch (error) {
+            console.error('Network error updating sponsor:', error);
+            alert(`Network error updating sponsor: ${error.message}`);
+        }
+    };
+
+    const handleRemoveSponsor = async (sponsorUserID, sponsorName) => {
+        if (!window.confirm(`Are you sure you want to remove ${sponsorName} from the system? This action cannot be undone and may affect associated drivers.`)) {
+            return;
+        }
+
+        try {
+            console.log('Removing sponsor with SponsorUserID:', sponsorUserID);
+
+            const response = await fetch(`http://localhost:4000/sponsorAPI/removeSponsorUser/${sponsorUserID}`, {
+                method: 'DELETE'
+            });
+
+            console.log('Delete response status:', response.status);
+            const responseText = await response.text();
+            console.log('Delete response text:', responseText);
+
+            if (response.ok) {
+                alert('Sponsor removed successfully!');
+                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllAdmins()]);
+            } else {
+                alert(`Error removing sponsor: ${responseText}`);
+            }
+        } catch (error) {
+            console.error('Error removing sponsor:', error);
+            alert(`Error removing sponsor: ${error.message}`);
+        }
+    };
+
     const getSponsorName = (sponsorID) => {
         const sponsor = sponsors.find(s => s.SponsorID === sponsorID);
         return sponsor ? `${sponsor.FirstName} ${sponsor.LastName}` : 'Unknown Sponsor';
@@ -220,10 +343,9 @@ export default function AdminUserManagement() {
         fetchData();
     }, []);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
-        if (drivers.length > 0 || sponsors.length > 0 || admins.length > 0) {
-            combineAllUsers();
-        }
+        combineAllUsers();
     }, [drivers, sponsors, admins]);
 
     if (loading) {
@@ -334,7 +456,7 @@ export default function AdminUserManagement() {
                             </thead>
                             <tbody>
                                 {filteredUsers.map((user) => (
-                                    <tr key={`${user.userType}-${user.UserID}`}>
+                                    <tr key={user.uniqueKey || `${user.userType}-${user.UserID}`}>
                                         <td>
                                             <span className={`badge ${
                                                 user.userType === 'Driver' ? 'bg-primary' :
@@ -373,7 +495,25 @@ export default function AdminUserManagement() {
                                                     </button>
                                                 </>
                                             )}
-                                            {(user.userType === 'Sponsor' || user.userType === 'Admin') && (
+                                            {user.userType === 'Sponsor' && (
+                                                <>
+                                                    <button 
+                                                        className="btn btn-sm btn-outline-primary me-2"
+                                                        onClick={() => handleEditSponsor(user)}
+                                                    >
+                                                        <i className="fas fa-edit me-1"></i>
+                                                        Edit
+                                                    </button>
+                                                    <button 
+                                                        className="btn btn-sm btn-outline-danger"
+                                                        onClick={() => handleRemoveSponsor(user.SponsorUserID, `${user.FirstName} ${user.LastName}`)}
+                                                    >
+                                                        <i className="fas fa-trash me-1"></i>
+                                                        Remove
+                                                    </button>
+                                                </>
+                                            )}
+                                            {user.userType === 'Admin' && (
                                                 <span className="text-muted">
                                                     <i className="fas fa-lock me-1"></i>
                                                     Protected
@@ -549,6 +689,74 @@ export default function AdminUserManagement() {
                                         </button>
                                         <button type="submit" className="btn btn-primary">
                                             Update Driver
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Edit Sponsor Modal */}
+                {showEditSponsorModal && editingSponsor && (
+                    <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Edit Sponsor Information</h5>
+                                    <button type="button" className="btn-close" onClick={() => setShowEditSponsorModal(false)}></button>
+                                </div>
+                                <form onSubmit={handleUpdateSponsor}>
+                                    <div className="modal-body">
+                                        <div className="alert alert-info">
+                                            <strong>Note:</strong> Sponsor ID {editingSponsor.SponsorID} - User ID {editingSponsor.UserID}
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">First Name *</label>
+                                            <input 
+                                                type="text" 
+                                                className="form-control"
+                                                value={editingSponsor.FirstName}
+                                                onChange={(e) => setEditingSponsor({...editingSponsor, FirstName: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">Last Name *</label>
+                                            <input 
+                                                type="text" 
+                                                className="form-control"
+                                                value={editingSponsor.LastName}
+                                                onChange={(e) => setEditingSponsor({...editingSponsor, LastName: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">Email *</label>
+                                            <input 
+                                                type="email" 
+                                                className="form-control"
+                                                value={editingSponsor.Email}
+                                                onChange={(e) => setEditingSponsor({...editingSponsor, Email: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">New Password (leave blank to keep current)</label>
+                                            <input 
+                                                type="password" 
+                                                className="form-control"
+                                                value={editingSponsor.Password}
+                                                onChange={(e) => setEditingSponsor({...editingSponsor, Password: e.target.value})}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="modal-footer">
+                                        <button type="button" className="btn btn-secondary" onClick={() => setShowEditSponsorModal(false)}>
+                                            Cancel
+                                        </button>
+                                        <button type="submit" className="btn btn-primary">
+                                            Update Sponsor
                                         </button>
                                     </div>
                                 </form>

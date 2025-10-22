@@ -367,4 +367,40 @@ router.get("/checkEmail", async (req, res, next) => {
     }
 });
 
-module.exports={router, addNewUser};
+/**
+ * Updates a user's information in the USER database.
+ * @param {object} data - An object containing UserID and fields to update.
+ * @returns {Promise<object>} The result from the database operation.
+ */
+async function updateUser(data) {
+    try {
+        const { UserID, FirstName, LastName, Email, Password, PasswordSalt } = data;
+        
+        if (!UserID) {
+            throw new Error("UserID is required to update user.");
+        }
+
+        let sql = "UPDATE USER SET FirstName = ?, LastName = ?, Email = ?";
+        let values = [FirstName, LastName, Email];
+        
+        // Only update password if provided
+        if (Password && Password.trim() !== '') {
+            sql += ", Password = ?, PasswordSalt = ?";
+            values.push(Password, PasswordSalt || 'updated-salt');
+        }
+        
+        sql += " WHERE UserID = ?";
+        values.push(UserID);
+        
+        console.log(`Updating user with UserID: ${UserID}`);
+        const result = await db.executeQuery(sql, values);
+        
+        console.log("User updated successfully.");
+        return result;
+    } catch (error) {
+        console.error("Failed to update user:", error);
+        throw error;
+    }
+}
+
+module.exports={router, addNewUser, updateUser};
