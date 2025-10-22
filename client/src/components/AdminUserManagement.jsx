@@ -12,8 +12,10 @@ export default function AdminUserManagement() {
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showEditSponsorModal, setShowEditSponsorModal] = useState(false);
+    const [showEditAdminModal, setShowEditAdminModal] = useState(false);
     const [editingDriver, setEditingDriver] = useState(null);
     const [editingSponsor, setEditingSponsor] = useState(null);
+    const [editingAdmin, setEditingAdmin] = useState(null);
     const [newDriver, setNewDriver] = useState({
         FirstName: '',
         LastName: '',
@@ -313,6 +315,101 @@ export default function AdminUserManagement() {
         }
     };
 
+    const handleEditAdmin = (admin) => {
+        setEditingAdmin({
+            ...admin,
+            Password: '',
+            PasswordSalt: 'auto-generated'
+        });
+        setShowEditAdminModal(true);
+    };
+
+    const handleUpdateAdmin = async (e) => {
+        e.preventDefault();
+        
+        try {
+            // Generate salt if password is provided
+            const updateData = {
+                UserID: editingAdmin.UserID,
+                FirstName: editingAdmin.FirstName,
+                LastName: editingAdmin.LastName,
+                Email: editingAdmin.Email
+            };
+
+            // Only include password fields if a new password is provided
+            if (editingAdmin.Password && editingAdmin.Password.trim() !== '') {
+                updateData.Password = editingAdmin.Password;
+                updateData.PasswordSalt = GenerateSalt();
+            }
+
+            console.log('Sending admin update data:', updateData);
+
+            const response = await fetch(`http://localhost:4000/adminAPI/updateAdminUser`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            console.log('Response status:', response.status);
+            
+            if (response.ok) {
+                const responseData = await response.json();
+                console.log('Response data:', responseData);
+                alert('Admin updated successfully!');
+                setShowEditAdminModal(false);
+                setEditingAdmin(null);
+                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllAdmins()]);
+            } else {
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                alert(`Error updating admin (${response.status}): Check console for details`);
+            }
+        } catch (error) {
+            console.error('Network error updating admin:', error);
+            alert(`Network error updating admin: ${error.message}`);
+        }
+    };
+
+    const handleRemoveAdmin = async (adminID, adminName) => {
+        // Get current user to prevent self-deletion
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        // Check if trying to delete self
+        const adminToDelete = admins.find(admin => admin.AdminID === adminID);
+        if (adminToDelete && adminToDelete.UserID === currentUser.UserID) {
+            alert('You cannot delete your own admin account!');
+            return;
+        }
+
+        if (!window.confirm(`Are you sure you want to remove ${adminName} from the system? This action cannot be undone and will remove all admin privileges.`)) {
+            return;
+        }
+
+        try {
+            console.log('Removing admin with AdminID:', adminID);
+
+            const response = await fetch(`http://localhost:4000/adminAPI/removeAdminUser/${adminID}`, {
+                method: 'DELETE'
+            });
+
+            console.log('Delete response status:', response.status);
+            const responseText = await response.text();
+            console.log('Delete response text:', responseText);
+
+            if (response.ok) {
+                alert('Admin removed successfully!');
+                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllAdmins()]);
+            } else {
+                alert(`Error removing admin: ${responseText}`);
+            }
+        } catch (error) {
+            console.error('Error removing admin:', error);
+            alert(`Error removing admin: ${error.message}`);
+        }
+    };
+
     const getSponsorName = (sponsorID) => {
         const sponsor = sponsors.find(s => s.SponsorID === sponsorID);
         return sponsor ? `${sponsor.FirstName} ${sponsor.LastName}` : 'Unknown Sponsor';
@@ -514,10 +611,22 @@ export default function AdminUserManagement() {
                                                 </>
                                             )}
                                             {user.userType === 'Admin' && (
-                                                <span className="text-muted">
-                                                    <i className="fas fa-lock me-1"></i>
-                                                    Protected
-                                                </span>
+                                                <>
+                                                    <button 
+                                                        className="btn btn-sm btn-outline-primary me-2"
+                                                        onClick={() => handleEditAdmin(user)}
+                                                    >
+                                                        <i className="fas fa-edit me-1"></i>
+                                                        Edit
+                                                    </button>
+                                                    <button 
+                                                        className="btn btn-sm btn-outline-danger"
+                                                        onClick={() => handleRemoveAdmin(user.AdminID, `${user.FirstName} ${user.LastName}`)}
+                                                    >
+                                                        <i className="fas fa-trash me-1"></i>
+                                                        Remove
+                                                    </button>
+                                                </>
                                             )}
                                         </td>
                                     </tr>
@@ -764,6 +873,76 @@ export default function AdminUserManagement() {
                         </div>
                     </div>
                 )}
+
+                {/* Edit Admin Modal */}
+                {showEditAdminModal && editingAdmin && (
+                    <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Edit Admin Information</h5>
+                                    <button type="button" className="btn-close" onClick={() => setShowEditAdminModal(false)}></button>
+                                </div>
+                                <form onSubmit={handleUpdateAdmin}>
+                                    <div className="modal-body">
+                                        <div className="alert alert-warning">
+                                            <strong>Warning:</strong> Admin ID {editingAdmin.AdminID} - User ID {editingAdmin.UserID}
+                                            <br />Editing admin accounts should be done carefully.
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">First Name *</label>
+                                            <input 
+                                                type="text" 
+                                                className="form-control"
+                                                value={editingAdmin.FirstName}
+                                                onChange={(e) => setEditingAdmin({...editingAdmin, FirstName: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">Last Name *</label>
+                                            <input 
+                                                type="text" 
+                                                className="form-control"
+                                                value={editingAdmin.LastName}
+                                                onChange={(e) => setEditingAdmin({...editingAdmin, LastName: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">Email *</label>
+                                            <input 
+                                                type="email" 
+                                                className="form-control"
+                                                value={editingAdmin.Email}
+                                                onChange={(e) => setEditingAdmin({...editingAdmin, Email: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">New Password (leave blank to keep current)</label>
+                                            <input 
+                                                type="password" 
+                                                className="form-control"
+                                                value={editingAdmin.Password}
+                                                onChange={(e) => setEditingAdmin({...editingAdmin, Password: e.target.value})}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="modal-footer">
+                                        <button type="button" className="btn btn-secondary" onClick={() => setShowEditAdminModal(false)}>
+                                            Cancel
+                                        </button>
+                                        <button type="submit" className="btn btn-warning">
+                                            Update Admin
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </div>
     );

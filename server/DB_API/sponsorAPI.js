@@ -88,16 +88,28 @@ async function addSponsorUser(data) {
 }
 
 /**
- * Updates a sponsor user's information using userAPI's updateUser function.
+ * Updates a sponsor user's information using the same pattern as driverAPI.
  * @param {object} data - The updated sponsor user data.
  * @returns {Promise<object>} A promise that resolves with the result of the update operation.
  */
 async function updateSponsorUser(data) {
     try {
-        console.log("Updating sponsor user:", data);
+        const { UserID, FirstName, LastName, Email, Password, PasswordSalt } = data;
         
-        // Use userAPI's updateUser function for the USER table update
-        const result = await user.updateUser(data);
+        let sql = "UPDATE USER SET FirstName = ?, LastName = ?, Email = ?";
+        let values = [FirstName, LastName, Email];
+        
+        // Only update password if provided (same as driverAPI)
+        if (Password && Password.trim() !== '') {
+            sql += ", Password = ?, PasswordSalt = ?";
+            values.push(Password, PasswordSalt || 'updated-salt');
+        }
+        
+        sql += " WHERE UserID = ?";
+        values.push(UserID);
+        
+        console.log("Updating sponsor user with UserID:", UserID);
+        const result = await db.executeQuery(sql, values);
         
         // Update the sponsor_user table if SponsorID changed
         if (data.SponsorID) {
