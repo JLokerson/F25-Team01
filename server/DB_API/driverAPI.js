@@ -9,8 +9,7 @@ async function getAllDrivers(){
     try {
         console.log("Reading all driver user info");
 
-        const query = "SELECT DRIVER.DriverID, DRIVER.SponsorID, DRIVER.UserID, USER.FirstName, USER.LastName, USER.Email FROM DRIVER \
-                        INNER JOIN USER ON DRIVER.USERID = USER.USERID;";
+        const query = "call GetDriverInfo();";
         const allDrivers = await db.executeQuery(query);
         console.log("Returning %s Drivers", allDrivers.length);
         return allDrivers;
