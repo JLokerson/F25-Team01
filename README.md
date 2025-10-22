@@ -93,4 +93,5 @@ The server will run on [http://localhost:5000](http://localhost:5000).
 TODO: Find Template for About Page/Login stuff. 
 Make sure that the database cooperates with this setup.  
 
-CURRENT SPRINT: SPRINT 3
+CURRENT SPRINT: SPRINT 4
+
