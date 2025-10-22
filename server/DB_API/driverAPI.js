@@ -34,7 +34,7 @@ async function addDriver(data) {
         // Thank god this doesn't also handle the fucking User entry creation.
         // I could have had to add that to the fucking stored procedure too.
         // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        const sql = "INSERT INTO DRIVER (SponsorID, UserID) VALUES (?, ?)";
+        const sql = "AddDriver(?,?)";
         const adminResult = await db.executeQuery(sql, [sponsorID, newUserId]);
 
         console.log("New driver record created successfully.");
