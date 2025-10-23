@@ -44,13 +44,13 @@ async function addDriver(data) {
 }
 
 /**
- * Updates driver information in the USER table.
+ * Updates driver information in the USER table and DRIVER table.
  * @param {object} data - The driver data to be updated.
  * @returns {Promise<object>} A promise that resolves with the result of the update.
  */
 async function updateDriver(data) {
     try {
-        const { UserID, FirstName, LastName, Email, Password, PasswordSalt } = data;
+        const { UserID, FirstName, LastName, Email, Password, PasswordSalt, SponsorID } = data;
         
         let sql = "UPDATE USER SET FirstName = ?, LastName = ?, Email = ?";
         let values = [FirstName, LastName, Email];
@@ -66,6 +66,14 @@ async function updateDriver(data) {
         
         console.log("Updating driver with UserID:", UserID);
         const result = await db.executeQuery(sql, values);
+        
+        // Update the DRIVER table if SponsorID is provided
+        if (SponsorID) {
+            console.log("Updating driver's SponsorID to:", SponsorID);
+            const driverUpdateSql = "UPDATE DRIVER SET SponsorID = ? WHERE UserID = ?";
+            await db.executeQuery(driverUpdateSql, [SponsorID, UserID]);
+            console.log("Driver's SponsorID updated successfully.");
+        }
         
         console.log("Driver updated successfully.");
         return result;

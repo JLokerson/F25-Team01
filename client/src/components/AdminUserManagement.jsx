@@ -26,6 +26,8 @@ export default function AdminUserManagement() {
     });
     const [search, setSearch] = useState("");
     const [userTypeFilter, setUserTypeFilter] = useState("all");
+    const [dataIssues, setDataIssues] = useState([]);
+    const [showDataCleanup, setShowDataCleanup] = useState(false);
 
     const fetchAllDrivers = async () => {
         try {
@@ -64,29 +66,62 @@ export default function AdminUserManagement() {
     };
 
     const combineAllUsers = () => {
-        const combinedUsers = [
-            ...drivers.map(driver => ({
-                ...driver,
-                userType: 'Driver',
-                displayId: driver.DriverID,
-                sponsorName: getSponsorName(driver.SponsorID),
-                uniqueKey: `Driver-${driver.DriverID}-${driver.UserID}` // Add unique key
-            })),
-            ...sponsors.map(sponsor => ({
-                ...sponsor,
-                userType: 'Sponsor',
-                displayId: sponsor.SponsorID,
-                sponsorName: 'N/A',
-                uniqueKey: `Sponsor-${sponsor.SponsorID}-${sponsor.UserID}` // Add unique key
-            })),
-            ...admins.map(admin => ({
-                ...admin,
-                userType: 'Admin',
-                displayId: admin.AdminID,
-                sponsorName: 'N/A',
-                uniqueKey: `Admin-${admin.AdminID}-${admin.UserID}` // Add unique key
-            }))
-        ];
+        const userMap = new Map(); // Use Map to deduplicate by UserID
+        
+        // Process drivers first
+        drivers.forEach(driver => {
+            const userKey = driver.UserID;
+            if (!userMap.has(userKey)) {
+                userMap.set(userKey, {
+                    ...driver,
+                    userType: 'Driver',
+                    displayId: driver.DriverID,
+                    sponsorName: getSponsorName(driver.SponsorID),
+                    uniqueKey: `Driver-${driver.DriverID}-${driver.UserID}`
+                });
+            } else {
+                // If user already exists, prefer the first role type encountered
+                console.log(`Duplicate user found: UserID ${userKey} already exists as ${userMap.get(userKey).userType}, skipping Driver role`);
+            }
+        });
+
+        // Process sponsors
+        sponsors.forEach(sponsor => {
+            const userKey = sponsor.UserID;
+            if (!userMap.has(userKey)) {
+                userMap.set(userKey, {
+                    ...sponsor,
+                    userType: 'Sponsor',
+                    displayId: sponsor.SponsorID,
+                    sponsorName: 'N/A',
+                    uniqueKey: `Sponsor-${sponsor.SponsorID}-${sponsor.UserID}`
+                });
+            } else {
+                console.log(`Duplicate user found: UserID ${userKey} already exists as ${userMap.get(userKey).userType}, skipping Sponsor role`);
+            }
+        });
+
+        // Process admins
+        admins.forEach(admin => {
+            const userKey = admin.UserID;
+            if (!userMap.has(userKey)) {
+                userMap.set(userKey, {
+                    ...admin,
+                    userType: 'Admin',
+                    displayId: admin.AdminID,
+                    sponsorName: 'N/A',
+                    uniqueKey: `Admin-${admin.AdminID}-${admin.UserID}`
+                });
+            } else {
+                console.log(`Duplicate user found: UserID ${userKey} already exists as ${userMap.get(userKey).userType}, skipping Admin role`);
+            }
+        });
+
+        // Convert Map values back to array
+        const combinedUsers = Array.from(userMap.values());
+        
+        console.log(`Combined ${combinedUsers.length} unique users from ${drivers.length} drivers, ${sponsors.length} sponsors, and ${admins.length} admins`);
+        
         setAllUsers(combinedUsers);
     };
 
@@ -150,8 +185,10 @@ export default function AdminUserManagement() {
                 Email: editingDriver.Email,
                 Password: editingDriver.Password,
                 PasswordSalt: editingDriver.PasswordSalt,
-                SponsorID: editingDriver.SponsorID
+                SponsorID: editingDriver.SponsorID // Make sure this is included
             };
+
+            console.log('Sending driver update data:', updateData); // Debug log
 
             const response = await fetch(`http://localhost:4000/driverAPI/updateDriver`, {
                 method: 'POST',
@@ -167,6 +204,8 @@ export default function AdminUserManagement() {
                 setEditingDriver(null);
                 fetchAllDrivers();
             } else {
+                const errorText = await response.text();
+                console.error('Update error:', errorText);
                 alert('Error updating driver');
             }
         } catch (error) {
@@ -432,6 +471,57 @@ export default function AdminUserManagement() {
         return matchesSearch && matchesFilter;
     });
 
+    const checkDataIntegrity = async () => {
+        try {
+            const response = await fetch(`http://localhost:4000/dataCleanupAPI/identify-issues`);
+            if (response.ok) {
+                const result = await response.json();
+                setDataIssues(result.issues);
+                if (result.totalIssues > 0) {
+                    setShowDataCleanup(true);
+                } else {
+                    alert('No data integrity issues found!');
+                }
+            }
+        } catch (error) {
+            console.error('Error checking data integrity:', error);
+        }
+    };
+
+    const fixDuplicateDrivers = async () => {
+        try {
+            const response = await fetch(`http://localhost:4000/dataCleanupAPI/fix-duplicate-drivers`, {
+                method: 'POST'
+            });
+            if (response.ok) {
+                const result = await response.json();
+                alert(result.message);
+                checkDataIntegrity(); // Refresh issues
+                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllAdmins()]);
+            }
+        } catch (error) {
+            console.error('Error fixing duplicate drivers:', error);
+        }
+    };
+
+    const fixInvalidSponsors = async () => {
+        try {
+            const response = await fetch(`http://localhost:4000/dataCleanupAPI/fix-invalid-sponsors`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ defaultSponsorID: 1 })
+            });
+            if (response.ok) {
+                const result = await response.json();
+                alert(result.message);
+                checkDataIntegrity(); // Refresh issues
+                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllAdmins()]);
+            }
+        } catch (error) {
+            console.error('Error fixing invalid sponsors:', error);
+        }
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllAdmins()]);
@@ -466,14 +556,54 @@ export default function AdminUserManagement() {
             <div className="container mt-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2>User Management</h2>
-                    <button 
-                        className="btn btn-primary"
-                        onClick={() => setShowAddModal(true)}
-                    >
-                        <i className="fas fa-plus me-2"></i>
-                        Add New Driver
-                    </button>
+                    <div>
+                        <button 
+                            className="btn btn-warning me-2"
+                            onClick={checkDataIntegrity}
+                        >
+                            <i className="fas fa-tools me-2"></i>
+                            Check Data Integrity
+                        </button>
+                        <button 
+                            className="btn btn-primary"
+                            onClick={() => setShowAddModal(true)}
+                        >
+                            <i className="fas fa-plus me-2"></i>
+                            Add New Driver
+                        </button>
+                    </div>
                 </div>
+
+                {/* Data Cleanup Section */}
+                {showDataCleanup && dataIssues.length > 0 && (
+                    <div className="alert alert-warning">
+                        <h5><i className="fas fa-exclamation-triangle me-2"></i>Data Integrity Issues Found</h5>
+                        {dataIssues.map((issue, index) => (
+                            <div key={index} className="mb-3">
+                                <strong>{issue.description}:</strong>
+                                <ul>
+                                    {issue.data.slice(0, 3).map((item, i) => (
+                                        <li key={i}>{JSON.stringify(item)}</li>
+                                    ))}
+                                    {issue.data.length > 3 && <li>...and {issue.data.length - 3} more</li>}
+                                </ul>
+                                {issue.type === 'duplicate_drivers' && (
+                                    <button className="btn btn-sm btn-danger me-2" onClick={fixDuplicateDrivers}>
+                                        Fix Duplicate Drivers
+                                    </button>
+                                )}
+                                {issue.type === 'invalid_sponsor_references' && (
+                                    <button className="btn btn-sm btn-danger me-2" onClick={fixInvalidSponsors}>
+                                        Fix Invalid Sponsor References
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                        <button className="btn btn-sm btn-secondary" onClick={() => setShowDataCleanup(false)}>
+                            Hide Issues
+                        </button>
+                    </div>
+                )}
 
                 <div className="row mb-3">
                     <div className="col-md-8">
@@ -520,10 +650,17 @@ export default function AdminUserManagement() {
                             </div>
                             <div className="col-md-3">
                                 <p className="card-text">
-                                    <strong>Total Users:</strong> {allUsers.length}
+                                    <strong>Unique Users:</strong> {allUsers.length}
                                 </p>
                             </div>
                         </div>
+                        {/* Show warning if there are potential duplicates */}
+                        {(drivers.length + sponsors.length + admins.length) > allUsers.length && (
+                            <div className="alert alert-warning mt-2">
+                                <strong>Note:</strong> Some users have multiple roles. Showing {allUsers.length} unique users 
+                                from {drivers.length + sponsors.length + admins.length} total role entries.
+                            </div>
+                        )}
                     </div>
                 </div>
 

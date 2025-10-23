@@ -368,6 +368,43 @@ router.get("/checkEmail", async (req, res, next) => {
 });
 
 /**
+ * Checks for duplicate users in the database based on email
+ * @returns {Promise<Array>} Array of duplicate user entries
+ */
+async function findDuplicateUsers() {
+    try {
+        console.log("Checking for duplicate users in database");
+        
+        const query = `
+            SELECT Email, COUNT(*) as count, GROUP_CONCAT(UserID) as UserIDs
+            FROM USER 
+            GROUP BY Email 
+            HAVING COUNT(*) > 1
+        `;
+        
+        const duplicates = await db.executeQuery(query);
+        console.log(`Found ${duplicates.length} duplicate email entries`);
+        return duplicates;
+    } catch (error) {
+        console.error("Failed to check for duplicate users:", error);
+        throw error;
+    }
+}
+
+router.get("/findDuplicates", async (req, res, next) => {
+    try {
+        const duplicates = await findDuplicateUsers();
+        res.json({ 
+            duplicates, 
+            message: `Found ${duplicates.length} duplicate email entries` 
+        });
+    } catch (error) {
+        console.error('Error finding duplicates:', error);
+        res.status(500).json({ message: 'Error checking for duplicates' });
+    }
+});
+
+/**
  * Updates a user's information in the USER database.
  * @param {object} data - An object containing UserID and fields to update.
  * @returns {Promise<object>} The result from the database operation.
@@ -403,4 +440,4 @@ async function updateUser(data) {
     }
 }
 
-module.exports={router, addNewUser, updateUser};
+module.exports={router, addNewUser, updateUser, findDuplicateUsers};
