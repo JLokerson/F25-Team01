@@ -8,7 +8,7 @@ const db = require('./db'); //shared database connection pool
 async function getAllUsers(){
     try{
         console.log("Reading all USER info");
-        const allUsers = await db.executeQuery("SELECT * from USER");
+        const allUsers = await db.executeQuery("SELECT * from USER where ActiveAccount = 1");
         console.log("Returning %s Users", allUsers.length);
         // console.log(allUsers); // for debugging
         // console.log("__________________");
