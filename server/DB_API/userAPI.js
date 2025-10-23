@@ -167,6 +167,22 @@ async function loginUser(data) {
     }
 }
 
+
+// Replacement for removeDriver, removeDriver left for consistency.
+async function ToggleAccountActivity(UserID) {
+    try {        
+        // Mark account as disabled on User table
+        const deleteQuery = "call ToggleAccountActivity(?)";
+        await db.executeQuery(deleteQuery, [UserID]);
+        
+        console.log("User disabled/enabled successfully.");
+        return result;
+    } catch (error) {
+        console.error("Failed to toggle user:", error);
+        throw error;
+    }
+}
+
 var express = require("express");
 var router = express.Router();
 
@@ -439,5 +455,17 @@ async function updateUser(data) {
         throw error;
     }
 }
+
+router.post("/toggleAccountActivity/:UserID", async (req, res, next) => {
+    const UserID = req.params.UserID;
+    console.log('Received disable request for user ID:', UserID);
+    try {
+        const result = await toggleAccountActivity(UserID);
+        res.status(200).json({ message: 'User activity toggled successfully!' });
+    } catch (error) {
+        console.error('Error toggling activity for user:', error);
+        res.status(500).send('Error toggling activity for user.');
+    }
+});
 
 module.exports={router, addNewUser, updateUser, findDuplicateUsers};

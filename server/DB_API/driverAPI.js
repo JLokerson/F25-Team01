@@ -210,7 +210,7 @@ router.delete("/removeDriver/:driverID", async (req, res, next) => {
     }
 });
 
-router.delete("/toggleDriverActivity/:driverID", async (req, res, next) => {
+router.post("/toggleDriverActivity/:driverID", async (req, res, next) => {
     const driverID = req.params.driverID;
     console.log('Received disable request for driver ID:', driverID);
     try {
