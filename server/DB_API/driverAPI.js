@@ -9,8 +9,7 @@ async function getAllDrivers(){
     try {
         console.log("Reading all driver user info");
 
-        const query = "SELECT DRIVER.DriverID, DRIVER.SponsorID, DRIVER.UserID, USER.FirstName, USER.LastName, USER.Email FROM DRIVER \
-                        INNER JOIN USER ON DRIVER.USERID = USER.USERID;";
+        const query = "call GetDriverInfo();";
         const allDrivers = await db.executeQuery(query);
         console.log("Returning %s Drivers", allDrivers.length);
         return allDrivers;
@@ -32,7 +31,10 @@ async function addDriver(data) {
         const newUserId = userResult.insertId;
 
         console.log("Adding new driver with UserID:", newUserId);
-        const sql = "INSERT INTO DRIVER (SponsorID, UserID) VALUES (?, ?)";
+        // Thank god this doesn't also handle the fucking User entry creation.
+        // I could have had to add that to the fucking stored procedure too.
+        // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        const sql = "call AddDriver(?,?)";
         const adminResult = await db.executeQuery(sql, [sponsorID, newUserId]);
 
         console.log("New driver record created successfully.");
@@ -119,6 +121,33 @@ async function removeDriver(driverID) {
 }
 
 
+// Replacement for removeDriver, removeDriver left for consistency.
+async function toggleDriverActivity(driverID) {
+    try {
+        // First get the UserID associated with this driver
+        const getUserQuery = "SELECT UserID FROM DRIVER WHERE DriverID = ?";
+        const driverResult = await db.executeQuery(getUserQuery, [driverID]);
+        
+        if (driverResult.length === 0) {
+            throw new Error("Driver not found");
+        }
+        
+        const userID = driverResult[0].UserID;
+        
+        // Mark account as disabled on User table
+        console.log("Toggling activity of driver with DriverID:", driverID);
+        const deleteDriverQuery = "call ToggleAccountActivity(?)";
+        await db.executeQuery(deleteDriverQuery, [driverID]);
+        
+        console.log("Driver disabled/enabled successfully.");
+        return result;
+    } catch (error) {
+        console.error("Failed to toggle driver:", error);
+        throw error;
+    }
+}
+
+
 var express = require("express");
 var router = express.Router();
 
@@ -178,6 +207,18 @@ router.delete("/removeDriver/:driverID", async (req, res, next) => {
     } catch (error) {
         console.error('Error removing driver:', error);
         res.status(500).send('Error removing driver.');
+    }
+});
+
+router.delete("/toggleDriverActivity/:driverID", async (req, res, next) => {
+    const driverID = req.params.driverID;
+    console.log('Received disable request for driver ID:', driverID);
+    try {
+        const result = await toggleDriverActivity(driverID);
+        res.status(200).json({ message: 'Driver activity toggled successfully!' });
+    } catch (error) {
+        console.error('Error toggling activity for driver:', error);
+        res.status(500).send('Error toggling activity for driver.');
     }
 });
 
