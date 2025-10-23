@@ -10,7 +10,7 @@ async function getAllAdmins(){
         console.log("Reading all admin user info");
 
         const query = "SELECT ADMIN.AdminID, ADMIN.UserID, USER.FirstName, USER.LastName, USER.Email FROM ADMIN \
-                        INNER JOIN USER ON ADMIN.USERID = USER.USERID;";
+                        INNER JOIN USER ON ADMIN.USERID = USER.USERID WHERE USER.ActiveAccount = 1;";
         const allAdmins = await db.executeQuery(query);
         console.log("Returning %s Admins", allAdmins.length);
         return allAdmins;
