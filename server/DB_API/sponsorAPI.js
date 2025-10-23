@@ -54,7 +54,7 @@ async function getAllSponsorUsers(){
 
         const query = "SELECT SPONSOR_USER.SponsorUserID, SPONSOR_USER.SponsorID,\
                         SPONSOR_USER.UserID, USER.FirstName, USER.LastName, USER.Email FROM SPONSOR_USER \
-                        INNER JOIN USER ON SPONSOR_USER.USERID = USER.USERID;";
+                        INNER JOIN USER ON SPONSOR_USER.USERID = USER.USERID WHERE ActiveAccount = 1;";
         const allSponsorUsers = await db.executeQuery(query);
         console.log("Returning %s Sponsor Users", allSponsorUsers.length);
         return allSponsorUsers;
