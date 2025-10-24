@@ -6,6 +6,7 @@ import { GenerateSalt } from './MiscellaneousParts/HashPass';
 export default function AdminUserManagement() {
     const [drivers, setDrivers] = useState([]);
     const [sponsors, setSponsors] = useState([]);
+    const [sponsorUsers, setSponsorUsers] = useState([]); // Add this line
     const [admins, setAdmins] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -41,13 +42,27 @@ export default function AdminUserManagement() {
 
     const fetchAllSponsors = async () => {
         try {
-            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+            // Get sponsor companies for driver dropdown
+            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
             if (response.ok) {
                 const allSponsors = await response.json();
                 setSponsors(allSponsors);
             }
         } catch (error) {
             console.error('Error fetching sponsors:', error);
+        }
+    };
+
+    const fetchAllSponsorUsers = async () => {
+        try {
+            // Get sponsor users for user management
+            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+            if (response.ok) {
+                const allSponsorUsers = await response.json();
+                setSponsorUsers(allSponsorUsers);
+            }
+        } catch (error) {
+            console.error('Error fetching sponsor users:', error);
         }
     };
 
@@ -73,12 +88,12 @@ export default function AdminUserManagement() {
                 uniqueKey: `Driver-${driver.DriverID}-${driver.UserID}`,
                 ActiveAccount: driver.ActiveAccount !== undefined ? driver.ActiveAccount : 1
             })),
-            ...sponsors.map(sponsor => ({
+            ...sponsorUsers.map(sponsor => ({
                 ...sponsor,
                 userType: 'Sponsor',
-                displayId: sponsor.SponsorID,
+                displayId: sponsor.SponsorUserID,
                 sponsorName: 'N/A',
-                uniqueKey: `Sponsor-${sponsor.SponsorID}-${sponsor.UserID}`,
+                uniqueKey: `Sponsor-${sponsor.SponsorUserID}-${sponsor.UserID}`,
                 ActiveAccount: sponsor.ActiveAccount !== undefined ? sponsor.ActiveAccount : 1
             })),
             ...admins.map(admin => ({
@@ -428,29 +443,38 @@ export default function AdminUserManagement() {
 
     const getSponsorName = (sponsorID) => {
         const sponsor = sponsors.find(s => s.SponsorID === sponsorID);
-        return sponsor ? `${sponsor.FirstName} ${sponsor.LastName}` : 'Unknown Sponsor';
+        // Now this will return the company name instead of person name
+        return sponsor ? sponsor.Name : 'Unknown Sponsor';
     };
 
     const filteredUsers = allUsers.filter(user => {
         const query = search.toLowerCase();
+        
+        // Safely access properties with null checks
+        const firstName = user.FirstName ? user.FirstName.toLowerCase() : '';
+        const lastName = user.LastName ? user.LastName.toLowerCase() : '';
+        const email = user.Email ? user.Email.toLowerCase() : '';
+        const sponsorName = user.sponsorName ? user.sponsorName.toLowerCase() : '';
+        const userType = user.userType ? user.userType.toLowerCase() : '';
+        
         const matchesSearch = (
-            user.FirstName.toLowerCase().includes(query) ||
-            user.LastName.toLowerCase().includes(query) ||
-            user.Email.toLowerCase().includes(query) ||
-            (user.sponsorName && user.sponsorName.toLowerCase().includes(query)) ||
+            firstName.includes(query) ||
+            lastName.includes(query) ||
+            email.includes(query) ||
+            sponsorName.includes(query) ||
             String(user.displayId).includes(query) ||
             String(user.UserID).includes(query) ||
-            user.userType.toLowerCase().includes(query)
+            userType.includes(query)
         );
         
-        const matchesFilter = userTypeFilter === "all" || user.userType.toLowerCase() === userTypeFilter;
+        const matchesFilter = userTypeFilter === "all" || userType === userTypeFilter;
         
         return matchesSearch && matchesFilter;
     });
 
     useEffect(() => {
         const fetchData = async () => {
-            await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllAdmins()]);
+            await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllSponsorUsers(), fetchAllAdmins()]);
             setLoading(false);
         };
         fetchData();
@@ -459,7 +483,7 @@ export default function AdminUserManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         combineAllUsers();
-    }, [drivers, sponsors, admins]);
+    }, [drivers, sponsors, sponsorUsers, admins]);
 
     if (loading) {
         return (
@@ -559,7 +583,6 @@ export default function AdminUserManagement() {
                             <thead className="table-dark">
                                 <tr>
                                     <th>User Type</th>
-                                    <th>Type ID</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Sponsor</th>
@@ -582,7 +605,6 @@ export default function AdminUserManagement() {
                                                 <span className="badge bg-danger ms-1">Inactive</span>
                                             )}
                                         </td>
-                                        <td>{user.displayId}</td>
                                         <td>{user.FirstName} {user.LastName}</td>
                                         <td>{user.Email}</td>
                                         <td>
