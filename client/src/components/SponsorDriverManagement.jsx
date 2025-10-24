@@ -150,25 +150,26 @@ export default function SponsorDriverManagement() {
         }
     };
 
-    const handleRemoveDriver = async (driverID, driverName) => {
-        if (!window.confirm(`Are you sure you want to remove ${driverName} from the program? This action cannot be undone.`)) {
+    const handleRemoveDriver = async (driverID, driverName, isActive) => {
+        const action = isActive ? 'deactivate' : 'reactivate';
+        if (!window.confirm(`Are you sure you want to ${action} ${driverName} from the program? This will ${isActive ? 'disable' : 'enable'} their access.`)) {
             return;
         }
 
         try {
-            const response = await fetch(`http://localhost:4000/driverAPI/removeDriver/${driverID}`, {
-                method: 'DELETE'
+            const response = await fetch(`http://localhost:4000/driverAPI/toggleDriverActivity/${driverID}`, {
+                method: 'POST'
             });
 
             if (response.ok) {
-                alert('Driver removed successfully!');
+                alert(`Driver ${action}d successfully!`);
                 fetchDriversForSponsor(sponsorInfo.SponsorID);
             } else {
-                alert('Error removing driver');
+                alert(`Error ${action}ing driver`);
             }
         } catch (error) {
-            console.error('Error removing driver:', error);
-            alert('Error removing driver');
+            console.error(`Error ${action}ing driver:`, error);
+            alert(`Error ${action}ing driver`);
         }
     };
 
@@ -277,9 +278,14 @@ export default function SponsorDriverManagement() {
                             </thead>
                             <tbody>
                                 {filteredDrivers.map((driver) => (
-                                    <tr key={driver.DriverID}>
+                                    <tr key={driver.DriverID} className={driver.ActiveAccount === 0 ? 'table-secondary' : ''}>
                                         <td>{driver.DriverID}</td>
-                                        <td>{driver.FirstName} {driver.LastName}</td>
+                                        <td>
+                                            {driver.FirstName} {driver.LastName}
+                                            {driver.ActiveAccount === 0 && (
+                                                <span className="badge bg-danger ms-2">Inactive</span>
+                                            )}
+                                        </td>
                                         <td>{driver.Email}</td>
                                         <td>{driver.UserID}</td>
                                         <td>
@@ -291,11 +297,11 @@ export default function SponsorDriverManagement() {
                                                 Edit
                                             </button>
                                             <button 
-                                                className="btn btn-sm btn-outline-danger"
-                                                onClick={() => handleRemoveDriver(driver.DriverID, `${driver.FirstName} ${driver.LastName}`)}
+                                                className={`btn btn-sm ${driver.ActiveAccount === 1 ? 'btn-outline-warning' : 'btn-outline-success'}`}
+                                                onClick={() => handleRemoveDriver(driver.DriverID, `${driver.FirstName} ${driver.LastName}`, driver.ActiveAccount === 1)}
                                             >
-                                                <i className="fas fa-trash me-1"></i>
-                                                Remove
+                                                <i className={`fas ${driver.ActiveAccount === 1 ? 'fa-ban' : 'fa-check'} me-1`}></i>
+                                                {driver.ActiveAccount === 1 ? 'Deactivate' : 'Reactivate'}
                                             </button>
                                         </td>
                                     </tr>

@@ -9,9 +9,28 @@ async function getAllAdmins(){
     try {
         console.log("Reading all admin user info");
 
-        const query = "SELECT ADMIN.AdminID, ADMIN.UserID, USER.FirstName, USER.LastName, USER.Email FROM ADMIN \
-                        INNER JOIN USER ON ADMIN.USERID = USER.USERID;";
+        // Use direct query to ensure we get all fields including ActiveAccount
+        const query = `
+            SELECT 
+                a.AdminID,
+                a.UserID,
+                u.FirstName,
+                u.LastName,
+                u.Email,
+                u.Password,
+                u.PasswordSalt,
+                u.UserType,
+                u.LastLogin,
+                COALESCE(u.ActiveAccount, 1) as ActiveAccount
+            FROM ADMIN a
+            JOIN USER u ON a.UserID = u.UserID
+            ORDER BY a.AdminID
+        `;
+        
         const allAdmins = await db.executeQuery(query);
+        console.log("Direct query returned:", allAdmins.length, "admins");
+        console.log("Sample admin record:", allAdmins[0] ? JSON.stringify(allAdmins[0], null, 2) : "No admins found");
+        
         console.log("Returning %s Admins", allAdmins.length);
         return allAdmins;
     } catch (error) {

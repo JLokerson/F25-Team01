@@ -52,11 +52,27 @@ async function getAllSponsorUsers(){
     try {
         console.log("Reading all sponsor user info");
 
-        const query = "SELECT SPONSOR_USER.SponsorUserID, SPONSOR_USER.SponsorID,\
-                        SPONSOR_USER.UserID, USER.FirstName, USER.LastName, USER.Email FROM SPONSOR_USER \
-                        INNER JOIN USER ON SPONSOR_USER.USERID = USER.USERID;";
+        const query = `
+            SELECT 
+                SPONSOR_USER.SponsorUserID, 
+                SPONSOR_USER.SponsorID,
+                SPONSOR_USER.UserID, 
+                USER.FirstName, 
+                USER.LastName, 
+                USER.Email,
+                USER.Password,
+                USER.PasswordSalt,
+                USER.UserType,
+                USER.LastLogin,
+                COALESCE(USER.ActiveAccount, 1) as ActiveAccount
+            FROM SPONSOR_USER 
+            INNER JOIN USER ON SPONSOR_USER.USERID = USER.USERID
+            ORDER BY SPONSOR_USER.SponsorUserID
+        `;
+        
         const allSponsorUsers = await db.executeQuery(query);
         console.log("Returning %s Sponsor Users", allSponsorUsers.length);
+        console.log("Sample sponsor user record:", allSponsorUsers[0] ? JSON.stringify(allSponsorUsers[0], null, 2) : "No sponsor users found");
         return allSponsorUsers;
     } catch (error) {
         console.error("Failed to get all sponsor users: ", error);
