@@ -94,4 +94,3 @@ TODO: Find Template for About Page/Login stuff.
 Make sure that the database cooperates with this setup.  
 
 CURRENT SPRINT: SPRINT 7
-
