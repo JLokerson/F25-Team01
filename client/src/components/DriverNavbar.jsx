@@ -10,18 +10,20 @@ export default function DriverNavbar() {
     const firstName = user?.FirstName || 'Driver';
     const [showImpostorModal, setShowImpostorModal] = useState(false);
     
-    // Check if admin is in impostor mode
+    // Check if admin or sponsor is in impostor mode
     const impostorMode = localStorage.getItem('impostorMode');
-    const isAdminImpostor = impostorMode && localStorage.getItem('impostorType') === 'driver';
+    const isAdminImpostor = impostorMode && localStorage.getItem('impostorType') === 'driver' && !localStorage.getItem('originalUserType');
+    const isSponsorImpostor = impostorMode && localStorage.getItem('impostorType') === 'driver' && localStorage.getItem('originalUserType') === 'sponsor';
 
     // Prevent navigation back to protected pages after logout
     const handleLogout = () => {
         localStorage.removeItem('user');
         // Clear impostor mode on logout
-        if (isAdminImpostor) {
+        if (isAdminImpostor || isSponsorImpostor) {
             localStorage.removeItem('impostorMode');
             localStorage.removeItem('impostorType');
             localStorage.removeItem('impostorSponsorOrg');
+            localStorage.removeItem('originalUserType');
         }
         window.history.pushState(null, '', window.location.href);
         window.onpopstate = function () {
@@ -35,10 +37,17 @@ export default function DriverNavbar() {
     };
 
     const handleExitImpostorMode = () => {
-        localStorage.removeItem('impostorMode');
-        localStorage.removeItem('impostorType');
-        localStorage.removeItem('impostorSponsorOrg');
-        navigate('/adminhome', { replace: true });
+        if (isAdminImpostor) {
+            localStorage.removeItem('impostorMode');
+            localStorage.removeItem('impostorType');
+            localStorage.removeItem('impostorSponsorOrg');
+            navigate('/adminhome', { replace: true });
+        } else if (isSponsorImpostor) {
+            localStorage.removeItem('impostorMode');
+            localStorage.removeItem('impostorType');
+            localStorage.removeItem('originalUserType');
+            navigate('/SponsorHome', { replace: true });
+        }
     };
 
     const handleSwitchImpostorMode = () => {
@@ -66,9 +75,9 @@ export default function DriverNavbar() {
 
     return (
         <>
-            <nav className="driver-navbar navbar navbar-expand-lg navbar-light bg-light">
+            <nav className="driver-navbar navbar navbar-expand-lg navbar-light bg-primary">
                 <div className="container-fluid">
-                    <Link className="navbar-brand d-flex align-items-center" to="/DriverHome">
+                    <Link className="navbar-brand d-flex align-items-center text-white" to="/DriverHome">
                         <img src="https://wallpaperaccess.com/full/2723826.jpg" alt="Network Drivers" className="navbar-logo me-2" style={{width: '40px', height: '40px', objectFit: 'cover'}} />
                         <span className="fw-bold">Driver Home</span>
                     </Link>
@@ -79,35 +88,30 @@ export default function DriverNavbar() {
                     <div className="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                             <li className="nav-item">
-                                <Link className="nav-link" to="/DriverHome">Home</Link>
+                                <Link className="nav-link text-white" to="/DriverHome">Home</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to="/DriverProfile">Profile</Link>
+                                <Link className="nav-link text-white" to="/DriverProfile">Profile</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to="/products">Catalog</Link>
+                                <Link className="nav-link text-white" to="/products">Catalog</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to="/drivercart">Cart</Link>
+                                <Link className="nav-link text-white" to="/drivercart">Cart</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to="#">My Orders</Link>
+                                <Link className="nav-link text-white" to="#">My Orders</Link>
                             </li>
                         </ul>
                         <div className="d-flex align-items-center">
-                            {isAdminImpostor && (
+                            {(isAdminImpostor || isSponsorImpostor) && (
                                 <>
                                     <div className="alert alert-warning py-1 px-2 mb-0 me-2 d-flex align-items-center" style={{fontSize: '0.875rem'}}>
                                         <i className="fas fa-user-secret me-2"></i>
-                                        <strong>Admin Impostor Mode: Driver</strong>
+                                        <strong>
+                                            {isAdminImpostor ? 'Admin' : 'Sponsor'} Impostor Mode: Driver
+                                        </strong>
                                     </div>
-                                    <button 
-                                        className="btn btn-secondary btn-sm me-1" 
-                                        onClick={handleSwitchImpostorMode}
-                                        title="Switch Impostor Mode"
-                                    >
-                                        Switch
-                                    </button>
                                     <button 
                                         className="btn btn-danger btn-sm me-2" 
                                         onClick={handleExitImpostorMode}
@@ -117,10 +121,10 @@ export default function DriverNavbar() {
                                     </button>
                                 </>
                             )}
-                            <span className="navbar-text me-3">
+                            <span className="navbar-text text-white me-3">
                                 Hello, {firstName}!
                             </span>
-                            <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
+                            <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
                                 Logout
                             </button>
                         </div>

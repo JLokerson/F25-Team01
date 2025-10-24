@@ -3,26 +3,30 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '../App.css';
 import { Link, useNavigate } from 'react-router-dom';
 import ImpostorModeModal from './ImpostorModeModal';
+import SponsorImpostorModeModal from './SponsorImpostorModeModal';
 
 export default function SponsorNavbar() {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const firstName = user?.FirstName || 'Sponsor';
     const [showImpostorModal, setShowImpostorModal] = useState(false);
+    const [showSponsorImpostorModal, setSponsorImpostorModeModal] = useState(false);
     
     // Check if admin is in impostor mode
     const impostorMode = localStorage.getItem('impostorMode');
     const isAdminImpostor = impostorMode && localStorage.getItem('impostorType') === 'sponsor';
+    const isSponsorImpostor = impostorMode && localStorage.getItem('impostorType') === 'driver' && localStorage.getItem('originalUserType') === 'sponsor';
     const sponsorOrg = localStorage.getItem('impostorSponsorOrg') || 'Generic Sponsor';
 
     // prevent navigation back to protected pages after logout
     const handleLogout = () => {
         localStorage.removeItem('user');
         // Clear impostor mode on logout
-        if (isAdminImpostor) {
+        if (isAdminImpostor || isSponsorImpostor) {
             localStorage.removeItem('impostorMode');
             localStorage.removeItem('impostorType');
             localStorage.removeItem('impostorSponsorOrg');
+            localStorage.removeItem('originalUserType');
         }
         window.history.pushState(null, '', window.location.href);
         window.onpopstate = function () {
@@ -32,14 +36,29 @@ export default function SponsorNavbar() {
     };
 
     const handleExitImpostorMode = () => {
-        localStorage.removeItem('impostorMode');
-        localStorage.removeItem('impostorType');
-        localStorage.removeItem('impostorSponsorOrg');
-        navigate('/adminhome', { replace: true });
+        if (isAdminImpostor) {
+            localStorage.removeItem('impostorMode');
+            localStorage.removeItem('impostorType');
+            localStorage.removeItem('impostorSponsorOrg');
+            navigate('/adminhome', { replace: true });
+        } else if (isSponsorImpostor) {
+            localStorage.removeItem('impostorMode');
+            localStorage.removeItem('impostorType');
+            localStorage.removeItem('originalUserType');
+            navigate('/SponsorHome', { replace: true });
+        }
     };
 
     const handleSwitchImpostorMode = () => {
         setShowImpostorModal(true);
+    };
+
+    const handleOpenSponsorImpostorMode = () => {
+        setSponsorImpostorModeModal(true);
+    };
+
+    const handleCloseSponsorImpostorModal = () => {
+        setSponsorImpostorModeModal(false);
     };
 
     const handleCloseImpostorModal = () => {
@@ -59,6 +78,15 @@ export default function SponsorNavbar() {
         } else if (type === 'sponsor') {
             navigate('/SponsorHome', { replace: true });
         }
+    };
+
+    const handleSponsorImpostorModeSet = (type) => {
+        localStorage.setItem('impostorMode', 'true');
+        localStorage.setItem('impostorType', type);
+        localStorage.setItem('originalUserType', 'sponsor');
+        setSponsorImpostorModeModal(false);
+        // Navigate to driver home
+        navigate('/DriverHome', { replace: true });
     };
  
     return (
@@ -114,6 +142,16 @@ export default function SponsorNavbar() {
                                     </button>
                                 </>
                             )}
+                            {!isAdminImpostor && (
+                                <button 
+                                    className="btn btn-warning btn-sm me-2" 
+                                    onClick={handleOpenSponsorImpostorMode}
+                                    title="Enter Driver Impostor Mode"
+                                >
+                                    <i className="fas fa-user-secret me-1"></i>
+                                    Impostor Mode
+                                </button>
+                            )}
                             <span className="navbar-text me-3">
                                 Hello, {firstName}!
                             </span>
@@ -129,6 +167,12 @@ export default function SponsorNavbar() {
                 show={showImpostorModal}
                 onClose={handleCloseImpostorModal}
                 onSetImpostorMode={handleImpostorModeSet}
+            />
+            
+            <SponsorImpostorModeModal
+                show={showSponsorImpostorModal}
+                onClose={handleCloseSponsorImpostorModal}
+                onSetImpostorMode={handleSponsorImpostorModeSet}
             />
         </>
     );
