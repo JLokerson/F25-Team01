@@ -506,13 +506,6 @@ export default function AdminUserManagement() {
             <div className="container mt-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2>User Management</h2>
-                    <button 
-                        className="btn btn-primary"
-                        onClick={() => setShowAddModal(true)}
-                    >
-                        <i className="fas fa-plus me-2"></i>
-                        Add New Driver
-                    </button>
                 </div>
 
                 <div className="row mb-3">
