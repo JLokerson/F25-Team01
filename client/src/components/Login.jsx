@@ -139,10 +139,10 @@ export default function Login() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center">
+    <div className="vh-100 vw-100 d-flex justify-content-center align-items-center">
       <div
-        className="card p-4 shadow w-100 h-100 d-flex flex-column justify-content-between"
-        style={{ maxWidth: '32em', height: '28em' }}
+        className="card p-4 shadow d-flex flex-column justify-content-between"
+        style={{ maxWidth: '32em', height: '28em', width: '100%' }}
       >
         <h1 className="mb-4 text-center">Login</h1>
         <form onSubmit={handleSubmit}>
