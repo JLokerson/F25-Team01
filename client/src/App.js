@@ -22,6 +22,7 @@ import DriverOrderConfirmation from './components/DriverOrderConfirmation';
 import Home from './components/Home';
 import Testing from './components/Testing.jsx';
 import { CookiesProvider, useCookies } from 'react-cookie';
+import DriverApplication from './components/DriverApplication';
 
 function AppContent() {
   const location = useLocation();
@@ -64,6 +65,7 @@ function AppContent() {
         <Route path="/driverprofile" element={<DriverProfile />} />
         <Route path="/drivercart" element={<DriverCart />} />
         <Route path="/driverorderconfirmation" element={<DriverOrderConfirmation />} />
+        <Route path="/driver-application" element={<DriverApplication />} />
 
         {/* Shared pages */}
 

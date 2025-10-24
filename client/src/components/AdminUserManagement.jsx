@@ -220,7 +220,7 @@ export default function AdminUserManagement() {
             if (response.ok) {
                 alert(`Driver ${action}d successfully!`);
                 // Refresh all data to ensure proper state sync
-                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllAdmins()]);
+                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllSponsorUsers(), fetchAllAdmins()]);
             } else {
                 const responseText = await response.text();
                 console.error('Server response:', responseText);
@@ -310,7 +310,7 @@ export default function AdminUserManagement() {
                 alert('Sponsor updated successfully!');
                 setShowEditSponsorModal(false);
                 setEditingSponsor(null);
-                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllAdmins()]);
+                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllSponsorUsers(), fetchAllAdmins()]);
             } else {
                 const errorText = await response.text();
                 console.error('Error response:', errorText);
@@ -337,7 +337,7 @@ export default function AdminUserManagement() {
             if (response.ok) {
                 alert(`Sponsor ${action}d successfully!`);
                 // Refresh all data to ensure proper state sync
-                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllAdmins()]);
+                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllSponsorUsers(), fetchAllAdmins()]);
             } else {
                 const responseText = await response.text();
                 console.error('Server response:', responseText);
@@ -394,7 +394,7 @@ export default function AdminUserManagement() {
                 alert('Admin updated successfully!');
                 setShowEditAdminModal(false);
                 setEditingAdmin(null);
-                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllAdmins()]);
+                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllSponsorUsers(), fetchAllAdmins()]);
             } else {
                 const errorText = await response.text();
                 console.error('Error response:', errorText);
@@ -429,7 +429,7 @@ export default function AdminUserManagement() {
             if (response.ok) {
                 alert(`Admin ${action}d successfully!`);
                 // Refresh all data to ensure proper state sync
-                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllAdmins()]);
+                await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllSponsorUsers(), fetchAllAdmins()]);
             } else {
                 const responseText = await response.text();
                 console.error('Server response:', responseText);
@@ -603,7 +603,9 @@ export default function AdminUserManagement() {
                                         <td>
                                             {user.userType === 'Driver' 
                                                 ? `${user.sponsorName} (ID: ${user.SponsorID})`
-                                                : user.sponsorName
+                                                : user.userType === 'Sponsor' && user.SponsorID
+                                                    ? `${getSponsorName(user.SponsorID)} (ID: ${user.SponsorID})`
+                                                    : user.sponsorName
                                             }
                                         </td>
                                         <td>{user.UserID}</td>
@@ -883,6 +885,25 @@ export default function AdminUserManagement() {
                                                 onChange={(e) => setEditingSponsor({...editingSponsor, Email: e.target.value})}
                                                 required
                                             />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">Sponsor Organization *</label>
+                                            <select 
+                                                className="form-control"
+                                                value={editingSponsor.SponsorID}
+                                                onChange={(e) => setEditingSponsor({...editingSponsor, SponsorID: e.target.value})}
+                                                required
+                                            >
+                                                <option value="">Select a sponsor organization...</option>
+                                                {sponsors.map(sponsor => (
+                                                    <option key={sponsor.SponsorID} value={sponsor.SponsorID}>
+                                                        {sponsor.Name} (ID: {sponsor.SponsorID})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <small className="form-text text-muted">
+                                                This determines which sponsor organization this user represents.
+                                            </small>
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-label">New Password (leave blank to keep current)</label>

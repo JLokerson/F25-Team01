@@ -80,6 +80,37 @@ async function addDriver(data) {
 }
 
 /**
+ * Adds an existing user to the DRIVER table with the specified sponsor.
+ * @param {object} data - The data containing UserID and SponsorID.
+ * @returns {Promise<object>} A promise that resolves with the result of the driver table insertion.
+ */
+async function addExistingUserAsDriver(data) {
+    try {
+        const { UserID, SponsorID } = data;
+        
+        console.log("Adding existing user to DRIVER table - UserID:", UserID, "SponsorID:", SponsorID);
+        
+        // Check if user is already a driver for this sponsor
+        const checkExistingQuery = "SELECT DriverID FROM DRIVER WHERE UserID = ? AND SponsorID = ?";
+        const existingDriver = await db.executeQuery(checkExistingQuery, [UserID, SponsorID]);
+        
+        if (existingDriver.length > 0) {
+            throw new Error('User is already a driver for this sponsor');
+        }
+        
+        // Use the AddDriver stored procedure with existing UserID
+        const sql = "call AddDriver(?,?)";
+        const result = await db.executeQuery(sql, [SponsorID, UserID]);
+        
+        console.log("Existing user added as driver successfully.");
+        return result;
+    } catch (error) {
+        console.error("Failed to add existing user as driver:", error);
+        throw error;
+    }
+}
+
+/**
  * Updates driver information in the USER table and DRIVER table.
  * @param {object} data - The driver data to be updated.
  * @returns {Promise<object>} A promise that resolves with the result of the update.
@@ -189,6 +220,12 @@ async function toggleDriverActivity(driverID) {
 var express = require("express");
 var router = express.Router();
 
+// Add debugging middleware like userAPI has
+router.use((req, res, next) => {
+    console.log('driverAPI router middleware hit:', req.method, req.originalUrl);
+    next();
+});
+
 // Ensure JSON body parsing for all routes in this router
 router.use(express.json());
 
@@ -211,6 +248,30 @@ router.post("/addDriver", async (req, res, next) => {
         res.status(200).json({ message: 'Driver user added successfully!', id: result.insertId });
     } catch (error) {
         res.status(500).send('Error adding driver user.');
+    }
+});
+
+router.post("/addExistingUserAsDriver", async (req, res, next) => {
+    console.log('=== POST /addExistingUserAsDriver route hit ===');
+    console.log('Request method:', req.method);
+    console.log('Request URL:', req.url);
+    console.log('Request body:', req.body);
+    console.log('Request query:', req.query);
+    
+    // Prefer body, fallback to query for compatibility
+    const data = (req.body && Object.keys(req.body).length > 0) ? req.body : req.query;
+    console.log('Received POST data for adding existing user as driver: ', data);
+    
+    if (!data.UserID || !data.SponsorID) {
+        return res.status(400).json({ message: 'UserID and SponsorID are required' });
+    }
+    
+    try {
+        const result = await addExistingUserAsDriver(data);
+        res.status(200).json({ message: 'User added as driver successfully!', result: result });
+    } catch (error) {
+        console.error('Error adding existing user as driver:', error);
+        res.status(500).json({ message: 'Error adding user as driver.', error: error.message });
     }
 });
 
@@ -393,4 +454,47 @@ router.post("/cleanupDuplicateDriversForUser/:userID", async (req, res, next) =>
     }
 });
 
-module.exports={router};
+router.get("/testAddExistingUserAsDriver", (req, res) => {
+    console.log('Test endpoint hit successfully');
+    res.json({ message: "addExistingUserAsDriver endpoint is reachable", timestamp: new Date().toISOString() });
+});
+
+// Add a test route to verify the router is working
+router.get("/test", (req, res) => {
+    console.log('Test route hit successfully');
+    res.json({ message: "driverAPI router is working", timestamp: new Date().toISOString() });
+});
+
+// Add a simple health check endpoint
+router.get("/health", (req, res) => {
+    res.json({ 
+        status: "healthy", 
+        message: "driverAPI is responding",
+        timestamp: new Date().toISOString(),
+        routes: router.stack?.length || 0
+    });
+});
+
+// Add debugging to see what routes are registered
+console.log('=== driverAPI module initialization ===');
+console.log('Router type:', typeof router);
+console.log('Router stack length:', router.stack ? router.stack.length : 'no stack');
+console.log('Express version check:', typeof router.use === 'function' ? 'Valid Express Router' : 'Invalid Router');
+
+if (router.stack && router.stack.length > 0) {
+    console.log('Registered driverAPI routes:');
+    router.stack.forEach((layer, index) => {
+        if (layer.route) {
+            const methods = Object.keys(layer.route.methods).join(', ').toUpperCase();
+            console.log(`  ${index + 1}: ${methods} ${layer.route.path}`);
+        }
+    });
+} else {
+    console.warn('No routes found in driverAPI router stack!');
+}
+
+console.log('=== End driverAPI initialization ===');
+
+// Export router in the same format as other API modules
+console.log('Exporting driverAPI router...');
+module.exports = { router };

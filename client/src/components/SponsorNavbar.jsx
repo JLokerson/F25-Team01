@@ -113,7 +113,7 @@ export default function SponsorNavbar() {
                                 <Link className="nav-link" to="/sponsor-driver-management">Driver Management</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to="/pending-applications">Pending Applications</Link>
+                                <Link className="nav-link" to="/pending-applications">Driver Applications</Link>
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to="/sponsorcatalog">Catalog Management</Link>

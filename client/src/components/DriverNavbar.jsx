@@ -94,6 +94,9 @@ export default function DriverNavbar() {
                                 <Link className="nav-link text-white" to="/DriverProfile">Profile</Link>
                             </li>
                             <li className="nav-item">
+                                <Link className="nav-link text-white" to="/driver-application">Apply to Sponsor</Link>
+                            </li>
+                            <li className="nav-item">
                                 <Link className="nav-link text-white" to="/products">Catalog</Link>
                             </li>
                             <li className="nav-item">
