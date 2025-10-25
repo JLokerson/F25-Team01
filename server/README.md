@@ -75,10 +75,14 @@ CURRENT SPRINT: SPRINT 2
 
 ## GetDriverInfo
 - N/A
-- Retrieves all information about each driver, with duplicate drivers returned in the case of multiple sponsors for a given driver.
+- Retrieves all information about each driver, with duplicate drivers returned in the case of multiple sponsors for a given driver. Does not return records for Driver entries tied to deactivated user accounts.
 
 ## GetDriverInfoLimited
 - N/A
 - A testing utility only, this stored procedure is the same as the above but with LIMIT 1 appended to the end of the query.
+
+## ToggleAccountActivity
+- UserID: ID of the User account to have it's activity status toggled on/off.
+- Updates the entry for the row matching the provided UserID in the User table, setting the ActiveAccount field to NOT ActiveAccount.
 
 
