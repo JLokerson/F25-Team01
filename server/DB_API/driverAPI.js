@@ -129,7 +129,7 @@ async function toggleDriverActivity(driverID) {
         // Mark account as disabled on User table
         console.log("Toggling activity of driver with DriverID:", driverID);
         const deleteDriverQuery = "call ToggleAccountActivity(?)";
-        await db.executeQuery(deleteDriverQuery, [driverID]);
+        await db.executeQuery(deleteDriverQuery, [userID]);
         
         console.log("Driver disabled/enabled successfully.");
         return result;

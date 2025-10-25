@@ -73,4 +73,12 @@ CURRENT SPRINT: SPRINT 2
 - UserID: ID of the User account this driver is tied to, SponsorID: ID of the Sponsor organisation for the new driver
 - Adds a new driver. May bug out if adding a driver for a User that already has one. Working on that. May have been fixed by the time you are reading this, though. Probably.
 
+## GetDriverInfo
+- N/A
+- Retrieves all information about each driver, with duplicate drivers returned in the case of multiple sponsors for a given driver.
+
+## GetDriverInfoLimited
+- N/A
+- A testing utility only, this stored procedure is the same as the above but with LIMIT 1 appended to the end of the query.
+
 
