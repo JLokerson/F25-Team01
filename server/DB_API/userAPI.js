@@ -543,7 +543,7 @@ router.post("/toggleAccountActivity/:UserID", async (req, res, next) => {
     }
 });
 
-// Add this debug route before module.exports
+// Debug route before module.exports
 router.get("/debugUser/:email", async (req, res, next) => {
     const email = req.params.email;
     console.log('--- Debug user lookup ---');
@@ -571,7 +571,7 @@ router.get("/debugUser/:email", async (req, res, next) => {
     }
 });
 
-// Add this debug route for admin users
+// Debug route for admin users
 router.get("/debugAdminUser/:email", async (req, res, next) => {
     const email = req.params.email;
     console.log('--- Debug ADMIN user lookup ---');
@@ -610,7 +610,7 @@ router.get("/debugAdminUser/:email", async (req, res, next) => {
     }
 });
 
-// Add this route before module.exports for quick testing
+// Route before module.exports for quick testing
 router.post("/reactivateUser/:UserID", async (req, res, next) => {
     const UserID = req.params.UserID;
     console.log('Reactivating user ID:', UserID);

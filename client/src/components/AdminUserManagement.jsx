@@ -6,7 +6,7 @@ import { GenerateSalt } from './MiscellaneousParts/HashPass';
 export default function AdminUserManagement() {
     const [drivers, setDrivers] = useState([]);
     const [sponsors, setSponsors] = useState([]);
-    const [sponsorUsers, setSponsorUsers] = useState([]); // Add this line
+    const [sponsorUsers, setSponsorUsers] = useState([]); 
     const [admins, setAdmins] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -152,7 +152,7 @@ export default function AdminUserManagement() {
         setEditingDriver({
             ...driver,
             Password: '',
-            PasswordSalt: 'auto-generated'
+            PasswordSalt: GenerateSalt()
         });
         setShowEditModal(true);
     };
@@ -236,7 +236,7 @@ export default function AdminUserManagement() {
         setEditingSponsor({
             ...sponsor,
             Password: '',
-            PasswordSalt: 'auto-generated'
+            PasswordSalt: GenerateSalt()
         });
         setShowEditSponsorModal(true);
     };
@@ -353,7 +353,7 @@ export default function AdminUserManagement() {
         setEditingAdmin({
             ...admin,
             Password: '',
-            PasswordSalt: 'auto-generated'
+            PasswordSalt: GenerateSalt()
         });
         setShowEditAdminModal(true);
     };
