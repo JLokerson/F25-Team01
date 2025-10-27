@@ -22,6 +22,8 @@ async function getAllDrivers(){
         
         // Always use direct query to ensure we get all fields including ActiveAccount
         console.log("Using direct query to ensure all fields are included...");
+
+        // Intentionally omits password related fields due to being a bulk retrieval.
         const fallbackQuery = `
             SELECT 
                 d.DriverID,
@@ -31,8 +33,6 @@ async function getAllDrivers(){
                 u.FirstName,
                 u.LastName,
                 u.Email,
-                u.Password,
-                u.PasswordSalt,
                 u.UserType,
                 u.LastLogin,
                 COALESCE(u.ActiveAccount, 1) as ActiveAccount
