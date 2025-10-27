@@ -12,6 +12,7 @@ import AdminProfile from './components/ProfilePages/AdminProfile'
 import DriverProfile from './components/ProfilePages/DriverProfile'
 import SponsorProfile from './components/ProfilePages/SponsorProfile';
 import CatalogBuilder from './components/SponsorCatalog/CatalogBuilder';
+import DriverSponsorCatalog from './components/SponsorCatalog/DriverSponsorCatalog';
 import Products from './components/Products';
 import MakeNewUser from './components/MakeNewUser'; 
 import DriverCart from './components/DriverCart';
@@ -53,11 +54,12 @@ function AppContent() {
         {/* Sponsor routes */}
         <Route path="/sponsorhome" element={<SponsorHome />} />
         <Route path="/sponsorprofile" element={<SponsorProfile />} />
-  <Route path="/sponsorcatalog" element={<CatalogBuilder />} />
+        <Route path="/sponsorcatalog" element={<CatalogBuilder />} />
 
         {/* Driver routes */}
         <Route path="/driverhome" element={<DriverHome />} />
         <Route path="/driverprofile" element={<DriverProfile />} />
+  <Route path="/drivercatalog" element={<DriverSponsorCatalog />} />
         <Route path="/drivercart" element={<DriverCart />} />
         <Route path="/driverorderconfirmation" element={<DriverOrderConfirmation />} />
 

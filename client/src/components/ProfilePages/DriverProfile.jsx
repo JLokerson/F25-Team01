@@ -8,6 +8,7 @@ import { CookiesProvider, useCookies } from 'react-cookie';
 export default function DriverProfile() {
     const [driver, setDriver] = useState(null);
     const [cookies, setCookie] = useCookies(['driverinfo']);
+    const [activeTab, setActiveTab] = useState('profile'); // tab state
 
     const loadDrivers = () => {
         // prefer drivers persisted in localStorage (so points changes persist)
@@ -24,7 +25,7 @@ export default function DriverProfile() {
 
         // find userid === 1
         const d = list.find(
-            x => Number(x.userid) === 3 || x.userid === 3
+            x => Number(x.userid) === 1 || x.userid === 3
         );
         setDriver(d || null);
         if (driver == null){
@@ -81,20 +82,54 @@ export default function DriverProfile() {
     return (
         <div>
             {DriverNavbar()}
-            {HelperPasswordChange(driver?.userid ?? 4)}
 
             <div className="container mt-4">
                 <h2>Driver Profile</h2>
-                {!driver ? (
-                    <div className="alert alert-warning">Driver with userid=1 not found.</div>
-                ) : (
-                    <ul className="list-group">
-                        <li className="list-group-item"><strong>User ID:</strong> {driver.userid}</li>
-                        <li className="list-group-item"><strong>Name:</strong> {driver.firstName} {driver.lastName}</li>
-                        <li className="list-group-item"><strong>Email:</strong> {driver.email}</li>
-                        <li className="list-group-item"><strong>Birthday:</strong> {driver.birthday}</li>
-                        <li className="list-group-item"><strong>Points:</strong> {driver.points}</li>
-                    </ul>
+
+                {/* Tab Navigation */}
+                <ul className="nav nav-tabs mb-4">
+                    <li className="nav-item">
+                        <button
+                            className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('profile')}
+                        >
+                            Profile
+                        </button>
+                    </li>
+                    <li className="nav-item">
+                        <button
+                            className={`nav-link ${activeTab === 'password' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('password')}
+                        >
+                            Change Password
+                        </button>
+                    </li>
+                </ul>
+
+                {/* Tab Content */}
+                {activeTab === 'profile' && (
+                    !driver ? (
+                        <div className="alert alert-warning">Driver with userid=1 not found.</div>
+                    ) : (
+                        <ul className="list-group">
+                            <li className="list-group-item"><strong>User ID:</strong> {driver.userid}</li>
+                            <li className="list-group-item"><strong>Name:</strong> {driver.firstName} {driver.lastName}</li>
+                            <li className="list-group-item"><strong>Email:</strong> {driver.email}</li>
+                            <li className="list-group-item"><strong>Birthday:</strong> {driver.birthday}</li>
+                            <li className="list-group-item"><strong>Points:</strong> {driver.points}</li>
+                        </ul>
+                    )
+                )}
+
+                {activeTab === 'password' && (
+                    <div>
+                        <h5>Change Password</h5>
+                        <div className="row">
+                            <div className="col-md-6">
+                                <HelperPasswordChange UserID={driver?.userid ?? 4} />
+                            </div>
+                        </div>
+                    </div>
                 )}
             </div>
         </div>

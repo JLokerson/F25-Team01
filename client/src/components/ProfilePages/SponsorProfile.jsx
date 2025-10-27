@@ -10,6 +10,7 @@ import { login } from '../MiscellaneousParts/ServerCall';
 export default function SponsorProfile() {
     // use this info to try a login.
     const [cookies, setCookie] = useCookies(['username', 'password']);
+    const [activeTab, setActiveTab] = useState('profile'); // Add tab state
     
     // Ensure this is actually a sponsor user.
     // TO-DO: verify the login returned success and not fail, rn only checks if error on retrieval.
@@ -85,68 +86,104 @@ export default function SponsorProfile() {
         return (
             <div>
                 {SponsorNavbar()}
-                {HelperPasswordChange(sponsor.userid)}
 
                 <div className="container mt-4">
                     <h2>Sponsor Profile</h2>
-                    <ul className="list-group mb-3">
-                        <li className="list-group-item"><strong>User ID:</strong> {sponsor.userid}</li>
-                        <li className="list-group-item"><strong>Name:</strong> {sponsor.firstName} {sponsor.lastName}</li>
-                        <li className="list-group-item"><strong>Email:</strong> {sponsor.email}</li>
-                        <li className="list-group-item"><strong>Birthday:</strong> {sponsor.birthday}</li>
+                    
+                    {/* Tab Navigation */}
+                    <ul className="nav nav-tabs mb-4">
+                        <li className="nav-item">
+                            <button 
+                                className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('profile')}
+                            >
+                                Profile Information
+                            </button>
+                        </li>
+                        <li className="nav-item">
+                            <button 
+                                className={`nav-link ${activeTab === 'password' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('password')}
+                            >
+                                Change Password
+                            </button>
+                        </li>
                     </ul>
 
-                    <h5>Sponsored Drivers</h5>
-                    {driversList.length > 0 ? (
-                        <ul className="list-group">
-                            {driversList.map((d) => (
-                                <li key={d.userid} className="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div><strong>{d.firstName} {d.lastName}</strong></div>
-                                        <div className="text-muted small">User ID: {d.userid} • Points: {d.points}</div>
-                                    </div>
-                                    <div>
-                                        <button className="btn btn-sm btn-outline-primary me-2" onClick={() => openEditorFor(d.userid)}>Edit Points</button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No linked drivers.</p>
+                    {/* Tab Content */}
+                    {activeTab === 'profile' && (
+                        <div>
+                            <ul className="list-group mb-3">
+                                <li className="list-group-item"><strong>User ID:</strong> {sponsor.userid}</li>
+                                <li className="list-group-item"><strong>Name:</strong> {sponsor.firstName} {sponsor.lastName}</li>
+                                <li className="list-group-item"><strong>Email:</strong> {sponsor.email}</li>
+                                <li className="list-group-item"><strong>Birthday:</strong> {sponsor.birthday}</li>
+                            </ul>
+
+                            <h5>Sponsored Drivers</h5>
+                            {driversList.length > 0 ? (
+                                <ul className="list-group">
+                                    {driversList.map((d) => (
+                                        <li key={d.userid} className="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div><strong>{d.firstName} {d.lastName}</strong></div>
+                                                <div className="text-muted small">User ID: {d.userid} • Points: {d.points}</div>
+                                            </div>
+                                            <div>
+                                                <button className="btn btn-sm btn-outline-primary me-2" onClick={() => openEditorFor(d.userid)}>Edit Points</button>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No linked drivers.</p>
+                            )}
+
+                            <div className="mt-3">
+                                <button className="btn btn-secondary me-2" onClick={() => {
+                                    const dataStr = JSON.stringify(driversList, null, 2);
+                                    const blob = new Blob([dataStr], { type: 'application/json' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = 'drivers_export.json';
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                }}>Export Drivers JSON</button>
+
+                                <label className="btn btn-outline-secondary mb-0">
+                                    Import JSON
+                                    <input type="file" accept="application/json" style={{display:'none'}} onChange={(e) => {
+                                        const f = e.target.files && e.target.files[0];
+                                        if (!f) return;
+                                        const reader = new FileReader();
+                                        reader.onload = (ev) => {
+                                            try {
+                                                const parsed = JSON.parse(ev.target.result);
+                                                if (!Array.isArray(parsed)) return alert('Imported JSON must be an array of drivers');
+                                                setDriversList(parsed);
+                                                localStorage.setItem('drivers', JSON.stringify(parsed));
+                                                window.dispatchEvent(new Event('driversUpdated'));
+                                                localStorage.setItem('drivers_last_update', JSON.stringify({ userid: null, points: null, ts: Date.now() }));
+                                            } catch (err) { alert('Failed to import JSON: ' + err.message); }
+                                        };
+                                        reader.readAsText(f);
+                                    }} />
+                                </label>
+                            </div>
+                        </div>
                     )}
 
-                    <div className="mt-3">
-                        <button className="btn btn-secondary me-2" onClick={() => {
-                            const dataStr = JSON.stringify(driversList, null, 2);
-                            const blob = new Blob([dataStr], { type: 'application/json' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = 'drivers_export.json';
-                            a.click();
-                            URL.revokeObjectURL(url);
-                        }}>Export Drivers JSON</button>
-
-                        <label className="btn btn-outline-secondary mb-0">
-                            Import JSON
-                            <input type="file" accept="application/json" style={{display:'none'}} onChange={(e) => {
-                                const f = e.target.files && e.target.files[0];
-                                if (!f) return;
-                                const reader = new FileReader();
-                                reader.onload = (ev) => {
-                                    try {
-                                        const parsed = JSON.parse(ev.target.result);
-                                        if (!Array.isArray(parsed)) return alert('Imported JSON must be an array of drivers');
-                                        setDriversList(parsed);
-                                        localStorage.setItem('drivers', JSON.stringify(parsed));
-                                        window.dispatchEvent(new Event('driversUpdated'));
-                                        localStorage.setItem('drivers_last_update', JSON.stringify({ userid: null, points: null, ts: Date.now() }));
-                                    } catch (err) { alert('Failed to import JSON: ' + err.message); }
-                                };
-                                reader.readAsText(f);
-                            }} />
-                        </label>
-                    </div>
+                    {activeTab === 'password' && (
+                        <div>
+                            <h5>Change Password</h5>
+                            <div className="row">
+                                <div className="col-md-6">
+                                    <HelperPasswordChange UserID={sponsor.userid} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Inline modal/editor */}
                     {editing && (

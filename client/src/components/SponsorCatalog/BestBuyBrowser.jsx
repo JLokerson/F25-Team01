@@ -13,13 +13,17 @@ export default function BestBuyBrowser({ onAdd }){
 
     async function fetchProducts(){
         setLoading(true); setError(null);
+        // Open the console and type localStorage.setItem('BESTBUY_API_KEY', [MY_API_KEY]);
+        // The variable is saved here
         const key = localStorage.getItem('BESTBUY_API_KEY') || '';
         if (!key) {
             setError('No BestBuy API key found in localStorage. Please paste it in the Sponsor settings.');
             setLoading(false); return;
         }
 
+        // Build query URLs
         const searchFilter = searchTerm ? `(search=${encodeURIComponent(searchTerm)})` : '';
+        // Proxy path for server-side API calls
         const proxyPath = `/v1/products${searchFilter}?format=json&show=sku,name,salePrice,image&page=${page}&pageSize=20&apiKey=${key}`;
         const directUrl = `https://api.bestbuy.com/v1/products${searchFilter}?format=json&show=sku,name,salePrice,image&page=${page}&pageSize=20&apiKey=${key}`;
 
@@ -49,19 +53,8 @@ export default function BestBuyBrowser({ onAdd }){
                     return;
                 }
             }
-
-            // Other non-OK proxy response
-            throw new Error('Proxy HTTP ' + resp.status);
         }catch(err){
-            // Network/CORS errors or thrown above
-            // If it's a CORS error when calling direct URL, the message may be generic; give guidance.
-            const isCORS = /Failed to fetch|NetworkError|TypeError/.test(err.message || '');
-            if (isCORS) {
-                setError('Failed to fetch BestBuy products: network/CORS error. Consider running a server proxy or check your API key. Details: ' + err.message);
-            } else {
-                setError('Failed to fetch BestBuy products: ' + err.message);
-            }
-            setLoading(false);
+            setError('Failed to fetch BestBuy products: ' + err.message);
         }
     }
 
@@ -74,7 +67,7 @@ export default function BestBuyBrowser({ onAdd }){
                 <button className="btn btn-primary">Search</button>
             </form>
 
-            {loading && <div>Loading...</div>}
+            {loading && <div>Fetching Products...</div>}
             {error && <div className="alert alert-danger">{error}</div>}
 
             <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))', gap:12}}>
