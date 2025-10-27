@@ -24,7 +24,6 @@ var adminAPIRouter = require("./DB_API/adminAPI").router;
 var sponsorAPIRouter = require("./DB_API/sponsorAPI").router;
 var driverAPIRouter = require("./DB_API/driverAPI").router;
 var cartAPIRouter = require("./DB_API/cartAPI").router;
-var dataCleanupRouter = require("./DB_API/dataCleanupAPI").router;
 
 // Mount API routers (same simple pattern as before)
 app.use("/userAPI", userAPIRouter);
@@ -32,7 +31,6 @@ app.use("/adminAPI", adminAPIRouter);
 app.use("/sponsorAPI", sponsorAPIRouter);
 app.use("/driverAPI", driverAPIRouter);
 app.use("/cartAPI", cartAPIRouter);
-app.use("/dataCleanupAPI", dataCleanupRouter);
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.resolve(__dirname, '../../public')));

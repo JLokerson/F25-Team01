@@ -48,8 +48,8 @@ export default function Login() {
 
       if (!response.ok) {
         // Check if account is deactivated
-        if (response.status === 403 && data.accountStatus === "deactivated") {
-          console.log('Account deactivated - showing deactivation message'); // Add this line
+        if (response.status === 403 && data.error === "ACCOUNT_DEACTIVATED") {
+          console.log('Account deactivated - showing deactivation message');
           alert("Your account has been deactivated. Please contact an administrator to reactivate your account.");
           return;
         }

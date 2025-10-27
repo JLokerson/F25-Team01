@@ -388,7 +388,6 @@ router.post("/login", async (req, res, next) => {
             // Account is deactivated
             res.status(403).json({ 
                 message: user.message,
-                accountStatus: "deactivated"
             });
         } else if (user) {
             // Login successful
