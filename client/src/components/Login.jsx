@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { CookiesProvider, useCookies } from 'react-cookie';
+import { login} from './MiscellaneousParts/ServerCall';
 
 export default function Login() {
   // Not secure - for demonstration purposes only
@@ -18,14 +19,7 @@ export default function Login() {
     console.log('Sending login request with:', { Email: username, Password: password });
 
     try {
-      const response = await fetch(`http://localhost:4000/userAPI/login?Email=${encodeURIComponent(username)}&Password=${encodeURIComponent(password)}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      console.log('Request URL:', `http://localhost:4000/userAPI/login?Email=${encodeURIComponent(username)}&Password=${encodeURIComponent(password)}`);
+      const response = await login({ Email: username, Password: password });
 
       // Debug: Log the response status and text
       console.log('Response status:', response.status);
