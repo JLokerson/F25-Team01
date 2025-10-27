@@ -52,6 +52,8 @@ async function getAllSponsorUsers(){
     try {
         console.log("Reading all sponsor user info");
 
+        // This and other bulk SElECT operations should never retrieve password information. 
+        // Password retrieval removed when spotted due to merge conflict.
         const query = `
             SELECT 
                 SPONSOR_USER.SponsorUserID, 
@@ -60,8 +62,6 @@ async function getAllSponsorUsers(){
                 USER.FirstName, 
                 USER.LastName, 
                 USER.Email,
-                USER.Password,
-                USER.PasswordSalt,
                 USER.UserType,
                 USER.LastLogin,
                 COALESCE(USER.ActiveAccount, 1) as ActiveAccount
