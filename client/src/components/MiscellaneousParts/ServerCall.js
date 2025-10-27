@@ -131,6 +131,12 @@ export const getAllSponsors = () => apiCall('GET', '/sponsorAPI/getAllSponsors')
 export const getAllSponsorUsers = () => apiCall('GET', '/sponsorAPI/getAllSponsorUsers');
 
 /**
+ * Get the sponsor record associated with a given UserID
+ * @param {number} userID - The ID of the user.
+ */
+export const getSponsorForUser = (userId) => apiCall('GET', '/sponsorAPI/getSponsorForUser', {UserID: userId});
+
+/**
  * Adds a new sponsor.
  * @param {Object} sponsorData - The sponsor data.
  * @param {string} sponsorData.Name

@@ -4,7 +4,7 @@ import '../styles/Home.css';
 import '../styles/Navbar.css';
 import { useNavigate } from 'react-router-dom';
 import truck from '../content/img/truck.png';
-import { getAllSponsors} from './MiscellaneousParts/ServerCall';
+import { getAllSponsors } from './MiscellaneousParts/ServerCall';
 
 function MostOfTheText() {
   let navigate = useNavigate(); 
