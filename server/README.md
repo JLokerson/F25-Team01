@@ -85,4 +85,10 @@ CURRENT SPRINT: SPRINT 2
 - UserID: ID of the User account to have it's activity status toggled on/off.
 - Updates the entry for the row matching the provided UserID in the User table, setting the ActiveAccount field to NOT ActiveAccount.
 
+## PointsUpdate
+- DriverID: ID of the driver to update points for, PointChangeAmount: Amount to increase points by, SponsorID sponsor to change driver's points for, SponsorID: ID of the sponsor for the mapping (in case user has multiple sponsors)
+- Updates Point value for the mapping of DriverID, SponsorID is changed by PointChangeAmount. The change is logged in the POINTCHANGELOG table.
 
+## BulkPointsUpdate
+- InputSponsorID: A sponsor for whom to update all drivers' point balances, PointChangeAmount: The amount to change each driver's points by.
+- Updates point values for all DriverID, SponsorID mappings with a SponsorID of InputSponsorID. All changes are entered as a separate entry into the POINTCHANGELOG table.
