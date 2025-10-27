@@ -37,8 +37,7 @@ export default function Login() {
       try {
         data = JSON.parse(responseText);
         console.log('Parsed response data:', data); 
-        console.log('Response status code:', response.status); // Add this line
-        console.log('Account status in response:', data.accountStatus); // Add this line
+        console.log('Response status code:', response.status);
       } catch (parseError) {
         console.error('Failed to parse JSON:', parseError);
         console.error('Raw response:', responseText);
@@ -54,7 +53,7 @@ export default function Login() {
           return;
         }
         
-        console.log('Login failed with status:', response.status, 'and message:', data.message); // Add this line
+        console.log('Login failed with status:', response.status, 'and message:', data.message); 
         setFailedAttempts(prev => {
           const next = prev + 1;
           if (next >= 5) {
@@ -68,7 +67,7 @@ export default function Login() {
       }
 
       // Login successful
-      console.log('Login successful - processing user data'); // Add this line
+      console.log('Login successful - processing user data'); 
       setFailedAttempts(0);
       setCookie('password', password, { path: '/' })
       setCookie('username', username, { path: '/' })
