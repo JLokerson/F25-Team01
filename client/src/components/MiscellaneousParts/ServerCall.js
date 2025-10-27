@@ -35,7 +35,7 @@ const apiCall = async (method, path, params = null) => {
         // Return null if the response has no content (e.g., 204 No Content)
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.indexOf("application/json") !== -1) {
-            return await response.json();
+            return await response;
         }
         return null; 
     } catch (error) {
