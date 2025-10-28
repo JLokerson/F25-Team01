@@ -66,27 +66,36 @@ export default function CatalogBuilder(){
             <div className="mt-3">
                 {tab==='browse' && <BestBuyBrowser />}
 
-                {tab==='mycatalog' && (
-                    <div className="row g-3">
-                        {CATEGORY_LIST.map(cat => {
-                            const active = Boolean(categoryState[cat.key]?.active);
-                            return (
-                                <div className="col-12 col-sm-6 col-md-4 col-lg-3" key={cat.key}>
-                                    <div className="card h-100">
-                                        <div className="card-body d-flex flex-column">
-                                            <h5 className="card-title">{cat.name}</h5>
-                                            <p className="text-muted">Status: <span className={`badge ${active ? 'bg-success' : 'bg-secondary'}`}>{active ? 'Active' : 'Inactive'}</span></p>
-                                            <div className="mt-auto d-flex justify-content-between align-items-center">
-                                                <button className="btn btn-outline-primary btn-sm" onClick={()=>toggle(cat.key)}>{active ? 'Deactivate' : 'Activate'}</button>
-                                                <a className="btn btn-outline-secondary btn-sm" href={`https://www.bestbuy.com/site/searchpage.jsp?st=${encodeURIComponent(cat.name)}`} target="_blank" rel="noreferrer">View on BestBuy</a>
-                                            </div>
+                        {tab==='mycatalog' && (
+                            (() => {
+                                const activeCats = CATEGORY_LIST.filter(cat => Boolean(categoryState[cat.key]?.active));
+                                if (activeCats.length === 0) {
+                                    return (
+                                        <div className="alert alert-info" role="alert">
+                                            Your catalog is empty. Go to "Browse Categories" and switch on categories to add them to your catalog.
                                         </div>
+                                    );
+                                }
+                                return (
+                                    <div className="row g-3">
+                                        {activeCats.map(cat => (
+                                            <div className="col-12 col-sm-6 col-md-4 col-lg-3" key={cat.key}>
+                                                <div className="card h-100">
+                                                    <div className="card-body d-flex flex-column">
+                                                        <h5 className="card-title">{cat.name}</h5>
+                                                        <p className="text-muted">Status: <span className="badge bg-success">Active</span></p>
+                                                        <div className="mt-auto d-flex justify-content-between align-items-center">
+                                                            <button className="btn btn-outline-danger btn-sm" onClick={()=>toggle(cat.key)}>Deactivate</button>
+                                                            <a className="btn btn-outline-secondary btn-sm" href={`https://www.bestbuy.com/site/searchpage.jsp?st=${encodeURIComponent(cat.name)}`} target="_blank" rel="noreferrer">View on BestBuy</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
+                                );
+                            })()
+                        )}
             </div>
         </div>
     );
