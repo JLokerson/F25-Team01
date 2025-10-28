@@ -193,7 +193,7 @@ export default function SponsorHome() {
                             <div className="card-body">
                                 <h5 className="card-title">Catalog Management</h5>
                                 <p className="card-text">Manage your product catalog and pricing.</p>
-                                <Link to="#" className="btn btn-primary">Manage Catalog</Link>
+                                <Link to="/catalogbuilder" className="btn btn-primary">Manage Catalog</Link>
                             </div>
                         </div>
                     </div>
