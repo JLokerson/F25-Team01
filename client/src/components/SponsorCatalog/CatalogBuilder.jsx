@@ -1,71 +1,90 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import BestBuyBrowser from './BestBuyBrowser';
-import CatalogItemCard from './CatalogItemCard';
+
+const CATEGORY_LIST = [
+    { key: 'phones', name: 'Phones' },
+    { key: 'tablets', name: 'Tablets' },
+    { key: 'monitors', name: 'Monitors' },
+    { key: 'pcs', name: 'PCs' },
+    { key: 'laptops', name: 'Laptops' },
+    { key: 'keyboards', name: 'Keyboards' },
+    { key: 'mice', name: 'Mice' },
+    { key: 'headphones', name: 'Headphones' },
+    { key: 'microphones', name: 'Microphones' },
+    { key: 'phonecases', name: 'Phone Cases' },
+];
+
+function getSponsorId(){
+    try {
+        const u = JSON.parse(localStorage.getItem('user') || 'null');
+        return u?.SponsorID || u?.UserID || 'sponsor_default';
+    } catch { return 'sponsor_default'; }
+}
 
 export default function CatalogBuilder(){
-    const sponsor = JSON.parse(localStorage.getItem('user') || '{}');
-    const sponsorId = sponsor?.UserID || sponsor?.userid || 'sponsor_default';
-    const key = `sponsor_catalog_${sponsorId}`;
+    const sponsorId = useMemo(() => getSponsorId(), []);
+    const storageKey = `sponsor_category_catalog_${sponsorId}`;
     const [tab, setTab] = useState('browse');
-    const [catalog, setCatalog] = useState([]);
+    const [categoryState, setCategoryState] = useState({});
 
-    useEffect(()=>{ loadCatalog(); }, []);
+    useEffect(()=>{ load();
+        const onUpd = () => load();
+        window.addEventListener('sponsorCategoryCatalogUpdated', onUpd);
+        return ()=> window.removeEventListener('sponsorCategoryCatalogUpdated', onUpd);
+    }, []);
 
-    function loadCatalog(){
-        try{ const raw = localStorage.getItem(key); if (raw) setCatalog(JSON.parse(raw)); else setCatalog([]); }catch(e){ setCatalog([]); }
+    function load(){
+        try{
+            const raw = localStorage.getItem(storageKey);
+            setCategoryState(raw ? JSON.parse(raw) : {});
+        }catch{ setCategoryState({}); }
     }
 
-    function saveCatalog(next){
-        setCatalog(next);
-        try{ localStorage.setItem(key, JSON.stringify(next)); }catch(e){ console.error('save failed', e); }
+    function save(next){
+        setCategoryState(next);
+        try{ localStorage.setItem(storageKey, JSON.stringify(next)); }catch{}
     }
 
-    function handleAdd(product){
-        // prevent duplicates by sku
-        const exists = catalog.find(c => String(c.sku) === String(product.sku));
-        if (exists) return alert('Product already in catalog');
-        const next = catalog.concat([{ sku: product.sku, name: product.name, image: product.image, salePrice: product.salePrice, enabled: true }]);
-        saveCatalog(next);
-        setTab('mycatalog');
-    }
-
-    function handleDeactivate(item){
-        const next = catalog.map(c => c.sku === item.sku ? { ...c, enabled: false } : c);
-        saveCatalog(next);
-    }
-
-    function handleActivate(item){
-        const next = catalog.map(c => c.sku === item.sku ? { ...c, enabled: true } : c);
-        saveCatalog(next);
+    function toggle(key){
+        const next = { ...categoryState, [key]: { active: !(categoryState[key]?.active) } };
+        save(next);
     }
 
     return (
         <div className="container mt-4">
-            <h3>Catalog Management</h3>
+            <h3>Catalog Management (Categories)</h3>
             <ul className="nav nav-tabs">
                 <li className="nav-item">
-                    <button className={`nav-link ${tab==='browse' ? 'active' : ''}`} onClick={()=>setTab('browse')}>Browse</button>
+                    <button className={`nav-link ${tab==='browse' ? 'active' : ''}`} onClick={()=>setTab('browse')}>Browse Categories</button>
                 </li>
                 <li className="nav-item">
-                    <button className={`nav-link ${tab==='mycatalog' ? 'active' : ''}`} onClick={()=>setTab('mycatalog')}>My Catalog</button>
+                    <button className={`nav-link ${tab==='mycatalog' ? 'active' : ''}`} onClick={()=>setTab('mycatalog')}>My Category Catalog</button>
                 </li>
             </ul>
 
             <div className="mt-3">
-                {tab==='browse' && <BestBuyBrowser onAdd={handleAdd} />}
+                {tab==='browse' && <BestBuyBrowser />}
 
                 {tab==='mycatalog' && (
-                    <div>
-                        {catalog.length===0 ? <p>No products yet.</p> : (
-                            <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))', gap:12}}>
-                                {catalog.map(p => (
-                                    <div key={p.sku}>
-                                        <CatalogItemCard product={{ sku:p.sku, name:p.name, image:p.image, salePrice:p.salePrice }} actionLabel={p.enabled ? 'Deactivate' : 'Activate'} onAction={() => p.enabled ? handleDeactivate(p) : handleActivate(p)} enabled={true} />
+                    <div className="row g-3">
+                        {CATEGORY_LIST.map(cat => {
+                            const active = Boolean(categoryState[cat.key]?.active);
+                            return (
+                                <div className="col-12 col-sm-6 col-md-4 col-lg-3" key={cat.key}>
+                                    <div className="card h-100">
+                                        <div className="card-body d-flex flex-column">
+                                            <h5 className="card-title">{cat.name}</h5>
+                                            <p className="text-muted">Status: <span className={`badge ${active ? 'bg-success' : 'bg-secondary'}`}>{active ? 'Active' : 'Inactive'}</span></p>
+                                            <div className="mt-auto d-flex justify-content-between align-items-center">
+                                                <button className="btn btn-outline-primary btn-sm" onClick={()=>toggle(cat.key)}>{active ? 'Deactivate' : 'Activate'}</button>
+                                                <a className="btn btn-outline-secondary btn-sm" href={`https://www.bestbuy.com/site/searchpage.jsp?st=${encodeURIComponent(cat.name)}`} target="_blank" rel="noreferrer">View on BestBuy</a>
+                                            </div>
+                                        </div>
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>
