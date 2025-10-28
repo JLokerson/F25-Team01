@@ -60,7 +60,7 @@ export default function SponsorNavbar() {
             navigate('/SponsorHome', { replace: true });
         }
     };
-
+ 
     return (
         <>
             <nav className="sponsor-navbar navbar navbar-expand-lg navbar-light bg-light">
@@ -82,7 +82,10 @@ export default function SponsorNavbar() {
                                 <Link className="nav-link" to="/SponsorProfile">Profile</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to="#">Driver Management</Link>
+                                <Link className="nav-link" to="/sponsor-driver-management">Driver Management</Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/pending-applications">Pending Applications</Link>
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to="/sponsorcatalog">Catalog Management</Link>
