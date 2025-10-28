@@ -78,8 +78,8 @@ CURRENT SPRINT: SPRINT 2
 - Retrieves all information about each driver, with duplicate drivers returned in the case of multiple sponsors for a given driver. Does not return records for Driver entries tied to deactivated user accounts.
 
 ## GetDriverInfoLimited
-- N/A
-- A testing utility only, this stored procedure is the same as the above but with LIMIT 1 appended to the end of the query.
+- User ID: A user ID to retrieve an associated driver record for.
+- Retrieves the first found driver ID for a given user, and only ever returns 1 or 0 rows.
 
 ## ToggleAccountActivity
 - UserID: ID of the User account to have it's activity status toggled on/off.
