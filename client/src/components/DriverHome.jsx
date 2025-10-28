@@ -102,6 +102,15 @@ export default function DriverHome() {
                             </div>
                         </div>
                     </div>
+                    <div className="col-md-6 mb-3">
+                        <div className="card">
+                            <div className="card-body">
+                                <h5 className="card-title">Your Sponsor Catalog</h5>
+                                <p className="card-text">Browse items your sponsor selected and add them to your cart.</p>
+                                <Link to="/drivercatalog" className="btn btn-primary">Browse Sponsor Catalog</Link>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             

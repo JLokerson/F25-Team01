@@ -37,6 +37,7 @@ export default function Login() {
       try {
         data = JSON.parse(responseText);
         console.log('Parsed response data:', data); 
+        console.log('Response status code:', response.status);
       } catch (parseError) {
         console.error('Failed to parse JSON:', parseError);
         console.error('Raw response:', responseText);
@@ -45,6 +46,14 @@ export default function Login() {
       }
 
       if (!response.ok) {
+        // Check if account is deactivated
+        if (response.status === 403 && data.error === "ACCOUNT_DEACTIVATED") {
+          console.log('Account deactivated - showing deactivation message');
+          alert("Your account has been deactivated. Please contact an administrator to reactivate your account.");
+          return;
+        }
+        
+        console.log('Login failed with status:', response.status, 'and message:', data.message); 
         setFailedAttempts(prev => {
           const next = prev + 1;
           if (next >= 5) {
@@ -58,6 +67,7 @@ export default function Login() {
       }
 
       // Login successful
+      console.log('Login successful - processing user data'); 
       setFailedAttempts(0);
       setCookie('password', password, { path: '/' })
       setCookie('username', username, { path: '/' })
@@ -71,8 +81,6 @@ export default function Login() {
       // Check if password is older than 3 months
       const shouldSuggestPasswordChange = checkPasswordAge(data.user.LastLogin);
       
-
-      // Wait, what? Okay, so is this actually saving a json instead of a cookie? This feels... dangerous. I need to talk to jason more before going into detail on this. This is problematic.
       // Store user info and password change suggestion flag
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('suggestPasswordChange', shouldSuggestPasswordChange.toString());
@@ -130,10 +138,10 @@ export default function Login() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center">
+    <div className="vh-100 vw-100 d-flex justify-content-center align-items-center">
       <div
-        className="card p-4 shadow w-100 h-100 d-flex flex-column justify-content-between"
-        style={{ maxWidth: '32em', height: '28em' }}
+        className="card p-4 shadow d-flex flex-column justify-content-between"
+        style={{ maxWidth: '32em', height: '28em', width: '100%' }}
       >
         <h1 className="mb-4 text-center">Login</h1>
         <form onSubmit={handleSubmit}>
