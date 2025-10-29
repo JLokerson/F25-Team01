@@ -19,6 +19,7 @@ echo "Starting client update at $(date)"
 sudo git pull
 
 # 2. Build the application
+sudo npm install
 sudo npm run build
 
 # Check if the build directory exists before copying
