@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
 import SponsorNavbar from './SponsorNavbar';
 import PasswordChangeModal from './PasswordChangeModal';
+import { getAllSponsors, getAllSponsorUsers } from './MiscellaneousParts/ServerCall';
 
 export default function SponsorHome() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -99,7 +100,7 @@ export default function SponsorHome() {
             console.log('SponsorHome - UserInfo:', userInfo); // Debug log
             if (userInfo && userInfo.UserID && !isAdminImpostor) {
                 try {
-                    const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+                    const response = await getAllSponsorUsers();
                     if (response.ok) {
                         const allSponsorUsers = await response.json();
                         console.log('SponsorHome - All sponsor users:', allSponsorUsers); // Debug log
@@ -120,7 +121,7 @@ export default function SponsorHome() {
 
         const fetchSponsorName = async (sponsorID) => {
             try {
-                const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+                const response = await getAllSponsors();
                 if (response.ok) {
                     const allSponsors = await response.json();
                     console.log('SponsorHome - All sponsors:', allSponsors); // Debug log

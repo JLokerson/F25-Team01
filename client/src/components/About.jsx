@@ -4,7 +4,7 @@ import '../styles/Home.css';
 import '../styles/Navbar.css';
 import { useNavigate } from 'react-router-dom';
 import truck from '../content/img/truck.png';
-import { getAllSponsors} from './MiscellaneousParts/ServerCall';
+import { getAllSponsors } from './MiscellaneousParts/ServerCall';
 
 function MostOfTheText() {
   let navigate = useNavigate(); 
@@ -27,10 +27,19 @@ function MostOfTheText() {
     const fetchSponsors = async () => {
       try {
         setLoading(true);
-        const sponsorsData = await getAllSponsors();
-        console.log('Fetched sponsor data:', sponsorsData);
-        // The data is already JSON from apiCall, no need to parse it again.
-        setSponsors(sponsorsData || []); // Use the data directly, ensure it's an array if response is null
+        // Try the standard API pattern first
+        const response = await getAllSponsors();
+        
+        console.log('Sponsor fetch response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch sponsors: ${response.status}`);
+        }
+        
+        const sponsorData = await response.text();
+        console.log('Fetched sponsor data:', sponsorData);
+        const parsedSponsors = JSON.parse(sponsorData);
+        setSponsors(parsedSponsors);
       } catch (err) {
         console.error('Error fetching sponsors:', err);
         setError(err.message);

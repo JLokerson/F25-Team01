@@ -5,7 +5,7 @@ import HelperPasswordChange from './HelperPasswordChange';
 import sponsors from '../../content/json-assets/sponsor-user_sample.json';
 import driversSeed from '../../content/json-assets/driver_sample.json';
 import { CookiesProvider, useCookies } from 'react-cookie';
-import { login } from '../MiscellaneousParts/ServerCall';
+import { login, getAllSponsors, getAllSponsorUsers } from '../MiscellaneousParts/ServerCall';
 
 export default function SponsorProfile() {
     const [cookies, setCookie] = useCookies(['username', 'password']);
@@ -18,11 +18,14 @@ export default function SponsorProfile() {
     async function VerifyLogin(){
         try{
             let userinfo = {
-            "email": cookies.username,
-            "password": cookies.password,
+            Email: cookies.username,
+            Password: cookies.password,
             };
-            await login(userinfo);
-            return true;
+            let response = await login(userinfo);
+            if (response.status === 200)
+                return true;
+            else
+                return false;
         }catch(e){
             return false;
         }
@@ -103,7 +106,7 @@ export default function SponsorProfile() {
         console.log('SponsorProfile - UserInfo:', userInfo); // Debug log
         if (userInfo && userInfo.UserID) {
             try {
-                const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+                const response = await getAllSponsorUsers();
                 if (response.ok) {
                     const allSponsorUsers = await response.json();
                     console.log('SponsorProfile - All sponsor users:', allSponsorUsers); // Debug log
@@ -124,7 +127,7 @@ export default function SponsorProfile() {
 
     const fetchSponsorName = async (sponsorID) => {
         try {
-            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+            const response = await getAllSponsors();
             if (response.ok) {
                 const allSponsors = await response.json();
                 console.log('SponsorProfile - All sponsors:', allSponsors); // Debug log
