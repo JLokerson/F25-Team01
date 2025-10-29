@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import truck from '../content/img/truck.png';
 import { getAllSponsors } from './MiscellaneousParts/ServerCall';
 
+const aboutData = require('../content/json-assets/about.json');
+
 function MostOfTheText() {
   let navigate = useNavigate(); 
   const [sponsors, setSponsors] = useState([]);
@@ -158,7 +160,7 @@ function MostOfTheText() {
       </div>
 
       {/* Footer section */}
-      <footer className="landing__footer">&copy; {new Date().getFullYear()} Network Drivers</footer>
+      <footer className="landing__footer">&copy; {aboutData.versionDate} {aboutData.groupName} v{aboutData.version} </footer>
     </div>
   );
 }
