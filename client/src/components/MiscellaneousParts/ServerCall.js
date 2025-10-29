@@ -86,6 +86,11 @@ export const updatePassword = (passwordData) => apiCall('POST', '/userAPI/update
  */
 export const login = (credentials) => apiCall('POST', '/userAPI/login', credentials);
 
+/**
+ * Checks if an email already exists in the USER database.
+ * @param {string} Email - The email to check.
+ */
+export const checkEmailExist = (Email) => apiCall('GET', '/userAPI/checkEmail', { email: Email });
 
 // --- Admin API Calls ---
 
