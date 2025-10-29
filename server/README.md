@@ -63,32 +63,4 @@ jsonwebtoken (JWT): For implementing token-based authentication in web applicati
 
 CURRENT SPRINT: SPRINT 2
 
-## DATABASE STORED PROCEDURE INFORMATION
-## Format:
-# Name
-- Input1: Description, Input2: Description... InputN: Description
-- Effects
 
-## AddDriver
-- UserID: ID of the User account this driver is tied to, SponsorID: ID of the Sponsor organisation for the new driver
-- Adds a new driver. May bug out if adding a driver for a User that already has one. Working on that. May have been fixed by the time you are reading this, though. Probably.
-
-## GetDriverInfo
-- N/A
-- Retrieves all information about each driver, with duplicate drivers returned in the case of multiple sponsors for a given driver. Does not return records for Driver entries tied to deactivated user accounts.
-
-## GetDriverInfoLimited
-- N/A
-- A testing utility only, this stored procedure is the same as the above but with LIMIT 1 appended to the end of the query.
-
-## ToggleAccountActivity
-- UserID: ID of the User account to have it's activity status toggled on/off.
-- Updates the entry for the row matching the provided UserID in the User table, setting the ActiveAccount field to NOT ActiveAccount.
-
-## PointsUpdate
-- DriverID: ID of the driver to update points for, PointChangeAmount: Amount to increase points by, SponsorID sponsor to change driver's points for, SponsorID: ID of the sponsor for the mapping (in case user has multiple sponsors)
-- Updates Point value for the mapping of DriverID, SponsorID is changed by PointChangeAmount. The change is logged in the POINTCHANGELOG table.
-
-## BulkPointsUpdate
-- InputSponsorID: A sponsor for whom to update all drivers' point balances, PointChangeAmount: The amount to change each driver's points by.
-- Updates point values for all DriverID, SponsorID mappings with a SponsorID of InputSponsorID. All changes are entered as a separate entry into the POINTCHANGELOG table.
