@@ -8,8 +8,6 @@ import { CookiesProvider, useCookies } from 'react-cookie';
 export default function DriverProfile() {
     const [driver, setDriver] = useState(null);
     const [cookies, setCookie] = useCookies(['driverinfo']);
-    const [activeTab, setActiveTab] = useState('profile'); // tab state
-    // Sprint7 additions we keep alongside tabs
     const [showPasswordChangeButton, setShowPasswordChangeButton] = useState(false);
     const [driverInfo, setDriverInfo] = useState(null);
     const [sponsorName, setSponsorName] = useState(null);
@@ -28,9 +26,9 @@ export default function DriverProfile() {
             list = Array.isArray(driversSeed) ? driversSeed : [];
         }
 
-        // find a demo driver; prefer userid from cookies/local storage; fallback to sample (1 or 3)
+        // find userid === 1
         const d = list.find(
-            x => Number(x.userid) === 1 || Number(x.userid) === 3
+            x => Number(x.userid) === 3 || x.userid === 3
         );
         setDriver(d || null);
         if (driver == null){
@@ -202,108 +200,74 @@ export default function DriverProfile() {
     return (
         <div>
             {DriverNavbar()}
-
-            <div className="container mt-4">
-                <h2>Driver Profile</h2>
-
-                {/* Tab Navigation */}
-                <ul className="nav nav-tabs mb-4">
-                    <li className="nav-item">
-                        <button
-                            className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('profile')}
-                        >
-                            Profile
-                        </button>
-                    </li>
-                    <li className="nav-item">
-                        <button
-                            className={`nav-link ${activeTab === 'password' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('password')}
-                        >
-                            Change Password
-                        </button>
-                    </li>
-                </ul>
-
-                {/* Tab Content */}
-                {activeTab === 'profile' && (
-                    <>
-                        {/* User Information Section from Sprint7 */}
-                        {userInfo && (
-                            <div className="card mb-4">
-                                <div className="card-header">
-                                    <h4 className="mb-0">
-                                        <i className="fas fa-user me-2"></i>
-                                        Current User Information
-                                    </h4>
+            
+            {/* User Information Section */}
+            {userInfo && (
+                <div className="container mt-4">
+                    <div className="card mb-4">
+                        <div className="card-header">
+                            <h4 className="mb-0">
+                                <i className="fas fa-user me-2"></i>
+                                Current User Information
+                            </h4>
+                        </div>
+                        <div className="card-body">
+                            <div className="row">
+                                <div className="col-md-6">
+                                    <p><strong>User ID:</strong> {userInfo.UserID}</p>
+                                    <p><strong>Name:</strong> {userInfo.FirstName} {userInfo.LastName}</p>
+                                    <p><strong>Email:</strong> {userInfo.Email}</p>
+                                    <p><strong>User Type:</strong> {getUserTypeString(userInfo.UserType)}</p>
                                 </div>
-                                <div className="card-body">
-                                    <div className="row">
-                                        <div className="col-md-6">
-                                            <p><strong>User ID:</strong> {userInfo.UserID}</p>
-                                            <p><strong>Name:</strong> {userInfo.FirstName} {userInfo.LastName}</p>
-                                            <p><strong>Email:</strong> {userInfo.Email}</p>
-                                            <p><strong>User Type:</strong> {getUserTypeString(userInfo.UserType)}</p>
+                                <div className="col-md-6">
+                                    {driverInfoLoading ? (
+                                        <p><em>Loading driver information...</em></p>
+                                    ) : driverInfo ? (
+                                        <>
+                                            <p><strong>Driver ID:</strong> {driverInfo.DriverID}</p>
+                                            <p><strong>Sponsor ID:</strong> {driverInfo.SponsorID}{sponsorName ? ` (${sponsorName})` : ''}</p>
+                                        </>
+                                    ) : (
+                                        <div className="alert alert-info">
+                                            <p><strong>No driver record found.</strong></p>
+                                            <p className="small">Your user account (UserID: {userInfo.UserID}) is not associated with a driver record. Contact your administrator or use the Testing page to create a driver entry.</p>
                                         </div>
-                                        <div className="col-md-6">
-                                            {driverInfoLoading ? (
-                                                <p><em>Loading driver information...</em></p>
-                                            ) : driverInfo ? (
-                                                <>
-                                                    <p><strong>Driver ID:</strong> {driverInfo.DriverID}</p>
-                                                    <p><strong>Sponsor ID:</strong> {driverInfo.SponsorID}{sponsorName ? ` (${sponsorName})` : ''}</p>
-                                                </>
-                                            ) : (
-                                                <div className="alert alert-info">
-                                                    <p><strong>No driver record found.</strong></p>
-                                                    <p className="small">Your user account (UserID: {userInfo.UserID}) is not associated with a driver record. Contact your administrator or use the Testing page to create a driver entry.</p>
-                                                </div>
-                                            )}
-                                            {showPasswordChangeButton && (
-                                                <div className="alert alert-warning mt-2">
-                                                    <i className="fas fa-exclamation-triangle me-2"></i>
-                                                    <strong>Security Notice:</strong>
-                                                    <p className="mb-2 mt-1">
-                                                        {userInfo.LastLogin 
-                                                            ? `It has been ${getTimeSinceLastLogin(new Date(userInfo.LastLogin))} since your last login.`
-                                                            : 'We have no record of your last login.'
-                                                        }
-                                                        <br />
-                                                        We recommend updating your password for security.
-                                                    </p>
-                                                </div>
-                                            )}
+                                    )}
+                                    {showPasswordChangeButton && (
+                                        <div className="alert alert-warning mt-2">
+                                            <i className="fas fa-exclamation-triangle me-2"></i>
+                                            <strong>Security Notice:</strong>
+                                            <p className="mb-2 mt-1">
+                                                {userInfo.LastLogin 
+                                                    ? `It has been ${getTimeSinceLastLogin(new Date(userInfo.LastLogin))} since your last login.`
+                                                    : 'We have no record of your last login.'
+                                                }
+                                                <br />
+                                                We recommend updating your password for security.
+                                            </p>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
-                            </div>
-                        )}
-
-                        {/* Driver seed/local info */}
-                        {!driver ? (
-                            <div className="alert alert-warning">Driver with userid=1 not found.</div>
-                        ) : (
-                            <ul className="list-group">
-                                <li className="list-group-item"><strong>User ID:</strong> {driver.userid}</li>
-                                <li className="list-group-item"><strong>Name:</strong> {driver.firstName} {driver.lastName}</li>
-                                <li className="list-group-item"><strong>Email:</strong> {driver.email}</li>
-                                <li className="list-group-item"><strong>Birthday:</strong> {driver.birthday}</li>
-                                <li className="list-group-item"><strong>Points:</strong> {driver.points}</li>
-                            </ul>
-                        )}
-                    </>
-                )}
-
-                {activeTab === 'password' && (
-                    <div>
-                        <h5>Change Password</h5>
-                        <div className="row">
-                            <div className="col-md-6">
-                                <HelperPasswordChange UserID={driver?.userid ?? 4} />
                             </div>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {HelperPasswordChange(driver?.userid ?? 4)}
+
+            <div className="container mt-4">
+                <h2>Driver Profile</h2>
+                {!driver ? (
+                    <div className="alert alert-warning">Driver with userid=1 not found.</div>
+                ) : (
+                    <ul className="list-group">
+                        <li className="list-group-item"><strong>User ID:</strong> {driver.userid}</li>
+                        <li className="list-group-item"><strong>Name:</strong> {driver.firstName} {driver.lastName}</li>
+                        <li className="list-group-item"><strong>Email:</strong> {driver.email}</li>
+                        <li className="list-group-item"><strong>Birthday:</strong> {driver.birthday}</li>
+                        <li className="list-group-item"><strong>Points:</strong> {driver.points}</li>
+                    </ul>
                 )}
             </div>
         </div>

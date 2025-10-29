@@ -8,7 +8,7 @@ const db = require('./db'); //shared database connection pool
 async function getAllUsers(){
     try{
         console.log("Reading all USER info");
-        const allUsers = await db.executeQuery("SELECT * from USER where ActiveAccount = 1");
+        const allUsers = await db.executeQuery("SELECT * from USER");
         console.log("Returning %s Users", allUsers.length);
         // console.log(allUsers); // for debugging
         // console.log("__________________");
@@ -23,7 +23,7 @@ async function getAllUsers(){
 /**
  * Gets a user from the USER database by their UserID or with FirstName, LastName, and Email.
  * @param {object} data - An object containing lookup criteria.
- * @returns {Promise<object|null>}
+ * @returns {Promise<object|null>} The user object if found, otherwise null.
  */
 async function getUser(data){
     let sql;
@@ -122,131 +122,47 @@ async function loginUser(data) {
     }
 
     try {
-        console.log(`\n=== LOGIN ATTEMPT START ===`);
         console.log(`Attempting login for email: ${data.Email}`);
-        console.log(`Password provided: ${data.Password}`);
-        
+        console.log(`Password provided: ${data.Password}`); // Debug line
         const sql = "SELECT * FROM USER WHERE Email = ?";
         const values = [data.Email];
 
         const users = await db.executeQuery(sql, values);
         
         if (users.length === 0) {
-            console.log("❌ User not found for login attempt.");
-            console.log(`=== LOGIN ATTEMPT END ===\n`);
+            console.log("User not found for login attempt.");
             return null;
         }
 
         const user = users[0];
-        console.log(`✅ Found user in database`);
-        console.log(`📋 User Details:`);
-        console.log(`   - UserID: ${user.UserID}`);
-        console.log(`   - Name: ${user.FirstName} ${user.LastName}`);
-        console.log(`   - Email: ${user.Email}`);
-        console.log(`   - UserType: ${user.UserType}`);
-        console.log(`   - Password: ${user.Password}`);
-        console.log(`   - ActiveAccount (raw): ${user.ActiveAccount}`);
-        console.log(`   - ActiveAccount type: ${typeof user.ActiveAccount}`);
-        console.log(`   - ActiveAccount === 1: ${user.ActiveAccount === 1}`);
-        console.log(`   - ActiveAccount === "1": ${user.ActiveAccount === "1"}`);
-        console.log(`   - Number(ActiveAccount) === 1: ${Number(user.ActiveAccount) === 1}`);
+        console.log(`Found user with password: ${user.Password}`); // Debug line
         
-        // Check if account is active - handle multiple data types
-        const isAccountActive = (
-            user.ActiveAccount === 1 || 
-            user.ActiveAccount === "1" || 
-            user.ActiveAccount === true ||
-            (user.ActiveAccount !== null && user.ActiveAccount !== undefined && Number(user.ActiveAccount) === 1)
-        );
-        
-        console.log(`🔍 Account Status Check:`);
-        console.log(`   - Final isAccountActive: ${isAccountActive}`);
-        
-        if (!isAccountActive) {
-            console.log("❌ LOGIN DENIED - Account is deactivated");
-            console.log(`=== LOGIN ATTEMPT END ===\n`);
-            return { error: "ACCOUNT_DEACTIVATED", message: "Your account has been deactivated. Please contact an administrator." };
-        }
-        
-        // Password check
-        console.log(`🔐 Password Check:`);
-        console.log(`   - Provided: ${data.Password}`);
-        console.log(`   - Stored: ${user.Password}`);
-        console.log(`   - Match: ${user.Password === data.Password}`);
-        
+        // TODO: Implement proper password hashing comparison
+        // For now, comparing plain text (NOT SECURE - for development only)
         if (user.Password === data.Password) {
-            console.log("✅ LOGIN SUCCESSFUL");
+            console.log("Login successful for user:", user.Email);
             
             // Only update LastLogin if it's null (first login)
             if (user.LastLogin === null) {
                 const updateSql = "UPDATE USER SET LastLogin = NOW() WHERE UserID = ?";
                 await db.executeQuery(updateSql, [user.UserID]);
-                console.log(`📅 Set initial LastLogin for UserID: ${user.UserID}`);
+                console.log(`Set initial LastLogin for UserID: ${user.UserID}`);
                 
                 // Update the user object to reflect the new LastLogin
                 user.LastLogin = new Date().toISOString();
             } else {
-                console.log(`📅 LastLogin already set, not updating`);
+                console.log(`LastLogin already set for UserID: ${user.UserID}, not updating`);
             }
-            
-            console.log(`=== LOGIN ATTEMPT END ===\n`);
             
             // Remove password from returned user object for security
             const { Password, PasswordSalt, ...userWithoutPassword } = user;
             return userWithoutPassword;
         } else {
-            console.log("❌ LOGIN DENIED - Invalid password");
-            console.log(`=== LOGIN ATTEMPT END ===\n`);
+            console.log("Invalid password for user:", user.Email);
             return null;
         }
     } catch (error) {
-        console.error("💥 Failed to authenticate user:", error);
-        console.log(`=== LOGIN ATTEMPT END ===\n`);
-        throw error;
-    }
-}
-
-/**
- * Toggles the ActiveAccount status for a user (1 -> 0, 0 -> 1)
- * @param {number} UserID - The UserID to toggle
- * @returns {Promise<object>} The result of the database update
- */
-async function toggleAccountActivity(UserID) {
-    try {        
-        console.log("Toggling activity for UserID:", UserID);
-        
-        // Get current ActiveAccount status
-        const getCurrentStatusQuery = "SELECT ActiveAccount FROM USER WHERE UserID = ?";
-        const currentStatus = await db.executeQuery(getCurrentStatusQuery, [UserID]);
-        
-        if (currentStatus.length === 0) {
-            throw new Error("User not found");
-        }
-        
-        const currentValue = currentStatus[0].ActiveAccount;
-        console.log(`Current ActiveAccount value: ${currentValue}, type: ${typeof currentValue}`);
-        
-        // Handle different data types - convert to number for comparison
-        const currentActiveStatus = (
-            currentValue === 1 || 
-            currentValue === "1" || 
-            currentValue === true ||
-            Number(currentValue) === 1
-        ) ? 1 : 0;
-        
-        // Toggle the ActiveAccount status (1 -> 0, 0 -> 1)
-        const newStatus = currentActiveStatus === 1 ? 0 : 1;
-        
-        console.log(`Toggling user activity - UserID: ${UserID}, Current: ${currentActiveStatus}, New: ${newStatus}`);
-        
-        // Update the ActiveAccount status
-        const toggleQuery = "UPDATE USER SET ActiveAccount = ? WHERE UserID = ?";
-        const result = await db.executeQuery(toggleQuery, [newStatus, UserID]);
-        
-        console.log("User disabled/enabled successfully.");
-        return result;
-    } catch (error) {
-        console.error("Failed to toggle user:", error);
+        console.error("Failed to authenticate user:", error);
         throw error;
     }
 }
@@ -384,19 +300,12 @@ router.post("/login", async (req, res, next) => {
 
     try {
         const user = await loginUser(data);
-        if (user && user.error === "ACCOUNT_DEACTIVATED") {
-            // Account is deactivated
-            res.status(403).json({ 
-                message: user.message,
-            });
-        } else if (user) {
-            // Login successful
+        if (user) {
             res.status(200).json({ 
                 message: 'Login successful!', 
                 user: user 
             });
         } else {
-            // Invalid credentials
             res.status(401).json({ message: 'Invalid email or password.' });
         }
     } catch (error) {
@@ -458,176 +367,4 @@ router.get("/checkEmail", async (req, res, next) => {
     }
 });
 
-/**
- * Checks for duplicate users in the database based on email
- * @returns {Promise<Array>} Array of duplicate user entries
- */
-async function findDuplicateUsers() {
-    try {
-        console.log("Checking for duplicate users in database");
-        
-        const query = `
-            SELECT Email, COUNT(*) as count, GROUP_CONCAT(UserID) as UserIDs
-            FROM USER 
-            GROUP BY Email 
-            HAVING COUNT(*) > 1
-        `;
-        
-        const duplicates = await db.executeQuery(query);
-        console.log(`Found ${duplicates.length} duplicate email entries`);
-        return duplicates;
-    } catch (error) {
-        console.error("Failed to check for duplicate users:", error);
-        throw error;
-    }
-}
-
-router.get("/findDuplicates", async (req, res, next) => {
-    try {
-        const duplicates = await findDuplicateUsers();
-        res.json({ 
-            duplicates, 
-            message: `Found ${duplicates.length} duplicate email entries` 
-        });
-    } catch (error) {
-        console.error('Error finding duplicates:', error);
-        res.status(500).json({ message: 'Error checking for duplicates' });
-    }
-});
-
-/**
- * Updates a user's information in the USER database.
- * @param {object} data - An object containing UserID and fields to update.
- * @returns {Promise<object>} The result from the database operation.
- */
-async function updateUser(data) {
-    try {
-        const { UserID, FirstName, LastName, Email, Password, PasswordSalt } = data;
-        
-        if (!UserID) {
-            throw new Error("UserID is required to update user.");
-        }
-
-        let sql = "UPDATE USER SET FirstName = ?, LastName = ?, Email = ?";
-        let values = [FirstName, LastName, Email];
-        
-        // Only update password if provided
-        if (Password && Password.trim() !== '') {
-            sql += ", Password = ?, PasswordSalt = ?";
-            values.push(Password, PasswordSalt || 'updated-salt');
-        }
-        
-        sql += " WHERE UserID = ?";
-        values.push(UserID);
-        
-        console.log(`Updating user with UserID: ${UserID}`);
-        const result = await db.executeQuery(sql, values);
-        
-        console.log("User updated successfully.");
-        return result;
-    } catch (error) {
-        console.error("Failed to update user:", error);
-        throw error;
-    }
-}
-
-router.post("/toggleAccountActivity/:UserID", async (req, res, next) => {
-    const UserID = req.params.UserID;
-    console.log('Received toggle activity request for user ID:', UserID);
-    try {
-        const result = await toggleAccountActivity(UserID);
-        res.status(200).json({ message: 'User activity toggled successfully!' });
-    } catch (error) {
-        console.error('Error toggling activity for user:', error);
-        res.status(500).send('Error toggling activity for user.');
-    }
-});
-
-// Debug route before module.exports
-router.get("/debugUser/:email", async (req, res, next) => {
-    const email = req.params.email;
-    console.log('--- Debug user lookup ---');
-    console.log('Looking up user with email:', email);
-    
-    try {
-        const sql = "SELECT UserID, FirstName, LastName, Email, ActiveAccount, UserType, LastLogin FROM USER WHERE Email = ?";
-        const users = await db.executeQuery(sql, [email]);
-        
-        if (users.length === 0) {
-            res.status(404).json({ message: 'User not found' });
-        } else {
-            const user = users[0];
-            console.log('Found user:', user);
-            res.json({ 
-                user: user,
-                isActive: user.ActiveAccount === 1,
-                activeAccountValue: user.ActiveAccount,
-                activeAccountType: typeof user.ActiveAccount
-            });
-        }
-    } catch (error) {
-        console.error('Error in debugUser:', error);
-        res.status(500).json({ error: 'Database error' });
-    }
-});
-
-// Debug route for admin users
-router.get("/debugAdminUser/:email", async (req, res, next) => {
-    const email = req.params.email;
-    console.log('--- Debug ADMIN user lookup ---');
-    console.log('Looking up admin user with email:', email);
-    
-    try {
-        // Check if user exists in USER table
-        const userSql = "SELECT UserID, FirstName, LastName, Email, ActiveAccount, UserType, LastLogin FROM USER WHERE Email = ? AND UserType = 3";
-        const users = await db.executeQuery(userSql, [email]);
-        
-        if (users.length === 0) {
-            res.status(404).json({ message: 'Admin user not found in USER table' });
-            return;
-        }
-
-        const user = users[0];
-        
-        // Check if admin record exists
-        const adminSql = "SELECT AdminID FROM ADMIN WHERE UserID = ?";
-        const adminRecords = await db.executeQuery(adminSql, [user.UserID]);
-        
-        console.log('Found user:', user);
-        console.log('Admin records:', adminRecords);
-        
-        res.json({ 
-            user: user,
-            adminRecord: adminRecords[0] || null,
-            isActive: user.ActiveAccount === 1,
-            activeAccountValue: user.ActiveAccount,
-            activeAccountType: typeof user.ActiveAccount,
-            hasAdminRecord: adminRecords.length > 0
-        });
-    } catch (error) {
-        console.error('Error in debugAdminUser:', error);
-        res.status(500).json({ error: 'Database error' });
-    }
-});
-
-// Route before module.exports for quick testing
-router.post("/reactivateUser/:UserID", async (req, res, next) => {
-    const UserID = req.params.UserID;
-    console.log('Reactivating user ID:', UserID);
-    
-    try {
-        const reactivateQuery = "UPDATE USER SET ActiveAccount = 1 WHERE UserID = ?";
-        const result = await db.executeQuery(reactivateQuery, [UserID]);
-        
-        if (result.affectedRows > 0) {
-            res.status(200).json({ message: 'User reactivated successfully!' });
-        } else {
-            res.status(404).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        console.error('Error reactivating user:', error);
-        res.status(500).send('Error reactivating user.');
-    }
-});
-
-module.exports={router, addNewUser, updateUser, findDuplicateUsers, toggleAccountActivity};
+module.exports={router, addNewUser};

@@ -12,10 +12,8 @@ import AdminProfile from './components/ProfilePages/AdminProfile'
 import DriverProfile from './components/ProfilePages/DriverProfile'
 import SponsorProfile from './components/ProfilePages/SponsorProfile';
 import SponsorDriverManagement from './components/SponsorDriverManagement';
-import AdminUserManagement from './components/AdminUserManagement';
 import PendingApplications from './components/PendingApplications';
 import CatalogBuilder from './components/SponsorCatalog/CatalogBuilder';
-import DriverSponsorCatalog from './components/SponsorCatalog/DriverSponsorCatalog';
 import Products from './components/Products';
 import MakeNewUser from './components/MakeNewUser'; 
 import DriverCart from './components/DriverCart';
@@ -46,27 +44,24 @@ function AppContent() {
         <Route path="/register" element={<Register />} />
         <Route path="/products" element={<Products />} />
         <Route path="/testing" element={<Testing />} />
+        {/* <Route path="/OrderConfirmation" element={<OrderConfirmation/>}/> */}
+        {/* <Route path="/Cart" element={<CartPage/>}/> */}
         <Route path="/MakeNewUser" element={<MakeNewUser />} /> 
 
         {/* Admin routes */}
         <Route path="/adminhome" element={<AdminHome />} />
         <Route path="/adminprofile" element={<AdminProfile />} />
-        <Route path="/admin-user-management" element={<AdminUserManagement />} />
 
         {/* Sponsor routes */}
         <Route path="/sponsorhome" element={<SponsorHome />} />
         <Route path="/sponsorprofile" element={<SponsorProfile />} />
-<<<<<<< HEAD
-=======
         <Route path="/sponsor-driver-management" element={<SponsorDriverManagement />} />
         <Route path="/pending-applications" element={<PendingApplications />} />
->>>>>>> origin/Sprint7
         <Route path="/sponsorcatalog" element={<CatalogBuilder />} />
 
         {/* Driver routes */}
         <Route path="/driverhome" element={<DriverHome />} />
         <Route path="/driverprofile" element={<DriverProfile />} />
-  <Route path="/drivercatalog" element={<DriverSponsorCatalog />} />
         <Route path="/drivercart" element={<DriverCart />} />
         <Route path="/driverorderconfirmation" element={<DriverOrderConfirmation />} />
 
