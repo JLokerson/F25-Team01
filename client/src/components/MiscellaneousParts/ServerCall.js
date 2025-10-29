@@ -71,12 +71,11 @@ export const addUser = (userData) => apiCall('POST', '/userAPI/addUser', userDat
 
 /**
  * Updates a user's password.
- * @param {Object} passwordData - The password update data.
- * @param {string|number} passwordData.UserID
- * @param {string} passwordData.Password
- * @param {string} passwordData.PasswordSalt
+ * @param {string|number} userID
+ * @param {string} password
+ * @param {string} passwordSalt
  */
-export const updatePassword = (passwordData) => apiCall('POST', '/userAPI/updatePassword', passwordData);
+export const updatePassword = (userID, password, passwordSalt) => apiCall('POST', '/userAPI/updatePassword', { UserID: userID, Password: password, PasswordSalt: passwordSalt});
 
 /**
  * Logs a user in.
@@ -119,6 +118,13 @@ export const getAllDrivers = () => apiCall('GET', '/driverAPI/getAllDrivers');
  * Adds a new driver.
  * Note: Corrected path from '/userAPI/addUser' to '/driverAPI/addDriver' based on API structure.
  * @param {Object} driverData - The driver data.
+ * @param {string} driverData.FirstName
+ * @param {string} driverData.LastName
+ * @param {string} driverData.Email
+ * @param {string} driverData.Password
+ * @param {string} driverData.PasswordSalt
+ * @param {number} driverData.UserType
+ * @param {number} driverData.SponsorID
  */
 export const addDriver = (driverData) => apiCall('POST', '/driverAPI/addDriver', driverData);
 

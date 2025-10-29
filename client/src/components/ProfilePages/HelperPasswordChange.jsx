@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
 import { HashPassword, GenerateSalt } from '../MiscellaneousParts/HashPass';
 import { CookiesProvider, useCookies } from 'react-cookie';
+import { updatePassword } from '../MiscellaneousParts/ServerCall';
 
 export default function HelperPasswordChange(UserID = 4) {
     const [newpass1, setnewpass1] = useState('');
@@ -24,14 +25,7 @@ export default function HelperPasswordChange(UserID = 4) {
         setMessageType("info");
             
         try {
-        const response = await fetch(`http://localhost:4000/userAPI/updatePassword?UserID=${UserID}&Password=${encodeURIComponent(hashedPassword)}&PasswordSalt=${encodeURIComponent(salt)}`, {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            }
-        });
-
-        console.log('Request URL:', `http://localhost:4000/userAPI/updatePassword?UserID=${UserID}&Password=${encodeURIComponent(hashedPassword)}&PasswordSalt=${encodeURIComponent(salt)}`);
+        const response = await updatePassword(UserID, hashedPassword, salt);
 
         // Debug: Log the response status and text
         console.log('Response status:', response.status);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import SponsorNavbar from './SponsorNavbar';
 import { HashPassword, GenerateSalt } from './MiscellaneousParts/HashPass';
+import { addDriver, getAllSponsorUsers } from './MiscellaneousParts/ServerCall';
 
 export default function PendingApplications() {
     // Dummy data for pending applications
@@ -72,7 +73,7 @@ export default function PendingApplications() {
                 
                 if (userInfo.UserID) {
                     try {
-                        const sponsorResponse = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+                        const sponsorResponse = await getAllSponsorUsers();
                         if (sponsorResponse.ok) {
                             const allSponsorUsers = await sponsorResponse.json();
                             const currentSponsorInfo = allSponsorUsers.find(s => s.UserID === userInfo.UserID);
@@ -99,13 +100,7 @@ export default function PendingApplications() {
                 console.log('Creating driver with data:', driverData);
 
                 // Use the same endpoint as SponsorDriverManagement
-                const queryString = new URLSearchParams(driverData).toString();
-                const response = await fetch(`http://localhost:4000/driverAPI/addDriver?${queryString}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
+                const response = await addDriver(driverData);
 
                 console.log('Response status:', response.status);
                 
