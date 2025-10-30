@@ -56,11 +56,8 @@ function AppContent() {
         {/* Sponsor routes */}
         <Route path="/sponsorhome" element={<SponsorHome />} />
         <Route path="/sponsorprofile" element={<SponsorProfile />} />
-<<<<<<< HEAD
-=======
         <Route path="/sponsor-driver-management" element={<SponsorDriverManagement />} />
         <Route path="/pending-applications" element={<PendingApplications />} />
->>>>>>> origin/Sprint7
         <Route path="/sponsorcatalog" element={<CatalogBuilder />} />
 
         {/* Driver routes */}
