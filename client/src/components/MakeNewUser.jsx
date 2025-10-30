@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import AdminNavbar from './AdminNavbar';
 import { GenerateSalt } from './MiscellaneousParts/HashPass';
+import { addUser, checkEmailExist } from './MiscellaneousParts/ServerCall';
 
 export default function MakeNewUser() {
     const [form, setForm] = useState({
@@ -35,12 +36,7 @@ export default function MakeNewUser() {
 
     const checkEmailExists = async (email) => {
         try {
-            const response = await fetch(`http://localhost:4000/userAPI/checkEmail?email=${encodeURIComponent(email)}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+            const response = await checkEmailExist(email);
             const data = await response.json();
             return data.exists; // Assuming backend returns { exists: true/false }
         } catch (error) {
@@ -77,13 +73,7 @@ export default function MakeNewUser() {
         console.log('Submitting user:', user); // Log what is being sent
 
         try {
-            const response = await fetch('http://localhost:4000/userAPI/addUser', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(user)
-            });
+            const response = await addUser(user);
             const data = await response.json().catch(() => ({}));
             console.log('Response from server:', response.status, data); // Log what is received
 
