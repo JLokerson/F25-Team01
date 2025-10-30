@@ -97,3 +97,4 @@ CURRENT SPRINT: SPRINT 2
 - The GENERIC_ACTION_AUDIT table has a trigger on it's table that automatically replaces
 EventTime with the current time and date upon inserting into the table.
 - PointChangeLog table similarly has a trigger that performs the same role for ease of tracking times, although admittedly the stored procedures that interface with it could have achieved the same result. This decision was made because implementing this simple feature in a trigger impacting both tables would be easier at this point in time. I am considering similarly moving the mechanism that ensures no point field is below 0 to the points table, but that remains part of the stored procedures at this time.
+- When an entry in the user table is updated, the update event is logged in the GENERIC_ACTION_AUDIT table via the use of a trigger.
