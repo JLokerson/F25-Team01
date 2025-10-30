@@ -15,6 +15,7 @@ import SponsorDriverManagement from './components/SponsorDriverManagement';
 import AdminUserManagement from './components/AdminUserManagement';
 import PendingApplications from './components/PendingApplications';
 import CatalogBuilder from './components/SponsorCatalog/CatalogBuilder';
+import DriverSponsorCatalog from './components/SponsorCatalog/DriverSponsorCatalog';
 import Products from './components/Products';
 import MakeNewUser from './components/MakeNewUser'; 
 import DriverCart from './components/DriverCart';
@@ -62,6 +63,7 @@ function AppContent() {
         {/* Driver routes */}
         <Route path="/driverhome" element={<DriverHome />} />
         <Route path="/driverprofile" element={<DriverProfile />} />
+  <Route path="/drivercatalog" element={<DriverSponsorCatalog />} />
         <Route path="/drivercart" element={<DriverCart />} />
         <Route path="/driverorderconfirmation" element={<DriverOrderConfirmation />} />
 

@@ -5,7 +5,7 @@ import { HashPassword, GenerateSalt } from '../MiscellaneousParts/HashPass';
 import { CookiesProvider, useCookies } from 'react-cookie';
 import { updatePassword } from '../MiscellaneousParts/ServerCall';
 
-export default function HelperPasswordChange(UserID = 4) {
+export default function HelperPasswordChange({ UserID = 4 }) {
     const [newpass1, setnewpass1] = useState('');
     const [newpass2, setnewpass2] = useState('');
     const [oldpass, setoldpass] = useState('');

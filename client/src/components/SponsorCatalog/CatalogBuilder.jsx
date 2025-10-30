@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Link } from 'react-router-dom';
 import BestBuyBrowser from './BestBuyBrowser';
 import CatalogItemCard from './CatalogItemCard';
+import SponsorNavbar from '../SponsorNavbar';
 
 export default function CatalogBuilder(){
     const sponsor = JSON.parse(localStorage.getItem('user') || '{}');
@@ -41,33 +43,41 @@ export default function CatalogBuilder(){
     }
 
     return (
-        <div className="container mt-4">
-            <h3>Catalog Management</h3>
-            <ul className="nav nav-tabs">
-                <li className="nav-item">
-                    <button className={`nav-link ${tab==='browse' ? 'active' : ''}`} onClick={()=>setTab('browse')}>Browse</button>
-                </li>
-                <li className="nav-item">
-                    <button className={`nav-link ${tab==='mycatalog' ? 'active' : ''}`} onClick={()=>setTab('mycatalog')}>My Catalog</button>
-                </li>
-            </ul>
+        <div>
+            <SponsorNavbar />
+            <div className="container mt-4">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h3>Catalog Management</h3>
+                    <Link to="/SponsorHome" className="btn btn-secondary">
+                        <i className="fas fa-arrow-left me-2"></i>Back to Home
+                    </Link>
+                </div>
+                <ul className="nav nav-tabs">
+                    <li className="nav-item">
+                        <button className={`nav-link ${tab==='browse' ? 'active' : ''}`} onClick={()=>setTab('browse')}>Browse</button>
+                    </li>
+                    <li className="nav-item">
+                        <button className={`nav-link ${tab==='mycatalog' ? 'active' : ''}`} onClick={()=>setTab('mycatalog')}>My Catalog</button>
+                    </li>
+                </ul>
 
-            <div className="mt-3">
-                {tab==='browse' && <BestBuyBrowser onAdd={handleAdd} />}
+                <div className="mt-3">
+                    {tab==='browse' && <BestBuyBrowser onAdd={handleAdd} />}
 
-                {tab==='mycatalog' && (
-                    <div>
-                        {catalog.length===0 ? <p>No products yet.</p> : (
-                            <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))', gap:12}}>
-                                {catalog.map(p => (
-                                    <div key={p.sku}>
-                                        <CatalogItemCard product={{ sku:p.sku, name:p.name, image:p.image, salePrice:p.salePrice }} actionLabel={p.enabled ? 'Deactivate' : 'Activate'} onAction={() => p.enabled ? handleDeactivate(p) : handleActivate(p)} enabled={true} />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                )}
+                    {tab==='mycatalog' && (
+                        <div>
+                            {catalog.length===0 ? <p>No products yet.</p> : (
+                                <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))', gap:12}}>
+                                    {catalog.map(p => (
+                                        <div key={p.sku}>
+                                            <CatalogItemCard product={{ sku:p.sku, name:p.name, image:p.image, salePrice:p.salePrice }} actionLabel={p.enabled ? 'Deactivate' : 'Activate'} onAction={() => p.enabled ? handleDeactivate(p) : handleActivate(p)} enabled={p.enabled} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
