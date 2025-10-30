@@ -92,3 +92,7 @@ CURRENT SPRINT: SPRINT 2
 ## BulkPointsUpdate
 - InputSponsorID: A sponsor for whom to update all drivers' point balances, PointChangeAmount: The amount to change each driver's points by.
 - Updates point values for all DriverID, SponsorID mappings with a SponsorID of InputSponsorID. All changes are entered as a separate entry into the POINTCHANGELOG table.
+
+## DATABASE TRIGGERS LIST:
+- The GENERIC_ACTION_AUDIT table has a trigger on it's table that automatically replaces
+EventTime with the current time and date upon inserting into the table.
