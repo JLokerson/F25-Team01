@@ -91,7 +91,7 @@ async function addSponsorUser(data) {
 async function toggleSponsorUserActivity(SponsorID) {
     try {
 
-        // First get the UserID associated with this driver
+        // First get the UserID associated with this sponsor
         const getUserQuery = "SELECT SPONSOR_USER.SponsorUserID FROM SPONSOR_USER WHERE SponsorID = ?";
         const driverResult = await db.executeQuery(getUserQuery, [driverID]);
         
@@ -110,6 +110,22 @@ async function toggleSponsorUserActivity(SponsorID) {
         return result;
     } catch (error) {
         console.error("Failed to toggle sponsor user:", error);
+        throw error;
+    }
+}
+
+async function toggleSponsorActivity(SponsorID) {
+    try {
+        
+        // Mark account as disabled on User table
+        console.log("Toggling activity of sponsor user with SponsorID:", SponsorID);
+        const deleteDriverQuery = "call ToggleSponsorEnabled(?)";
+        await db.executeQuery(deleteDriverQuery, [SponsorID]);
+        
+        console.log("Sponsor disabled/enabled successfully.");
+        return result;
+    } catch (error) {
+        console.error("Failed to toggle sponsor:", error);
         throw error;
     }
 }
@@ -275,12 +291,27 @@ router.get("/debug", (req, res) => {
 
 
 module.exports = {router};
+router.delete("/toggleSponsorUserActivity/:driverID", async (req, res, next) => {
+    
+    const SponsorID = req.params.SponsorID;
+    console.log('Received disable request for driver ID:', SponsorID);
+    try {
+        const result = await toggleSponsorUserActivity(SponsorID);
+        res.status(200).json({ message: 'Driver activity toggled successfully!' });
+    } catch (error) {
+        console.error('Error toggling activity for driver:', error);
+        res.status(500).send('Error toggling activity for driver.');
+    }
+});
+
+
+module.exports = {router};
 router.delete("/toggleSponsorActivity/:driverID", async (req, res, next) => {
     
-    const driverID = req.params.driverID;
-    console.log('Received disable request for driver ID:', driverID);
+    const SponsorID = req.params.SponsorID;
+    console.log('Received disable request for driver ID:', SponsorID);
     try {
-        const result = await toggleSponsorUserActivity(driverID);
+        const result = await toggleSponsorActivity(SponsorID);
         res.status(200).json({ message: 'Driver activity toggled successfully!' });
     } catch (error) {
         console.error('Error toggling activity for driver:', error);
