@@ -1,8 +1,19 @@
 import React from 'react';
 
 export default function CatalogItemCard({ product, actionLabel = 'Add', onAction, small=false, enabled=true }){
+    const containerStyle = {
+        border: '1px solid #ddd',
+        borderRadius: 8,
+        padding: 12,
+        textAlign: 'center',
+        transition: 'opacity 200ms ease, filter 200ms ease',
+        opacity: enabled ? 1 : 0.45,
+        filter: enabled ? 'none' : 'grayscale(80%)',
+        background: enabled ? 'white' : '#f8f9fa'
+    };
+
     return (
-        <div style={{border:'1px solid #ddd', borderRadius:8, padding:12, textAlign:'center'}}>
+        <div style={containerStyle}>
             <div style={{height:120, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:8}}>
                 <img src={product.image || product.ITEM_IMG || 'https://via.placeholder.com/150'} alt={product.name || product.ITEM_NAME} style={{maxHeight:110, maxWidth:'100%'}} />
             </div>

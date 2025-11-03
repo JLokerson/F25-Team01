@@ -61,7 +61,7 @@ export default function CatalogBuilder(){
                             <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))', gap:12}}>
                                 {catalog.map(p => (
                                     <div key={p.sku}>
-                                        <CatalogItemCard product={{ sku:p.sku, name:p.name, image:p.image, salePrice:p.salePrice }} actionLabel={p.enabled ? 'Deactivate' : 'Activate'} onAction={() => p.enabled ? handleDeactivate(p) : handleActivate(p)} enabled={true} />
+                                        <CatalogItemCard product={{ sku:p.sku, name:p.name, image:git log --since="7 days ago"p.image, salePrice:p.salePrice }} actionLabel={p.enabled ? 'Deactivate' : 'Activate'} onAction={() => p.enabled ? handleDeactivate(p) : handleActivate(p)} enabled={true} />
                                     </div>
                                 ))}
                             </div>
