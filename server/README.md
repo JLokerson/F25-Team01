@@ -85,6 +85,12 @@ CURRENT SPRINT: SPRINT 2
 - UserID: ID of the User account to have it's activity status toggled on/off.
 - Updates the entry for the row matching the provided UserID in the User table, setting the ActiveAccount field to NOT ActiveAccount.
 
+
+## ToggleSponsorActivity
+- SponsorID: ID of a sponsor organisation to be enabled/disabled.
+- Updates the entry for the row matching the provided sponsorID to set the Enabled status to whatever it wasn't before. Can cause sponsors to be hidden upon retrieving generic driverinfo.
+
+
 ## PointsUpdate
 - DriverID: ID of the driver to update points for, PointChangeAmount: Amount to increase points by, SponsorID sponsor to change driver's points for, SponsorID: ID of the sponsor for the mapping (in case user has multiple sponsors)
 - Updates Point value for the mapping of DriverID, SponsorID is changed by PointChangeAmount. The change is logged in the POINTCHANGELOG table.
