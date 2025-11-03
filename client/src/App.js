@@ -13,6 +13,7 @@ import DriverProfile from './components/ProfilePages/DriverProfile'
 import SponsorProfile from './components/ProfilePages/SponsorProfile';
 import SponsorDriverManagement from './components/SponsorDriverManagement';
 import PendingApplications from './components/PendingApplications';
+import AdminApplications from './components/AdminApplications';
 import CatalogBuilder from './components/SponsorCatalog/CatalogBuilder';
 import Products from './components/Products';
 import MakeNewUser from './components/MakeNewUser'; 
@@ -51,6 +52,7 @@ function AppContent() {
         {/* Admin routes */}
         <Route path="/adminhome" element={<AdminHome />} />
         <Route path="/adminprofile" element={<AdminProfile />} />
+        <Route path="/admin-applications" element={<AdminApplications />} />
 
         {/* Sponsor routes */}
         <Route path="/sponsorhome" element={<SponsorHome />} />

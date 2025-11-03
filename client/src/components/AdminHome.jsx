@@ -49,6 +49,51 @@ export default function AdminHome() {
                         {/* Impostor mode controls moved to navbar */}
                     </div>
                 </div>
+                
+                {/* Admin Action Cards */}
+                <div className="row mt-4">
+                    <div className="col-md-4 mb-3">
+                        <div className="card h-100">
+                            <div className="card-body text-center">
+                                <i className="fas fa-file-alt fa-3x text-primary mb-3"></i>
+                                <h5 className="card-title">Driver Applications</h5>
+                                <p className="card-text">Review and manage driver applications from all sponsor organizations</p>
+                                <Link to="/admin-applications" className="btn btn-primary">
+                                    <i className="fas fa-eye me-1"></i>View Applications
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="col-md-4 mb-3">
+                        <div className="card h-100">
+                            <div className="card-body text-center">
+                                <i className="fas fa-user-plus fa-3x text-success mb-3"></i>
+                                <h5 className="card-title">Create New User</h5>
+                                <p className="card-text">Add new users to the system with different roles and permissions</p>
+                                <Link to="/MakeNewUser" className="btn btn-success">
+                                    <i className="fas fa-plus me-1"></i>Create User
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="col-md-4 mb-3">
+                        <div className="card h-100">
+                            <div className="card-body text-center">
+                                <i className="fas fa-user-secret fa-3x text-warning mb-3"></i>
+                                <h5 className="card-title">Impostor Mode</h5>
+                                <p className="card-text">View the system from the perspective of drivers or sponsors</p>
+                                <button 
+                                    className="btn btn-warning"
+                                    onClick={() => window.dispatchEvent(new Event('openImpostorModal'))}
+                                >
+                                    <i className="fas fa-mask me-1"></i>Enter Impostor Mode
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <PasswordChangeModal 

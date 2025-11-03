@@ -106,6 +106,21 @@ export const getAllAdmins = () => apiCall('GET', '/adminAPI/getAllAdmins');
  */
 export const addAdmin = (adminData) => apiCall('POST', '/adminAPI/addAdmin', adminData);
 
+/**
+ * Fetches all driver applications from all sponsor organizations.
+ */
+export const getAllApplications = () => apiCall('GET', '/adminAPI/getAllApplications');
+
+/**
+ * Updates an application status (approve/deny).
+ * @param {Object} applicationData - The application update data.
+ * @param {number} applicationData.applicationId - The ID of the application.
+ * @param {string} applicationData.status - The new status ('approved' or 'denied').
+ * @param {string} applicationData.processedBy - The admin who processed the application.
+ * @param {string} [applicationData.denialReason] - The reason for denial (if denied).
+ */
+export const updateApplicationStatus = (applicationData) => apiCall('POST', '/adminAPI/updateApplicationStatus', applicationData);
+
 
 // --- Driver API Calls ---
 

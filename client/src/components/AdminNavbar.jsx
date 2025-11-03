@@ -129,6 +129,9 @@ export default function AdminNavbar() {
                                 <Link className="nav-link" to="#" style={textStyle}>User Management</Link>
                             </li>
                             <li className="nav-item">
+                                <Link className="nav-link" to="/admin-applications" style={textStyle}>Driver Applications</Link>
+                            </li>
+                            <li className="nav-item">
                                 <Link className="nav-link" to="/MakeNewUser" style={textStyle}>Make New User</Link>
                             </li>
                         </ul>
