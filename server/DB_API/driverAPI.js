@@ -166,8 +166,18 @@ router.use(express.json());
 
 router.get("/getAllDrivers", async (req, res, next) => {
     try {
-        const admins = await getAllDrivers();
-        res.json(admins);
+        const result = await getAllDrivers();
+        res.json(result);
+    } catch (error) {
+        res.status(500).send('Database error.');
+    }
+});
+
+router.get("/getSpecificDriver", async (req, res, next) => {
+    const data = (req.body && Object.keys(req.body).length > 0) ? req.body : req.query;
+    try {
+        const result = await getSpecificDriverSponsors(data);
+        res.json(result);
     } catch (error) {
         res.status(500).send('Database error.');
     }
