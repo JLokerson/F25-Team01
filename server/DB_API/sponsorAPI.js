@@ -264,12 +264,12 @@ router.post('/updateProductPrice', async (req, res, next) => {
     }
 });
 
-router.delete("/toggleDriverActivity/:driverID", async (req, res, next) => {
+router.delete("/toggleSponsorActivity/:driverID", async (req, res, next) => {
     
     const driverID = req.params.driverID;
     console.log('Received disable request for driver ID:', driverID);
     try {
-        const result = await toggleDriverActivity(driverID);
+        const result = await toggleSponsorUserActivity(driverID);
         res.status(200).json({ message: 'Driver activity toggled successfully!' });
     } catch (error) {
         console.error('Error toggling activity for driver:', error);
