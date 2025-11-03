@@ -88,7 +88,6 @@ async function addSponsorUser(data) {
 }
 
 
-// Replacement for removeDriver, removeDriver left for consistency.
 async function toggleSponsorUserActivity(SponsorID) {
     try {
 
