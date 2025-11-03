@@ -159,6 +159,7 @@ async function toggleDriverActivity(driverID) {
     try {
         console.log(`Starting toggleDriverActivity for DriverID: ${driverID}`);
         
+
         // First get the UserID associated with this driver
         const getUserQuery = "SELECT UserID FROM DRIVER WHERE DriverID = ?";
         const driverResult = await db.executeQuery(getUserQuery, [driverID]);
@@ -249,6 +250,7 @@ router.delete("/removeDriver/:driverID", async (req, res, next) => {
 });
 
 router.post("/toggleDriverActivity/:driverID", async (req, res, next) => {
+    
     const driverID = req.params.driverID;
     console.log('Received toggle activity request for driver ID:', driverID);
     
