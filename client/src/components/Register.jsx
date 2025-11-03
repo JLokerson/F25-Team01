@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { GenerateSalt } from './MiscellaneousParts/HashPass';
+import { addUser, login, checkEmailExist } from './MiscellaneousParts/ServerCall';
 
 //TO DO: how do we want to handle user types? Right now it defaults to Driver (1) for all new registrations
 // Do we want driver to make an account w a sponsor or is that something they can do after making account? 
@@ -21,12 +22,7 @@ export default function Register() {
 
   const checkEmailExists = async (email) => {
     try {
-      const response = await fetch(`http://localhost:4000/userAPI/checkEmail?email=${encodeURIComponent(email)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await checkEmailExist(email);
       const data = await response.json();
       return data.exists;
     } catch (error) {
@@ -37,12 +33,7 @@ export default function Register() {
 
   const loginUser = async (email, password) => {
     try {
-      const response = await fetch(`http://localhost:4000/userAPI/login?Email=${encodeURIComponent(email)}&Password=${encodeURIComponent(password)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await login({ Email: email, Password: password });
 
       const responseText = await response.text();
       let data;
@@ -92,13 +83,7 @@ export default function Register() {
     };
 
     try {
-      const response = await fetch('http://localhost:4000/userAPI/addUser', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(user)
-      });
+      const response = await addUser(user);
       
       const data = await response.json().catch(() => ({}));
       

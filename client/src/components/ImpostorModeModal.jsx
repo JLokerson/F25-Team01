@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAllSponsors } from './MiscellaneousParts/ServerCall';
 
 export default function ImpostorModeModal({ show, onClose, onSetImpostorMode }) {
     const navigate = useNavigate();
@@ -19,12 +20,7 @@ export default function ImpostorModeModal({ show, onClose, onSetImpostorMode }) 
         
         try {
             console.log('Fetching sponsors from API...');
-            const response = await fetch('http://localhost:4000/sponsorAPI/getAllSponsors', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
+            const response = await getAllSponsors();
 
             console.log('Response status:', response.status);
 

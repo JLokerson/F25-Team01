@@ -4,6 +4,7 @@ import DriverNavbar from '../DriverNavbar';
 import HelperPasswordChange from './HelperPasswordChange';
 import driversSeed from '../../content/json-assets/driver_sample.json';
 import { CookiesProvider, useCookies } from 'react-cookie';
+import { getAllSponsors, getAllDrivers } from '../MiscellaneousParts/ServerCall';
 
 export default function DriverProfile() {
     const [driver, setDriver] = useState(null);
@@ -70,7 +71,7 @@ export default function DriverProfile() {
         console.log('DriverProfile - UserInfo:', userInfo); // Debug log
         if (userInfo && userInfo.UserID) {
             try {
-                const response = await fetch(`http://localhost:4000/driverAPI/getAllDrivers`);
+                const response = await getAllDrivers();
                 if (response.ok) {
                     const allDrivers = await response.json();
                     console.log('DriverProfile - All drivers:', allDrivers); // Debug log
@@ -103,7 +104,7 @@ export default function DriverProfile() {
 
     const fetchSponsorName = async (sponsorID) => {
         try {
-            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+            const response = await getAllSponsors();
             if (response.ok) {
                 const allSponsors = await response.json();
                 console.log('DriverProfile - All sponsors:', allSponsors); // Debug log

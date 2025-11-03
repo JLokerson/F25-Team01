@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import SponsorNavbar from './SponsorNavbar';
 import { GenerateSalt } from './MiscellaneousParts/HashPass'; // <-- Import GenerateSalt
+import { getAllSponsorUsers, getAllDrivers } from './MiscellaneousParts/ServerCall';
 
 export default function SponsorDriverManagement() {
     const [drivers, setDrivers] = useState([]);
@@ -35,7 +36,7 @@ export default function SponsorDriverManagement() {
         const userInfo = getUserInfo();
         if (userInfo && userInfo.UserID) {
             try {
-                const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+                const response = await getAllSponsorUsers();
                 if (response.ok) {
                     const allSponsorUsers = await response.json();
                     const currentSponsorInfo = allSponsorUsers.find(s => s.UserID === userInfo.UserID);
@@ -53,7 +54,7 @@ export default function SponsorDriverManagement() {
 
     const fetchDriversForSponsor = async (sponsorID) => {
         try {
-            const response = await fetch(`http://localhost:4000/driverAPI/getAllDrivers`);
+            const response = await getAllDrivers();
             if (response.ok) {
                 const allDrivers = await response.json();
                 const sponsorDrivers = allDrivers.filter(driver => driver.SponsorID === sponsorID);
