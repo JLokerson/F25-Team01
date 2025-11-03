@@ -88,6 +88,34 @@ async function addSponsorUser(data) {
 }
 
 
+// Replacement for removeDriver, removeDriver left for consistency.
+async function toggleSponsorUserActivity(SponsorID) {
+    try {
+
+        // First get the UserID associated with this driver
+        const getUserQuery = "SELECT SPONSOR_USER.SponsorUserID FROM SPONSOR_USER WHERE SponsorID = ?";
+        const driverResult = await db.executeQuery(getUserQuery, [driverID]);
+        
+        if (driverResult.length === 0) {
+            throw new Error("Sponsor User not found");
+        }
+        
+        const userID = driverResult[0].UserID;
+        
+        // Mark account as disabled on User table
+        console.log("Toggling activity of sponsor user with SponsorID:", driverID);
+        const deleteDriverQuery = "call ToggleAccountActivity(?)";
+        await db.executeQuery(deleteDriverQuery, [userID]);
+        
+        console.log("Sponsor User disabled/enabled successfully.");
+        return result;
+    } catch (error) {
+        console.error("Failed to toggle sponsor user:", error);
+        throw error;
+    }
+}
+
+
 var express = require("express");
 var router=express.Router();
 
@@ -233,6 +261,19 @@ router.post('/updateProductPrice', async (req, res, next) => {
     } catch (error) {
         console.error('Error in updateProductPrice:', error);
         res.status(500).json({ message: 'Failed to update product price' });
+    }
+});
+
+router.delete("/toggleDriverActivity/:driverID", async (req, res, next) => {
+    
+    const driverID = req.params.driverID;
+    console.log('Received disable request for driver ID:', driverID);
+    try {
+        const result = await toggleDriverActivity(driverID);
+        res.status(200).json({ message: 'Driver activity toggled successfully!' });
+    } catch (error) {
+        console.error('Error toggling activity for driver:', error);
+        res.status(500).send('Error toggling activity for driver.');
     }
 });
 
