@@ -116,6 +116,7 @@ async function removeDriver(driverID) {
 // Replacement for removeDriver, removeDriver left for consistency.
 async function toggleDriverActivity(driverID) {
     try {
+
         // First get the UserID associated with this driver
         const getUserQuery = "SELECT UserID FROM DRIVER WHERE DriverID = ?";
         const driverResult = await db.executeQuery(getUserQuery, [driverID]);
@@ -203,6 +204,7 @@ router.delete("/removeDriver/:driverID", async (req, res, next) => {
 });
 
 router.delete("/toggleDriverActivity/:driverID", async (req, res, next) => {
+    
     const driverID = req.params.driverID;
     console.log('Received disable request for driver ID:', driverID);
     try {
