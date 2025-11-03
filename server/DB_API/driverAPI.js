@@ -9,6 +9,20 @@ async function getAllDrivers(){
     try {
         console.log("Reading all driver user info");
 
+        const query = "call GetDriverInfo();";
+        const allDrivers = await db.executeQuery(query);
+        console.log("Returning %s Drivers", allDrivers.length);
+        return allDrivers;
+    } catch (error) {
+        console.error("Failed to get all drivers: ", error);
+        throw error;
+    }
+}
+
+async function getSpecificDriverSponsors(data){
+    try {
+        console.log("Reading info for chosen driver");
+
         const query = "SELECT DRIVER.DriverID, DRIVER.SponsorID, DRIVER.UserID, USER.FirstName, USER.LastName, USER.Email FROM DRIVER \
                         INNER JOIN USER ON DRIVER.USERID = USER.USERID;";
         const allDrivers = await db.executeQuery(query);
@@ -32,8 +46,8 @@ async function addDriver(data) {
         const newUserId = userResult.insertId;
 
         console.log("Adding new driver with UserID:", newUserId);
-        const sql = "INSERT INTO DRIVER (SponsorID, UserID) VALUES (?, ?)";
-        const adminResult = await db.executeQuery(sql, [sponsorID, newUserId]);
+        const sql = "call AddDriver (?, ?)";
+        const adminResult = await db.executeQuery(sql, [newUserId, sponsorID]);
 
         console.log("New driver record created successfully.");
         return adminResult;
