@@ -36,7 +36,6 @@ function getSponsorIdForStorage() {
         const userRaw = localStorage.getItem('user');
         if (!userRaw) return 'default';
         const user = JSON.parse(userRaw);
-        // Prefer SponsorID if present (sponsor user), otherwise UserID as a fallback bucket
         return user.SponsorID || user.UserID || 'default';
     } catch {
         return 'default';
@@ -63,7 +62,7 @@ function saveCategoryState(sponsorId, state) {
 
 export default function BestBuyBrowser() {
     const [filter, setFilter] = useState('');
-    const [inexact, setInexact] = useState(true); // inexact contains match by default
+    const [inexact, setInexact] = useState(true);
     const [selectedKey, setSelectedKey] = useState(null);
     const sponsorId = useMemo(() => getSponsorIdForStorage(), []);
     const [categoryState, setCategoryState] = useState(() => loadCategoryState(sponsorId));
@@ -178,7 +177,7 @@ function CategorySearchLink({ baseQuery }) {
     return (
         <div className="d-flex gap-2">
             <input className="form-control" style={{ maxWidth: 360 }} placeholder="Optional: inexact name filter (e.g., pro, wireless)" value={term} onChange={e=>setTerm(e.target.value)} />
-            <a href={url} target="_blank" rel="noreferrer" className="btn btn-primary">Open Results</a>
+            <a href={url} target="_blank" rel=-"noreferrer" className="btn btn-primary">Open Results</a>
         </div>
     );
 }
