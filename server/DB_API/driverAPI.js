@@ -22,16 +22,35 @@ function hashPassword(password, salt) {
 }
 
 /**
- * Retrieves all admins by joining the Driver and User tables.
- * @returns {Promise<Array<Object>>} A promise that resolves with an array of admin user objects.
+ * Retrieves all drivers by joining the Driver and User tables, including inactive accounts.
+ * @returns {Promise<Array<Object>>} A promise that resolves with an array of driver user objects.
  */
 async function getAllDrivers(){
     try {
-        console.log("Reading all driver user info");
+        console.log("Reading all driver user info (including inactive accounts)");
 
-        const query = "call GetDriverInfo();";
+        // Simplified query to ensure we get all the right data
+        const query = `
+            SELECT 
+                u.FirstName, 
+                u.LastName, 
+                u.Email, 
+                u.UserID, 
+                u.ActiveAccount,
+                d.DriverID, 
+                d.SponsorID, 
+                COALESCE(d.Points, 0) as Points
+            FROM DRIVER d
+            INNER JOIN USER u ON d.UserID = u.UserID
+            WHERE u.UserType = 1
+            ORDER BY u.ActiveAccount DESC, d.SponsorID, u.LastName, u.FirstName
+        `;
+        
         const allDrivers = await db.executeQuery(query);
-        console.log("Returning %s Drivers", allDrivers.length);
+        console.log("Raw SQL result:", allDrivers);
+        console.log("Returning %s Drivers (including inactive)", allDrivers.length);
+        
+        // Ensure we return the data in a consistent format
         return allDrivers;
     } catch (error) {
         console.error("Failed to get all drivers: ", error);
@@ -474,9 +493,124 @@ router.post("/toggleDriverActivity/:driverID", async (req, res, next) => {
 });
 
 /**
+ * Debug function to show all users from different tables
+ * @returns {Promise<object>} Debug information about all users
+ */
+async function debugAllUsers() {
+    try {
+        console.log("=== DEBUG: Fetching all user data from multiple tables ===");
+        
+        const debugData = {};
+        
+        // Get all users from USER table
+        const allUsersQuery = "SELECT UserID, FirstName, LastName, Email, UserType, ActiveAccount FROM USER ORDER BY UserID";
+        debugData.allUsers = await db.executeQuery(allUsersQuery);
+        console.log(`Found ${debugData.allUsers.length} users in USER table`);
+        
+        // Get all drivers from DRIVER table with more detail
+        const allDriversQuery = `
+            SELECT d.DriverID, d.UserID, d.SponsorID, d.Points,
+                   u.FirstName, u.LastName, u.Email, u.ActiveAccount
+            FROM DRIVER d
+            LEFT JOIN USER u ON d.UserID = u.UserID
+            ORDER BY d.DriverID
+        `;
+        debugData.allDrivers = await db.executeQuery(allDriversQuery);
+        console.log(`Found ${debugData.allDrivers.length} drivers in DRIVER table`);
+        
+        // Get all sponsor users from SPONSOR_USER table
+        const allSponsorUsersQuery = `
+            SELECT su.SponsorUserID, su.UserID, su.SponsorID,
+                   u.FirstName, u.LastName, u.Email, u.ActiveAccount
+            FROM SPONSOR_USER su
+            LEFT JOIN USER u ON su.UserID = u.UserID
+            ORDER BY su.SponsorUserID
+        `;
+        debugData.allSponsorUsers = await db.executeQuery(allSponsorUsersQuery);
+        console.log(`Found ${debugData.allSponsorUsers.length} sponsor users in SPONSOR_USER table`);
+        
+        // Get all sponsors from SPONSOR table
+        const allSponsorsQuery = "SELECT SponsorID, Name, EnabledSponsor FROM SPONSOR ORDER BY SponsorID";
+        debugData.allSponsors = await db.executeQuery(allSponsorsQuery);
+        console.log(`Found ${debugData.allSponsors.length} sponsors in SPONSOR table`);
+        
+        // Get the same data that getAllDrivers() returns
+        debugData.getAllDriversResult = await getAllDrivers();
+        console.log(`getAllDrivers() returned ${debugData.getAllDriversResult.length} drivers`);
+        
+        // Analysis: Find users without driver records
+        const userIDsWithDrivers = new Set(debugData.allDrivers.map(d => d.UserID));
+        debugData.usersWithoutDriverRecords = debugData.allUsers.filter(user => 
+            user.UserType === 1 && !userIDsWithDrivers.has(user.UserID)
+        );
+        
+        // Analysis: Find drivers without valid sponsors
+        const validSponsorIDs = new Set(debugData.allSponsors.map(s => s.SponsorID));
+        debugData.driversWithInvalidSponsors = debugData.allDrivers.filter(driver => 
+            !validSponsorIDs.has(driver.SponsorID)
+        );
+        
+        // Analysis: Find duplicates and data issues
+        debugData.duplicateDriverUserIDs = [];
+        const userIDCounts = {};
+        debugData.allDrivers.forEach(driver => {
+            userIDCounts[driver.UserID] = (userIDCounts[driver.UserID] || 0) + 1;
+        });
+        Object.keys(userIDCounts).forEach(userID => {
+            if (userIDCounts[userID] > 1) {
+                debugData.duplicateDriverUserIDs.push({
+                    UserID: parseInt(userID),
+                    count: userIDCounts[userID],
+                    drivers: debugData.allDrivers.filter(d => d.UserID === parseInt(userID))
+                });
+            }
+        });
+        
+        // Summary stats
+        debugData.summary = {
+            totalUsers: debugData.allUsers.length,
+            activeUsers: debugData.allUsers.filter(u => u.ActiveAccount === 1).length,
+            inactiveUsers: debugData.allUsers.filter(u => u.ActiveAccount === 0).length,
+            driverTypeUsers: debugData.allUsers.filter(u => u.UserType === 1).length,
+            totalDrivers: debugData.allDrivers.length,
+            totalSponsorUsers: debugData.allSponsorUsers.length,
+            totalSponsors: debugData.allSponsors.length,
+            usersWithoutDriverRecords: debugData.usersWithoutDriverRecords.length,
+            driversWithInvalidSponsors: debugData.driversWithInvalidSponsors.length,
+            duplicateDriverUserIDs: debugData.duplicateDriverUserIDs.length
+        };
+        
+        console.log("=== DEBUG SUMMARY ===");
+        console.log(debugData.summary);
+        console.log("=== DUPLICATE ANALYSIS ===");
+        console.log("Users with multiple DRIVER records:", debugData.duplicateDriverUserIDs);
+        
+        return debugData;
+    } catch (error) {
+        console.error("Failed to debug all users:", error);
+        throw error;
+    }
+}
+
+router.get("/debugAllUsers", async (req, res, next) => {
+    console.log('Received request for debug all users data');
+    try {
+        const result = await debugAllUsers();
+        res.status(200).json({
+            message: 'Debug data retrieved successfully',
+            timestamp: new Date().toISOString(),
+            data: result
+        });
+    } catch (error) {
+        console.error('Error in debug all users:', error);
+        res.status(500).json({ message: 'Error retrieving debug data.', error: error.message });
+    }
+});
+
+/**
  * Cleans up duplicate driver records for the same user
  * @param {number} userID - The UserID that has duplicate driver records
- * @returns {Promise<object>} Result of the cleanup operation
+ * @returns {Promise<object>}
  */
 async function cleanupDuplicateDriversForUser(userID) {
     try {
@@ -600,6 +734,66 @@ router.post("/createMissingDriverRecords", async (req, res, next) => {
     } catch (error) {
         console.error('Error creating missing DRIVER records:', error);
         res.status(500).json({ message: 'Error creating missing DRIVER records.', error: error.message });
+    }
+});
+
+/**
+ * Retrieves drivers for a specific sponsor, including inactive accounts.
+ * @param {number} sponsorID - The sponsor ID to filter by
+ * @returns {Promise<Array<Object>>} A promise that resolves with an array of driver user objects.
+ */
+async function getDriversForSponsor(sponsorID) {
+    try {
+        console.log(`Reading driver info for SponsorID: ${sponsorID} (including inactive accounts)`);
+
+        const query = `
+            SELECT 
+                u.FirstName, 
+                u.LastName, 
+                u.Email, 
+                u.UserID, 
+                u.ActiveAccount,
+                d.DriverID, 
+                d.SponsorID, 
+                COALESCE(d.Points, 0) as Points
+            FROM DRIVER d
+            INNER JOIN USER u ON d.UserID = u.UserID
+            WHERE u.UserType = 1 AND d.SponsorID = ?
+            ORDER BY u.ActiveAccount DESC, u.LastName, u.FirstName
+        `;
+        
+        const sponsorDrivers = await db.executeQuery(query, [sponsorID]);
+        console.log(`Returning ${sponsorDrivers.length} Drivers for SponsorID ${sponsorID} (including inactive)`);
+        
+        return sponsorDrivers;
+    } catch (error) {
+        console.error(`Failed to get drivers for sponsor ${sponsorID}:`, error);
+        throw error;
+    }
+}
+
+router.get("/getDriversForSponsor/:sponsorID", async (req, res, next) => {
+    const sponsorID = req.params.sponsorID;
+    console.log('Received request for drivers for SponsorID:', sponsorID);
+    
+    // Validate sponsorID
+    if (isNaN(sponsorID) || sponsorID <= 0) {
+        console.error('Invalid SponsorID provided:', sponsorID);
+        return res.status(400).json({ 
+            message: 'Invalid SponsorID provided',
+            received: sponsorID
+        });
+    }
+    
+    try {
+        const result = await getDriversForSponsor(parseInt(sponsorID));
+        res.json(result);
+    } catch (error) {
+        console.error('Error fetching drivers for sponsor:', error);
+        res.status(500).json({ 
+            message: 'Database error.',
+            error: error.message 
+        });
     }
 });
 

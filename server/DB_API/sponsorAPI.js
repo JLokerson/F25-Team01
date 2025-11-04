@@ -50,13 +50,13 @@ async function addSponsor(data) {
  */
 async function getAllSponsorUsers(){
     try {
-        console.log("Reading all sponsor user info");
+        console.log("Reading all sponsor user info (including inactive accounts)");
 
         const query = "SELECT SPONSOR_USER.SponsorUserID, SPONSOR_USER.SponsorID,\
-                        SPONSOR_USER.UserID, USER.FirstName, USER.LastName, USER.Email FROM SPONSOR_USER \
+                        SPONSOR_USER.UserID, USER.FirstName, USER.LastName, USER.Email, USER.ActiveAccount FROM SPONSOR_USER \
                         INNER JOIN USER ON SPONSOR_USER.USERID = USER.USERID;";
         const allSponsorUsers = await db.executeQuery(query);
-        console.log("Returning %s Sponsor Users", allSponsorUsers.length);
+        console.log("Returning %s Sponsor Users (including inactive)", allSponsorUsers.length);
         return allSponsorUsers;
     } catch (error) {
         console.error("Failed to get all sponsor users: ", error);
