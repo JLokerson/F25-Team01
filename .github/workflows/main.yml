@@ -31,5 +31,5 @@ jobs:
           ls
           zip -r server.zip server -x "server/*.md"
           ls
-          aws lambda update-function-code --function-name=Team01-LambdaFunction --zip-file=fileb://deploy.zip 
+          aws lambda update-function-code --function-name=Team01-LambdaFunction --zip-file=fileb://server.zip 
       
