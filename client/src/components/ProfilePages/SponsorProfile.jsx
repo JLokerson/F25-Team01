@@ -251,15 +251,10 @@ export default function SponsorProfile() {
         return;
     }
 }
-import React, { useState, useEffect } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import SponsorNavbar from '../SponsorNavbar';
-import HelperPasswordChange from './HelperPasswordChange';
-import sponsors from '../../content/json-assets/sponsor-user_sample.json';
-import driversSeed from '../../content/json-assets/driver_sample.json';
-import { CookiesProvider, useCookies } from 'react-cookie';
-import { login } from '../MiscellaneousParts/ServerCall';
 
+// COMMENTED OUT - OLDER VERSION OF SponsorProfile COMPONENT
+// This is the original version with tabs that was duplicated
+/*
 export default function SponsorProfile() {
     // use this info to try a login.
     const [cookies, setCookie] = useCookies(['username', 'password']);
@@ -343,7 +338,7 @@ export default function SponsorProfile() {
                 <div className="container mt-4">
                     <h2>Sponsor Profile</h2>
                     
-                    {/* Tab Navigation */}
+                    {/* Tab Navigation /}
                     <ul className="nav nav-tabs mb-4">
                         <li className="nav-item">
                             <button 
@@ -363,7 +358,7 @@ export default function SponsorProfile() {
                         </li>
                     </ul>
 
-                    {/* Tab Content */}
+                    {/* Tab Content /}
                     {activeTab === 'profile' && (
                         <div>
                             <ul className="list-group mb-3">
@@ -438,7 +433,7 @@ export default function SponsorProfile() {
                         </div>
                     )}
 
-                    {/* Inline modal/editor */}
+                    {/* Inline modal/editor /}
                     {editing && (
                         <div style={{position:'fixed', left:'50%', top:'50%', transform:'translate(-50%,-50%)', background:'#fff', padding:20, borderRadius:8, boxShadow:'0 4px 20px rgba(0,0,0,.3)', zIndex:9999, width:360}}>
                             <h5>Edit points — {editing.driver.firstName} {editing.driver.lastName}</h5>
@@ -459,3 +454,4 @@ export default function SponsorProfile() {
         return;
     }
 }
+*/

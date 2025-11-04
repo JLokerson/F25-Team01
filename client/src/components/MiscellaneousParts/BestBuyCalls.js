@@ -113,7 +113,7 @@ export const findCatId = async (name) => {
 /**
  * Get N products from a category ID
  */
-const getProdByCatId = async (categoryId, n = 5) => {
+export const getProdByCatId = async (categoryId, n = 5) => {
   const filter = `categoryPath.id=${categoryId}`;
   const path = `/products(${filter})`;
   const params = {
