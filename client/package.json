@@ -8,6 +8,7 @@
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.13.1",
     "bootstrap": "^5.3.8",
     "react": "^19.1.1",
     "react-cookie": "^8.0.1",
@@ -18,6 +19,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "bb:server": "node src/components/MiscellaneousParts/bbServer.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
