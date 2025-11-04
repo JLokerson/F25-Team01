@@ -39,7 +39,7 @@ var userAPIRouter = require("./DB_API/userAPI").router;
 var adminAPIRouter = require("./DB_API/adminAPI").router;
 var sponsorAPIRouter = require("./DB_API/sponsorAPI").router;
 var driverAPIRouter = require("./DB_API/driverAPI").router;
-var cartAPIRouter = require("./DB_API/cartAPI").router;
+var cartAPIRouter = require("./DB_API/CartAPI").router;
 
 // var userTest = require("./testAPI");
 
@@ -74,7 +74,7 @@ app.get('/test-driver-api', (req, res) => {
   res.json({ message: 'Driver API test route working' });
 });
 
-if (port) {
+if (port == 4000) {
   console.log("Port found - Running local host server");
   app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
