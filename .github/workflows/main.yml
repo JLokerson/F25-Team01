@@ -23,10 +23,13 @@ jobs:
         env:
           CI: true
         run: |
+          ls
           cd ./server
           npm ci
       - name: deploy
         run: |
-          zip -r ../server.zip . -x "*.md"
+          ls
+          zip -r server.zip server -x "server/*.md"
+          ls
           aws lambda update-function-code --function-name=Team01-LambdaFunction --zip-file=fileb://deploy.zip 
       
