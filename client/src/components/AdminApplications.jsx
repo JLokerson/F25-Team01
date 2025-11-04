@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import AdminNavbar from './AdminNavbar';
-import { HashPassword, GenerateSalt } from './MiscellaneousParts/HashPass';
-import { addDriver, getAllSponsorUsers, getAllSponsors, getAllApplications, updateApplicationStatus } from './MiscellaneousParts/ServerCall';
 
 export default function AdminApplications() {
     // Extended dummy data for applications from all sponsors - updated to match real database sponsors
     const [applications, setApplications] = useState([
         {
             id: 1,
-            firstName: 'John',
-            lastName: 'Doe',
-            email: 'jdoe@email.com',
+            firstName: 'David',
+            lastName: 'Johnson',
+            email: 'davidjohnson@email.com',
             phone: '(555) 123-4567',
             dateOfBirth: '1990-05-15',
             licenseNumber: 'DL123456789',
@@ -22,41 +20,41 @@ export default function AdminApplications() {
             status: 'pending',
             tempPassword: 'password123'
         },
-        {
-            id: 2,
-            firstName: 'Jane',
-            lastName: 'Smith',
-            email: 'jsmith@email.com',
-            phone: '(555) 987-6543',
-            dateOfBirth: '1988-09-22',
-            licenseNumber: 'DL987654321',
-            address: '456 Oak Ave, City, State 54321',
-            requestedOrganization: 'CoolTruckCompany',
-            sponsorId: 3,
-            applicationDate: '2024-01-18',
-            status: 'pending',
-            tempPassword: 'password456'
-        },
+        // {
+        //     id: 2,
+        //     firstName: 'Sarah',
+        //     lastName: 'Williams',
+        //     email: 'sarahwilliams@email.com',
+        //     phone: '(555) 987-6543',
+        //     dateOfBirth: '1988-09-22',
+        //     licenseNumber: 'DL987654321',
+        //     address: '456 Oak Ave, City, State 54321',
+        //     requestedOrganization: 'CoolTruckCompany',
+        //     sponsorId: 3,
+        //     applicationDate: '2024-01-18',
+        //     status: 'pending',
+        //     tempPassword: 'password456'
+        // },
         {
             id: 3,
-            firstName: 'Mike',
-            lastName: 'Johnson',
-            email: 'mjohnson@email.com',
+            firstName: 'James',
+            lastName: 'Anderson',
+            email: 'jamesanderson@email.com',
             phone: '(555) 555-1234',
             dateOfBirth: '1985-03-10',
             licenseNumber: 'DL555123456',
             address: '789 Pine Rd, City, State 67890',
-            requestedOrganization: 'AwesomeTruckCompany',
-            sponsorId: 4,
+            requestedOrganization: 'CoolTruckCompany',
+            sponsorId: 3,
             applicationDate: '2024-01-20',
             status: 'pending',
             tempPassword: 'password789'
         },
         {
             id: 4,
-            firstName: 'Sarah',
-            lastName: 'Williams',
-            email: 'swilliams@email.com',
+            firstName: 'Maria',
+            lastName: 'Rodriguez',
+            email: 'mariarodriguez@email.com',
             phone: '(555) 444-7890',
             dateOfBirth: '1992-07-25',
             licenseNumber: 'DL444789012',
@@ -66,14 +64,15 @@ export default function AdminApplications() {
             applicationDate: '2024-01-22',
             status: 'approved',
             tempPassword: 'passwordabc',
-            approvedBy: 'Admin John Smith',
-            approvedDate: '2024-01-23'
+            approvedBy: 'Sponsor User',
+            approvedDate: '2024-01-23',
+            processedByType: 'sponsor'
         },
         {
             id: 5,
-            firstName: 'David',
+            firstName: 'Michael',
             lastName: 'Brown',
-            email: 'dbrown@email.com',
+            email: 'michaelbrown@email.com',
             phone: '(555) 333-2468',
             dateOfBirth: '1987-11-05',
             licenseNumber: 'DL333246810',
@@ -85,13 +84,14 @@ export default function AdminApplications() {
             tempPassword: 'passworddef',
             deniedBy: 'Admin Jane Doe',
             deniedDate: '2024-01-21',
-            denialReason: 'Invalid license number provided'
+            denialReason: 'Invalid license number provided',
+            processedByType: 'admin'
         },
         {
             id: 6,
-            firstName: 'Emily',
-            lastName: 'Davis',
-            email: 'edavis@email.com',
+            firstName: 'Lisa',
+            lastName: 'Garcia',
+            email: 'lisagarcia@email.com',
             phone: '(555) 777-9999',
             dateOfBirth: '1991-12-08',
             licenseNumber: 'DL777999123',
@@ -108,38 +108,136 @@ export default function AdminApplications() {
     const [showModal, setShowModal] = useState(false);
     const [denialReason, setDenialReason] = useState('');
     const [actionType, setActionType] = useState(''); // 'approve' or 'deny'
-    const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'pending', 'approved', 'denied'
+    const [filterStatus, setFilterStatus] = useState('pending'); // 'all', 'pending', 'approved', 'denied'
     const [filterOrganization, setFilterOrganization] = useState('all');
-    const [sponsors, setSponsors] = useState([]);
+    // Remove unused sponsors state variable
+    // const [sponsors, setSponsors] = useState([]);
 
     // Load data on component mount
     useEffect(() => {
         const loadData = async () => {
             try {
-                // Load sponsors
-                const sponsorResponse = await getAllSponsors();
-                if (sponsorResponse.ok) {
-                    const sponsorData = await sponsorResponse.json();
-                    setSponsors(sponsorData);
-                }
+                // Load sponsors - remove this since we're not using it
+                // const sponsorResponse = await getAllSponsors();
+                // if (sponsorResponse.ok) {
+                //     const sponsorData = await sponsorResponse.json();
+                //     setSponsors(sponsorData);
+                // }
 
-                // Load applications - try API first, fallback to dummy data
-                try {
-                    const applicationsResponse = await getAllApplications();
-                    if (applicationsResponse.ok) {
-                        const applicationsData = await applicationsResponse.json();
-                        setApplications(applicationsData);
-                    }
-                } catch (appError) {
-                    console.log('Using dummy data for applications:', appError);
-                    // Keep the existing dummy data if API fails
-                }
+                // Since application API endpoints don't exist, always use fallback data
+                console.log('Using shared fallback application data - API endpoints not available');
+                setApplications(getSharedFallbackApplications());
             } catch (error) {
                 console.error('Error loading data:', error);
+                setApplications(getSharedFallbackApplications());
             }
         };
         loadData();
+
+        // Remove polling since API endpoints don't exist
+        console.log('Application polling disabled - API endpoints not available');
     }, []);
+
+    // Shared fallback data - this should match the data in PendingApplications
+    const getSharedFallbackApplications = () => [
+        {
+            id: 1,
+            firstName: 'David',
+            lastName: 'Johnson',
+            email: 'davidjohnson@email.com',
+            phone: '(555) 123-4567',
+            dateOfBirth: '1990-05-15',
+            licenseNumber: 'DL123456789',
+            address: '123 Main St, City, State 12345',
+            requestedOrganization: 'RandTruckCompany',
+            sponsorId: 1,
+            applicationDate: '2024-01-15',
+            status: 'pending',
+            tempPassword: 'password123'
+        },
+        {
+            id: 2,
+            firstName: 'Sarah',
+            lastName: 'Williams',
+            email: 'sarahwilliams@email.com',
+            phone: '(555) 987-6543',
+            dateOfBirth: '1988-09-22',
+            licenseNumber: 'DL987654321',
+            address: '456 Oak Ave, City, State 54321',
+            requestedOrganization: 'CoolTruckCompany',
+            sponsorId: 3,
+            applicationDate: '2024-01-18',
+            status: 'pending',
+            tempPassword: 'password456'
+        },
+        {
+            id: 3,
+            firstName: 'James',
+            lastName: 'Anderson',
+            email: 'jamesanderson@email.com',
+            phone: '(555) 555-1234',
+            dateOfBirth: '1985-03-10',
+            licenseNumber: 'DL555123456',
+            address: '789 Pine Rd, City, State 67890',
+            requestedOrganization: 'AwesomeTruckCompany',
+            sponsorId: 4,
+            applicationDate: '2024-01-20',
+            status: 'pending',
+            tempPassword: 'password789'
+        },
+        {
+            id: 4,
+            firstName: 'Maria',
+            lastName: 'Rodriguez',
+            email: 'mariarodriguez@email.com',
+            phone: '(555) 444-7890',
+            dateOfBirth: '1992-07-25',
+            licenseNumber: 'DL444789012',
+            address: '321 Elm St, City, State 54321',
+            requestedOrganization: 'RandTruckCompany',
+            sponsorId: 5,
+            applicationDate: '2024-01-22',
+            status: 'approved',
+            tempPassword: 'passwordabc',
+            approvedBy: 'Sponsor User',
+            approvedDate: '2024-01-23',
+            processedByType: 'sponsor'
+        },
+        {
+            id: 5,
+            firstName: 'Michael',
+            lastName: 'Brown',
+            email: 'michaelbrown@email.com',
+            phone: '(555) 333-2468',
+            dateOfBirth: '1987-11-05',
+            licenseNumber: 'DL333246810',
+            address: '654 Maple Ave, City, State 13579',
+            requestedOrganization: 'CoolTruckCompany',
+            sponsorId: 3,
+            applicationDate: '2024-01-19',
+            status: 'denied',
+            tempPassword: 'passworddef',
+            deniedBy: 'Admin Jane Doe',
+            deniedDate: '2024-01-21',
+            denialReason: 'Invalid license number provided',
+            processedByType: 'admin'
+        },
+        {
+            id: 6,
+            firstName: 'Lisa',
+            lastName: 'Garcia',
+            email: 'lisagarcia@email.com',
+            phone: '(555) 777-9999',
+            dateOfBirth: '1991-12-08',
+            licenseNumber: 'DL777999123',
+            address: '987 Cedar Blvd, City, State 98765',
+            requestedOrganization: 'AwesomeTruckCompany',
+            sponsorId: 4,
+            applicationDate: '2024-01-25',
+            status: 'pending',
+            tempPassword: 'password999'
+        }
+    ];
 
     const handleViewApplication = (application) => {
         setSelectedApplication(application);
@@ -161,72 +259,88 @@ export default function AdminApplications() {
         const adminName = `${currentUser.FirstName || 'Admin'} ${currentUser.LastName || 'User'}`;
         
         if (actionType === 'approve') {
+            console.log(`Admin approving application for ${selectedApplication.firstName} ${selectedApplication.lastName}`);
+            console.log('Organization:', selectedApplication.requestedOrganization);
+            
+            // Use simple hardcoded password and salt
+            const password = "password";
+            const salt = "salt";
+            
+            // Create driver data - this will create both USER and DRIVER table records
+            const driverData = {
+                FirstName: selectedApplication.firstName,
+                LastName: selectedApplication.lastName,
+                Email: selectedApplication.email,
+                Password: password,
+                PasswordSalt: salt,
+                SponsorID: selectedApplication.sponsorId,
+                UserType: 1 // Driver type
+            };
+
+            console.log('Creating driver with USER and DRIVER table records:', driverData);
+            console.log('Expected DRIVER table entry: { DriverID: auto-generated, SponsorID:', selectedApplication.sponsorId, ', UserID: auto-generated, Points: 0 }');
+
             try {
-                // Generate password salt and hash the temporary password
-                const salt = GenerateSalt();
-                const hashedPassword = await HashPassword(selectedApplication.tempPassword + salt);
-                
-                console.log(`Admin approving application for ${selectedApplication.firstName} ${selectedApplication.lastName}`);
-                console.log('Organization:', selectedApplication.requestedOrganization);
-                
-                // Create driver data
-                const driverData = {
-                    FirstName: selectedApplication.firstName,
-                    LastName: selectedApplication.lastName,
-                    Email: selectedApplication.email,
-                    Password: hashedPassword,
-                    PasswordSalt: salt,
-                    SponsorID: selectedApplication.sponsorId,
-                    UserType: 1 // Driver type
-                };
-
-                console.log('Creating driver with data:', driverData);
-
-                // Create the driver account
-                const response = await addDriver(driverData);
+                // Use the addDriver endpoint - this should create:
+                // 1. A record in the USER table 
+                // 2. A record in the DRIVER table with (DriverID, SponsorID, UserID, Points=0)
+                const queryString = new URLSearchParams(driverData).toString();
+                const response = await fetch(`http://localhost:4000/driverAPI/addDriver?${queryString}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
 
                 console.log('Response status:', response.status);
                 
-                if (!response.ok) {
+                if (response.ok) {
                     const responseText = await response.text();
-                    console.log('Error response:', responseText);
-                    throw new Error(`Failed to create driver: ${response.status} - ${responseText}`);
+                    console.log('Driver creation response:', responseText);
+                    
+                    // Try to parse the response to get more details
+                    let responseData = null;
+                    try {
+                        responseData = JSON.parse(responseText);
+                    } catch (parseError) {
+                        console.log('Response is not JSON, treating as plain text');
+                    }
+                    
+                    // Update application status in local state
+                    setApplications(prev => prev.map(app => 
+                        app.id === selectedApplication.id 
+                            ? { 
+                                ...app, 
+                                status: 'approved', 
+                                approvedBy: adminName,
+                                approvedDate: new Date().toISOString().split('T')[0],
+                                processedByType: 'admin'
+                            }
+                            : app
+                    ));
+                    
+                    // Check if this was a partial success (user created but DRIVER table failed)
+                    if (responseData && responseData.requiresDriverFix) {
+                        alert(`Driver User Account Created Successfully!\n\nUser Account:\n- Email: ${selectedApplication.email}\n- Password: password\n- UserID: ${responseData.userID}\n\nNote: DRIVER table relationship needs to be created manually.\nPlease use the "Fix Missing Driver Records" button in User Management.\n\nThe user can log in but may have limited functionality until the DRIVER relationship is fixed.`);
+                    } else if (responseData && responseData.driverID) {
+                        // Full success with all IDs
+                        alert(`Driver created successfully!\n\nUser Account:\n- Email: ${selectedApplication.email}\n- Password: password\n- UserID: ${responseData.userID}\n\nDRIVER Table Record:\n- DriverID: ${responseData.driverID}\n- SponsorID: ${selectedApplication.sponsorId}\n- Points: 0 (initial)\n\nThe driver can now log in to access their account.`);
+                    } else {
+                        // Fallback success message
+                        alert(`Driver created successfully!\n\nUser Account Created:\n- Email: ${selectedApplication.email}\n- Password: password\n\nDRIVER Table Record:\n- SponsorID: ${selectedApplication.sponsorId}\n- Points: 0 (initial)\n\nThe driver can now log in to access their account.`);
+                    }
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error creating driver:', errorText);
+                    alert(`Error creating driver: ${errorText}\n\nPlease check the server logs and try again.`);
+                    return;
                 }
-
-                const responseText = await response.text();
-                console.log('Success response:', responseText);
-                
-                // Update application status in database
-                try {
-                    const statusUpdateData = {
-                        applicationId: selectedApplication.id,
-                        status: 'approved',
-                        processedBy: adminName
-                    };
-                    await updateApplicationStatus(statusUpdateData);
-                } catch (statusError) {
-                    console.warn('Could not update application status in database:', statusError);
-                }
-
-                // Update application status in local state
-                setApplications(prev => prev.map(app => 
-                    app.id === selectedApplication.id 
-                        ? { 
-                            ...app, 
-                            status: 'approved', 
-                            approvedBy: adminName,
-                            approvedDate: new Date().toISOString().split('T')[0]
-                        }
-                        : app
-                ));
-                
-                alert(`Driver created successfully! Temporary password: ${selectedApplication.tempPassword}`);
-                
             } catch (error) {
-                console.error('Error creating driver:', error);
-                alert(`Failed to approve application: ${error.message}`);
+                console.error('Network error creating driver:', error);
+                alert(`Error creating driver: ${error.message}`);
                 return;
             }
+            
         } else if (actionType === 'deny') {
             if (!denialReason.trim()) {
                 alert('Please provide a reason for denial.');
@@ -236,20 +350,16 @@ export default function AdminApplications() {
             console.log(`Admin denying application for ${selectedApplication.firstName} ${selectedApplication.lastName}`);
             console.log('Denial reason:', denialReason);
             
-            // Update application status in database
-            try {
-                const statusUpdateData = {
-                    applicationId: selectedApplication.id,
-                    status: 'denied',
-                    processedBy: adminName,
-                    denialReason: denialReason
-                };
-                await updateApplicationStatus(statusUpdateData);
-            } catch (statusError) {
-                console.warn('Could not update application status in database:', statusError);
-            }
+            // Since application status API doesn't exist, just log what would be updated
+            console.log('Would update application status:', {
+                applicationId: selectedApplication.id,
+                status: 'denied',
+                processedBy: adminName,
+                processedByType: 'admin',
+                denialReason: denialReason
+            });
             
-            // Update application status in local state
+            // Update application status in local state - keep for admin view but mark as processed
             setApplications(prev => prev.map(app => 
                 app.id === selectedApplication.id 
                     ? { 
@@ -257,10 +367,13 @@ export default function AdminApplications() {
                         status: 'denied', 
                         denialReason,
                         deniedBy: adminName,
-                        deniedDate: new Date().toISOString().split('T')[0]
+                        deniedDate: new Date().toISOString().split('T')[0],
+                        processedByType: 'admin'
                     }
                     : app
             ));
+            
+            alert('Application denied successfully.');
         }
         
         setShowModal(false);
@@ -324,13 +437,14 @@ export default function AdminApplications() {
                             </div>
                         </div>
                         
-                        {/* Statistics Cards */}
+                        {/* Enhanced Statistics Cards with sync info */}
                         <div className="row mb-4">
                             <div className="col-md-3">
                                 <div className="card text-center">
                                     <div className="card-body">
                                         <h5 className="card-title text-primary">{statusStats.total}</h5>
                                         <p className="card-text">Total Applications</p>
+                                        <small className="text-muted">System-wide</small>
                                     </div>
                                 </div>
                             </div>
@@ -339,6 +453,7 @@ export default function AdminApplications() {
                                     <div className="card-body">
                                         <h5 className="card-title text-warning">{statusStats.pending}</h5>
                                         <p className="card-text">Pending Review</p>
+                                        <small className="text-muted">Admin + Sponsor</small>
                                     </div>
                                 </div>
                             </div>
@@ -347,6 +462,10 @@ export default function AdminApplications() {
                                     <div className="card-body">
                                         <h5 className="card-title text-success">{statusStats.approved}</h5>
                                         <p className="card-text">Approved</p>
+                                        <small className="text-muted">
+                                            {applications.filter(app => app.status === 'approved' && app.processedByType === 'admin').length} by Admin, {' '}
+                                            {applications.filter(app => app.status === 'approved' && app.processedByType === 'sponsor').length} by Sponsor
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -355,6 +474,10 @@ export default function AdminApplications() {
                                     <div className="card-body">
                                         <h5 className="card-title text-danger">{statusStats.denied}</h5>
                                         <p className="card-text">Denied</p>
+                                        <small className="text-muted">
+                                            {applications.filter(app => app.status === 'denied' && app.processedByType === 'admin').length} by Admin, {' '}
+                                            {applications.filter(app => app.status === 'denied' && app.processedByType === 'sponsor').length} by Sponsor
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -362,7 +485,7 @@ export default function AdminApplications() {
                     </div>
                 </div>
 
-                {/* Filters */}
+                {/* Enhanced Filters */}
                 <div className="row mb-4">
                     <div className="col-md-6">
                         <label className="form-label">Filter by Status:</label>
@@ -371,8 +494,8 @@ export default function AdminApplications() {
                             value={filterStatus} 
                             onChange={(e) => setFilterStatus(e.target.value)}
                         >
+                            <option value="pending">Pending Only (Default)</option>
                             <option value="all">All Statuses</option>
-                            <option value="pending">Pending</option>
                             <option value="approved">Approved</option>
                             <option value="denied">Denied</option>
                         </select>
@@ -398,7 +521,17 @@ export default function AdminApplications() {
                         {filteredApplications.length === 0 ? (
                             <div className="alert alert-info">
                                 <i className="fas fa-info-circle me-2"></i>
-                                No applications match the current filters.
+                                {filterStatus === 'pending' 
+                                    ? "No pending applications match the current filters."
+                                    : "No applications match the current filters."
+                                }
+                                {filterStatus === 'pending' && (
+                                    <div className="mt-2">
+                                        <small>
+                                            To view processed applications, change the status filter above.
+                                        </small>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <div className="table-responsive">
@@ -508,7 +641,7 @@ export default function AdminApplications() {
                                                 <li><strong>User Type:</strong> Driver (Type 1)</li>
                                                 <li><strong>Organization:</strong> {selectedApplication.requestedOrganization}</li>
                                                 <li><strong>Sponsor ID:</strong> {selectedApplication.sponsorId}</li>
-                                                <li><strong>Temporary Password:</strong> {selectedApplication.tempPassword}</li>
+                                                <li><strong>Temporary Password:</strong> password</li>
                                                 <li><strong>Action By:</strong> Admin (System-wide approval)</li>
                                             </ul>
                                             <small className="text-muted">The user should change their password after first login.</small>

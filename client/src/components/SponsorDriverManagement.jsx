@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import SponsorNavbar from './SponsorNavbar';
 import { GenerateSalt } from './MiscellaneousParts/HashPass'; // <-- Import GenerateSalt
-import { getAllSponsorUsers, getAllDrivers } from './MiscellaneousParts/ServerCall';
 
 export default function SponsorDriverManagement() {
     const [drivers, setDrivers] = useState([]);
@@ -36,7 +35,7 @@ export default function SponsorDriverManagement() {
         const userInfo = getUserInfo();
         if (userInfo && userInfo.UserID) {
             try {
-                const response = await getAllSponsorUsers();
+                const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
                 if (response.ok) {
                     const allSponsorUsers = await response.json();
                     const currentSponsorInfo = allSponsorUsers.find(s => s.UserID === userInfo.UserID);
@@ -54,14 +53,114 @@ export default function SponsorDriverManagement() {
 
     const fetchDriversForSponsor = async (sponsorID) => {
         try {
-            const response = await getAllDrivers();
-            if (response.ok) {
-                const allDrivers = await response.json();
-                const sponsorDrivers = allDrivers.filter(driver => driver.SponsorID === sponsorID);
-                setDrivers(sponsorDrivers);
+            console.log('Fetching all users for SponsorID:', sponsorID);
+            
+            // Get current user info to exclude the sponsor user themselves
+            const currentUser = getUserInfo();
+            const currentUserID = currentUser?.UserID;
+            console.log('Current user ID:', currentUserID);
+            
+            // Get all drivers that have this SponsorID
+            const driversResponse = await fetch(`http://localhost:4000/driverAPI/getAllDrivers`);
+            let allDrivers = [];
+            if (driversResponse.ok) {
+                allDrivers = await driversResponse.json();
+                console.log('All drivers from API:', allDrivers);
+                
+                // Handle nested array response format if needed
+                if (Array.isArray(allDrivers) && allDrivers.length > 0 && Array.isArray(allDrivers[0])) {
+                    allDrivers = allDrivers[0];
+                    console.log('Extracted drivers from nested array:', allDrivers);
+                }
+            } else {
+                console.warn('Failed to fetch drivers');
             }
+            
+            // Get all sponsor users to get additional user info
+            const sponsorUsersResponse = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+            let allSponsorUsers = [];
+            if (sponsorUsersResponse.ok) {
+                allSponsorUsers = await sponsorUsersResponse.json();
+                console.log('All sponsor users:', allSponsorUsers);
+            } else {
+                console.warn('Failed to fetch sponsor users');
+            }
+            
+            // Find all users that belong to this sponsor
+            const sponsorDrivers = [];
+            
+            console.log(`Looking for drivers with SponsorID: ${sponsorID} (type: ${typeof sponsorID})`);
+            
+            // First, add drivers from DRIVER table that have matching SponsorID
+            if (Array.isArray(allDrivers)) {
+                allDrivers.forEach((driver, index) => {
+                    console.log(`Checking driver ${index}:`, {
+                        DriverID: driver.DriverID,
+                        UserID: driver.UserID,
+                        SponsorID: driver.SponsorID,
+                        sponsorIDType: typeof driver.SponsorID,
+                        matches: driver.SponsorID == sponsorID, // Use == for type-flexible comparison
+                        strictMatches: driver.SponsorID === sponsorID,
+                        isNotCurrentUser: driver.UserID !== currentUserID
+                    });
+                    
+                    // Use == instead of === to handle type differences (string vs number)
+                    if (driver.SponsorID == sponsorID && driver.UserID !== currentUserID) {
+                        console.log(`✓ Found driver with matching SponsorID: UserID ${driver.UserID}, DriverID ${driver.DriverID}`);
+                        sponsorDrivers.push({
+                            ...driver,
+                            FirstName: driver.FirstName || 'Unknown',
+                            LastName: driver.LastName || 'User',
+                            Email: driver.Email || 'No email'
+                        });
+                    } else {
+                        console.log(`✗ Driver ${driver.DriverID} does not match - SponsorID: ${driver.SponsorID} vs ${sponsorID}`);
+                    }
+                });
+            }
+            
+            console.log(`Found ${sponsorDrivers.length} drivers with matching SponsorID from DRIVER table`);
+            
+            // Then, add users from SPONSOR_USER table that have matching SponsorID but aren't already in drivers
+            if (Array.isArray(allSponsorUsers)) {
+                allSponsorUsers.forEach((sponsorUser, index) => {
+                    console.log(`Checking sponsor user ${index}:`, {
+                        UserID: sponsorUser.UserID,
+                        SponsorID: sponsorUser.SponsorID,
+                        sponsorIDType: typeof sponsorUser.SponsorID,
+                        matches: sponsorUser.SponsorID == sponsorID,
+                        isNotCurrentUser: sponsorUser.UserID !== currentUserID
+                    });
+                    
+                    if (sponsorUser.SponsorID == sponsorID && sponsorUser.UserID !== currentUserID) {
+                        // Check if this user is already in the drivers list
+                        const existsInDrivers = sponsorDrivers.some(driver => driver.UserID === sponsorUser.UserID);
+                        
+                        if (!existsInDrivers) {
+                            console.log(`✓ Found sponsor user with matching SponsorID but no DRIVER record: UserID ${sponsorUser.UserID}`);
+                            sponsorDrivers.push({
+                                UserID: sponsorUser.UserID,
+                                FirstName: sponsorUser.FirstName || 'Unknown',
+                                LastName: sponsorUser.LastName || 'User',
+                                Email: sponsorUser.Email || 'No email',
+                                DriverID: null, // No driver ID available
+                                SponsorID: sponsorID,
+                                Points: 0,
+                                ActiveAccount: sponsorUser.ActiveAccount
+                            });
+                        } else {
+                            console.log(`- Sponsor user ${sponsorUser.UserID} already exists in drivers list`);
+                        }
+                    }
+                });
+            }
+            
+            console.log('Final sponsor drivers/users list:', sponsorDrivers);
+            console.log(`Total users found for SponsorID ${sponsorID}: ${sponsorDrivers.length}`);
+            setDrivers(sponsorDrivers);
+            
         } catch (error) {
-            console.error('Error fetching drivers:', error);
+            console.error('Error fetching sponsor users:', error);
         }
     };
 
@@ -151,25 +250,26 @@ export default function SponsorDriverManagement() {
         }
     };
 
-    const handleRemoveDriver = async (driverID, driverName) => {
-        if (!window.confirm(`Are you sure you want to remove ${driverName} from the program? This action cannot be undone.`)) {
+    const handleRemoveDriver = async (driverID, driverName, isActive) => {
+        const action = isActive ? 'deactivate' : 'reactivate';
+        if (!window.confirm(`Are you sure you want to ${action} ${driverName} from the program? This will ${isActive ? 'disable' : 'enable'} their access.`)) {
             return;
         }
 
         try {
-            const response = await fetch(`http://localhost:4000/driverAPI/removeDriver/${driverID}`, {
-                method: 'DELETE'
+            const response = await fetch(`http://localhost:4000/driverAPI/toggleDriverActivity/${driverID}`, {
+                method: 'POST'
             });
 
             if (response.ok) {
-                alert('Driver removed successfully!');
+                alert(`Driver ${action}d successfully!`);
                 fetchDriversForSponsor(sponsorInfo.SponsorID);
             } else {
-                alert('Error removing driver');
+                alert(`Error ${action}ing driver`);
             }
         } catch (error) {
-            console.error('Error removing driver:', error);
-            alert('Error removing driver');
+            console.error(`Error ${action}ing driver:`, error);
+            alert(`Error ${action}ing driver`);
         }
     };
 
@@ -278,9 +378,14 @@ export default function SponsorDriverManagement() {
                             </thead>
                             <tbody>
                                 {filteredDrivers.map((driver) => (
-                                    <tr key={driver.DriverID}>
+                                    <tr key={driver.DriverID} className={driver.ActiveAccount === 0 ? 'table-secondary' : ''}>
                                         <td>{driver.DriverID}</td>
-                                        <td>{driver.FirstName} {driver.LastName}</td>
+                                        <td>
+                                            {driver.FirstName} {driver.LastName}
+                                            {driver.ActiveAccount === 0 && (
+                                                <span className="badge bg-danger ms-2">Inactive</span>
+                                            )}
+                                        </td>
                                         <td>{driver.Email}</td>
                                         <td>{driver.UserID}</td>
                                         <td>
@@ -292,11 +397,11 @@ export default function SponsorDriverManagement() {
                                                 Edit
                                             </button>
                                             <button 
-                                                className="btn btn-sm btn-outline-danger"
-                                                onClick={() => handleRemoveDriver(driver.DriverID, `${driver.FirstName} ${driver.LastName}`)}
+                                                className={`btn btn-sm ${driver.ActiveAccount === 1 ? 'btn-outline-warning' : 'btn-outline-success'}`}
+                                                onClick={() => handleRemoveDriver(driver.DriverID, `${driver.FirstName} ${driver.LastName}`, driver.ActiveAccount === 1)}
                                             >
-                                                <i className="fas fa-trash me-1"></i>
-                                                Remove
+                                                <i className={`fas ${driver.ActiveAccount === 1 ? 'fa-ban' : 'fa-check'} me-1`}></i>
+                                                {driver.ActiveAccount === 1 ? 'Deactivate' : 'Reactivate'}
                                             </button>
                                         </td>
                                     </tr>

@@ -1,6 +1,26 @@
 //This file is for admin related database api calls.
 const db = require('./db'); //shared database connection pool
 const user = require('./userAPI');
+const crypto = require('crypto');
+
+/**
+ * Generates a random salt for password hashing
+ * @returns {string} A random salt string
+ */
+function generateSalt() {
+    return crypto.randomBytes(16).toString('hex');
+}
+
+/**
+ * Hashes a password with a salt using SHA-256
+ * @param {string} password - The plain text password
+ * @param {string} salt - The salt to use
+ * @returns {string} The hashed password
+ */
+function hashPassword(password, salt) {
+    return crypto.createHash('sha256').update(password + salt).digest('hex');
+}
+
 /**
  * Retrieves all admins by joining the Driver and User tables.
  * @returns {Promise<Array<Object>>} A promise that resolves with an array of admin user objects.
@@ -35,24 +55,221 @@ async function getSpecificDriverSponsors(data){
 }
 
 /**
+ * Creates missing DRIVER records for users who exist in SPONSOR_USER but not in DRIVER table
+ * This fixes the issue where users are created but the AddDriver stored procedure fails
+ */
+async function createMissingDriverRecords() {
+    try {
+        console.log("Finding users in SPONSOR_USER who don't have DRIVER records...");
+        
+        // Find UserIDs that exist in SPONSOR_USER but not in DRIVER
+        const findMissingQuery = `
+            SELECT su.UserID, su.SponsorID, u.FirstName, u.LastName, u.Email
+            FROM SPONSOR_USER su
+            INNER JOIN USER u ON su.UserID = u.UserID
+            LEFT JOIN DRIVER d ON su.UserID = d.UserID
+            WHERE d.UserID IS NULL AND u.UserType = 1
+        `;
+        
+        const missingDrivers = await db.executeQuery(findMissingQuery);
+        console.log(`Found ${missingDrivers.length} users missing DRIVER records:`, missingDrivers);
+        
+        if (missingDrivers.length === 0) {
+            return { message: "No missing DRIVER records found", created: [] };
+        }
+        
+        const createdDrivers = [];
+        
+        // Create DRIVER records for each missing user
+        for (const user of missingDrivers) {
+            try {
+                console.log(`Creating DRIVER record for UserID ${user.UserID} (${user.FirstName} ${user.LastName})`);
+                
+                // Insert directly into DRIVER table instead of using the problematic stored procedure
+                const insertDriverQuery = "INSERT INTO DRIVER (UserID, SponsorID) VALUES (?, ?)";
+                const result = await db.executeQuery(insertDriverQuery, [user.UserID, user.SponsorID]);
+                
+                console.log(`Successfully created DRIVER record with DriverID ${result.insertId} for UserID ${user.UserID}`);
+                
+                createdDrivers.push({
+                    UserID: user.UserID,
+                    DriverID: result.insertId,
+                    SponsorID: user.SponsorID,
+                    Name: `${user.FirstName} ${user.LastName}`,
+                    Email: user.Email
+                });
+                
+            } catch (driverCreateError) {
+                console.error(`Failed to create DRIVER record for UserID ${user.UserID}:`, driverCreateError);
+            }
+        }
+        
+        return {
+            message: `Created ${createdDrivers.length} missing DRIVER records`,
+            found: missingDrivers.length,
+            created: createdDrivers
+        };
+        
+    } catch (error) {
+        console.error("Failed to create missing DRIVER records:", error);
+        throw error;
+    }
+}
+
+/**
  * Creates a new driver user and then adds the corresponding UserID to the Driver table.
  * @param {object} data - The user data to be added.
  * @returns {Promise<object>} A promise that resolves with the result of the driver table insertion.
  */
 async function addDriver(data) {
+    console.log("=== ADDDRIVER FUNCTION START - NEW VERSION ===");
+    console.log("This is the updated version that should NOT call AddDriver stored procedure");
+    
     try {
         const sponsorID = data.SponsorID;
-        const userResult = await user.addNewUser(data);
+        
+        // Generate salt and hash password BEFORE creating userData object
+        if (!data.Password || data.Password === '') {
+            throw new Error('Password is required');
+        }
+        
+        // Always generate a salt, with fallback
+        let salt;
+        try {
+            salt = generateSalt();
+            if (!salt || salt.length === 0) {
+                throw new Error('Salt generation failed');
+            }
+        } catch (saltError) {
+            console.warn('Salt generation failed, using fallback:', saltError);
+            salt = 'temp-salt-' + Date.now() + '-' + Math.random().toString(36).substring(2, 15);
+        }
+        
+        const hashedPassword = hashPassword(data.Password, salt);
+        
+        console.log("Generated salt:", salt ? '[GENERATED]' : 'NULL');
+        console.log("Generated salt length:", salt ? salt.length : 0);
+        console.log("Hashed password:", hashedPassword ? '[HASHED]' : 'NULL');
+        
+        // Create user data with properly generated salt and hashed password
+        const userData = {
+            FirstName: data.FirstName,
+            LastName: data.LastName,
+            Email: data.Email,
+            Password: hashedPassword,
+            PasswordSalt: salt,
+            UserType: data.UserType || 1
+        };
+        
+        // Verify salt is included before calling addNewUser
+        if (!userData.PasswordSalt) {
+            console.error('PasswordSalt is still undefined, setting emergency fallback');
+            userData.PasswordSalt = 'emergency-salt-' + Date.now();
+        }
+        
+        console.log("Adding new driver user with hashed password and salt");
+        console.log("User data being sent (with verification):", {
+            FirstName: userData.FirstName,
+            LastName: userData.LastName,
+            Email: userData.Email,
+            Password: userData.Password ? '[HASHED]' : 'NULL',
+            PasswordSalt: userData.PasswordSalt ? `[GENERATED-${userData.PasswordSalt.length}chars]` : 'NULL',
+            UserType: userData.UserType
+        });
+        
+        const userResult = await user.addNewUser(userData);
         const newUserId = userResult.insertId;
+        console.log("Record inserted user, ID:", newUserId);
 
-        console.log("Adding new driver with UserID:", newUserId);
-        const sql = "call AddDriver (?, ?)";
-        const adminResult = await db.executeQuery(sql, [newUserId, sponsorID]);
-
-        console.log("New driver record created successfully.");
-        return adminResult;
+        // Create the SPONSOR_USER relationship first
+        console.log("Creating SPONSOR_USER relationship for UserID:", newUserId, "with SponsorID:", sponsorID);
+        try {
+            const sponsorUserSql = "INSERT INTO SPONSOR_USER (UserID, SponsorID) VALUES (?, ?)";
+            const sponsorUserResult = await db.executeQuery(sponsorUserSql, [newUserId, sponsorID]);
+            console.log("SPONSOR_USER relationship created successfully:", sponsorUserResult);
+        } catch (sponsorUserError) {
+            console.error("Failed to create SPONSOR_USER relationship:", sponsorUserError);
+            // Continue - this is not critical for basic functionality
+        }
+        
+        // === ABSOLUTELY NO STORED PROCEDURES - DIRECT DATABASE ACCESS ONLY ===
+        console.log("=== STARTING DIRECT DATABASE ACCESS FOR DRIVER TABLE ===");
+        console.log("IMPORTANT: This code will NEVER call 'AddDriver' stored procedure");
+        console.log("If you see 'call AddDriver' in the logs after this, the server is using old cached code");
+        
+        // Create DRIVER record using only direct SQL
+        console.log("Step 1: Creating DRIVER table record with direct SQL");
+        console.log("Target SQL: INSERT INTO DRIVER (UserID, SponsorID, Points) VALUES (?, ?, 0)");
+        console.log("Target values:", [newUserId, sponsorID, 0]);
+        
+        let driverCreationSuccess = false;
+        let driverID = null;
+        
+        try {
+            const directDriverSQL = "INSERT INTO DRIVER (UserID, SponsorID, Points) VALUES (?, ?, 0)";
+            console.log("Executing direct SQL:", directDriverSQL);
+            console.log("With parameters:", [newUserId, sponsorID]);
+            
+            const directDriverResult = await db.executeQuery(directDriverSQL, [newUserId, sponsorID]);
+            driverID = directDriverResult.insertId;
+            
+            console.log("SUCCESS: Direct DRIVER insertion completed");
+            console.log("New DriverID:", driverID);
+            driverCreationSuccess = true;
+            
+        } catch (directDriverError) {
+            console.error("FAILURE: Direct DRIVER insertion failed");
+            console.error("Error details:", directDriverError);
+            console.error("SQL that failed:", "INSERT INTO DRIVER (UserID, SponsorID, Points) VALUES (?, ?, 0)");
+            console.error("Parameters that failed:", [newUserId, sponsorID]);
+        }
+        
+        // Optional: Try DRIVER_SPONSOR_MAPPINGS if direct DRIVER worked
+        if (driverCreationSuccess && driverID) {
+            console.log("Step 2: Attempting DRIVER_SPONSOR_MAPPINGS table (optional)");
+            try {
+                const mappingSQL = "INSERT INTO DRIVER_SPONSOR_MAPPINGS (DriverID, SponsorID, Points, ApplicationAccepted) VALUES (?, ?, 0, 1)";
+                console.log("Executing mapping SQL:", mappingSQL);
+                console.log("With parameters:", [driverID, sponsorID, 0, 1]);
+                
+                const mappingResult = await db.executeQuery(mappingSQL, [driverID, sponsorID]);
+                console.log("SUCCESS: DRIVER_SPONSOR_MAPPINGS created with MappingID:", mappingResult.insertId);
+            } catch (mappingError) {
+                console.warn("OPTIONAL FAILURE: DRIVER_SPONSOR_MAPPINGS failed (not critical):", mappingError.message);
+            }
+        }
+        
+        // Return results based on what succeeded
+        console.log("=== FINAL RESULT DETERMINATION ===");
+        if (driverCreationSuccess && driverID) {
+            console.log("COMPLETE SUCCESS: Both USER and DRIVER records created");
+            const successResult = {
+                insertId: driverID,
+                userID: newUserId,
+                driverID: driverID,
+                sponsorID: sponsorID,
+                message: "Driver created successfully with direct SQL - stored procedures bypassed completely",
+                method: "direct_sql_success"
+            };
+            console.log("Returning success result:", successResult);
+            return successResult;
+        } else {
+            console.log("PARTIAL SUCCESS: USER created but DRIVER table failed");
+            const partialResult = {
+                insertId: newUserId,
+                userID: newUserId,
+                message: "User account created but DRIVER table insertion failed. Use 'Fix Missing Driver Records' to complete setup.",
+                method: "partial_success",
+                requiresDriverFix: true,
+                error: "Direct DRIVER table insertion failed - check server logs"
+            };
+            console.log("Returning partial result:", partialResult);
+            return partialResult;
+        }
+        
     } catch (error) {
-        console.error("Failed to add new driver:", error);
+        console.error("=== ADDDRIVER FUNCTION COMPLETE FAILURE ===");
+        console.error("Top-level error in addDriver function:", error);
         throw error;
     }
 }
@@ -307,7 +524,7 @@ async function cleanupDuplicateDriversForUser(userID) {
 
 /**
  * Fixes all data integrity issues in one operation
- * @returns {Promise<object>} Result of the cleanup operation
+ * @returns {Promise<object>}
  */
 async function fixAllDataIntegrityIssues() {
     try {
@@ -372,6 +589,17 @@ router.post("/cleanupDuplicateDriversForUser/:userID", async (req, res, next) =>
     } catch (error) {
         console.error('Error cleaning up duplicate drivers:', error);
         res.status(500).json({ message: 'Error cleaning up duplicate drivers.', error: error.message });
+    }
+});
+
+router.post("/createMissingDriverRecords", async (req, res, next) => {
+    console.log('Received request to create missing DRIVER records');
+    try {
+        const result = await createMissingDriverRecords();
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error creating missing DRIVER records:', error);
+        res.status(500).json({ message: 'Error creating missing DRIVER records.', error: error.message });
     }
 });
 

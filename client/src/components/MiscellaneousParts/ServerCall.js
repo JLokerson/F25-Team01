@@ -203,3 +203,66 @@ export const getItemMappings = (productId) => apiCall('GET', '/cartAPI/getItemMa
  * @param {string|number} driverId - The ID of the driver whose cart should be cleared.
  */
 export const deleteUserCartItems = (driverId) => apiCall('DELETE', '/cartAPI/deleteCartItems', { DriverID: driverId });
+
+// Application Management Functions - Using unique names to avoid conflicts
+export const fetchAllApplicationsData = async () => {
+    try {
+        const response = await fetch(`http://localhost:4000/applicationAPI/getAllApplications`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        return response;
+    } catch (error) {
+        console.error('Error fetching all applications:', error);
+        throw error;
+    }
+};
+
+export const fetchApplicationsBySponsorData = async (sponsorId) => {
+    try {
+        const response = await fetch(`http://localhost:4000/applicationAPI/getApplicationsBySponsor/${sponsorId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        return response;
+    } catch (error) {
+        console.error('Error fetching sponsor applications:', error);
+        throw error;
+    }
+};
+
+export const updateApplicationStatusData = async (applicationData) => {
+    try {
+        const response = await fetch(`http://localhost:4000/applicationAPI/updateApplicationStatus`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(applicationData)
+        });
+        return response;
+    } catch (error) {
+        console.error('Error updating application status:', error);
+        throw error;
+    }
+};
+
+export const createApplicationData = async (applicationData) => {
+    try {
+        const response = await fetch(`http://localhost:4000/applicationAPI/createApplication`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(applicationData)
+        });
+        return response;
+    } catch (error) {
+        console.error('Error creating application:', error);
+        throw error;
+    }
+};
