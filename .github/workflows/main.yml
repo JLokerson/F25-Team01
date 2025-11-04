@@ -3,7 +3,8 @@ name: Deploy
 on:
   push:
     branches:
-    - sprint8-githubToLambda
+    - main
+    - sprint8
 
 jobs:
   deploy_lambda:
