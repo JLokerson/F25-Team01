@@ -24,6 +24,7 @@ import DriverOrderConfirmation from './components/DriverOrderConfirmation';
 import Home from './components/Home';
 import Testing from './components/Testing.jsx';
 import { CookiesProvider, useCookies } from 'react-cookie';
+import AdminAuditView from './components/AdminAuditView';
 
 function AppContent() {
   const location = useLocation();
