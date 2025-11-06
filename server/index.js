@@ -50,7 +50,7 @@ app.use("/userAPI", userAPIRouter);
 app.use("/adminAPI", adminAPIRouter);
 app.use("/sponsorAPI", sponsorAPIRouter);
 app.use("/driverAPI", driverAPIRouter);
-app.use("/cartAPI", cartAPIRouter);
+app.use("/CartAPI", cartAPIRouter);
 app.use("/api/bestbuy", bestbuyAPIRouter);
 // app.use("/testAPI", userTest);
 
