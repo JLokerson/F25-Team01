@@ -76,7 +76,7 @@ export default function Login() {
       // If user is a sponsor, fetch their sponsor record so we know which catalog to load
       if (data.user.UserType === 2) {
         try {
-          const sponsorResp = await await getSponsorForUser(data.user.UserID);
+          const sponsorResp = await getSponsorForUser(data.user.UserID);
           if (sponsorResp.ok) {
             const sponsor = await sponsorResp.json();
             localStorage.setItem('sponsor', JSON.stringify(sponsor));
@@ -92,11 +92,11 @@ export default function Login() {
       // Navigate based on user type
       const userType = data.user.UserType;
       if (userType === 1) {
-        navigate('/DriverHome'); // Driver user
+        navigate('/driverhome'); // Driver user
       } else if (userType === 2) {
-        navigate('/SponsorHome'); // Sponsor user
+        navigate('/sponsorhome'); // Sponsor user
       } else if (userType === 3) {
-        navigate('/AdminHome'); // Admin user
+        navigate('/adminhome'); // Admin user
       } else {
         navigate('/about'); // Default fallback
       }
