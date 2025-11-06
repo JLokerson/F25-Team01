@@ -112,6 +112,11 @@ export const addAdmin = (adminData) => apiCall('POST', '/adminAPI/addAdmin', adm
 export const getAllApplications = () => apiCall('GET', '/adminAPI/getAllApplications');
 
 /**
+ * Fetches all audit records.
+ */
+export const getAllAuditRecords = () => apiCall('GET', '/adminAPI/getAuditRecords');
+
+/**
  * Updates an application status (approve/deny).
  * @param {Object} applicationData - The application update data.
  * @param {number} applicationData.applicationId - The ID of the application.
