@@ -16,7 +16,7 @@ function ReportView(Filter) {
       </p>
     </li>
   );
-  return listItems;
+  return <ul>{listItems}</ul>;
 }
 
 export default ReportView;
