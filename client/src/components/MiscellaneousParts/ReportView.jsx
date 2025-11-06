@@ -1,4 +1,4 @@
-import {getAllAuditRecords} from './ServerCall.jsx';
+import {getAllAuditRecords} from './ServerCall.js';
 
 // Filter is an untyped var on purpose, intended to be passed as a bunch of possible filters
 // we can apply to the data after initial retrieval, though none have yet been implemented.
