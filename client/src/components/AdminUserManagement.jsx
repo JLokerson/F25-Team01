@@ -6,17 +6,22 @@ import { GenerateSalt } from './MiscellaneousParts/HashPass';
 export default function AdminUserManagement() {
     const [drivers, setDrivers] = useState([]);
     const [sponsors, setSponsors] = useState([]);
-    const [sponsorUsers, setSponsorUsers] = useState([]); // Add this line
+    const [sponsorUsers, setSponsorUsers] = useState([]);
+    const [sponsorOrgs, setSponsorOrgs] = useState([]); // Add this for SPONSOR table
     const [admins, setAdmins] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('users'); // Add tab state
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showEditSponsorModal, setShowEditSponsorModal] = useState(false);
     const [showEditAdminModal, setShowEditAdminModal] = useState(false);
+    const [showAddSponsorOrgModal, setShowAddSponsorOrgModal] = useState(false); // Add modal state
+    const [showEditSponsorOrgModal, setShowEditSponsorOrgModal] = useState(false);
     const [editingDriver, setEditingDriver] = useState(null);
     const [editingSponsor, setEditingSponsor] = useState(null);
     const [editingAdmin, setEditingAdmin] = useState(null);
+    const [editingSponsorOrg, setEditingSponsorOrg] = useState(null); // Add editing state
     const [newDriver, setNewDriver] = useState({
         FirstName: '',
         LastName: '',
@@ -25,9 +30,15 @@ export default function AdminUserManagement() {
         SponsorID: '',
         PasswordSalt: ''
     });
+    const [newSponsorOrg, setNewSponsorOrg] = useState({ // Add new sponsor org state
+        Name: '',
+        PointRatio: 0.01,
+        EnabledSponsor: 1
+    });
     const [search, setSearch] = useState("");
     const [userTypeFilter, setUserTypeFilter] = useState("all");
-    const [isFixingDrivers, setIsFixingDrivers] = useState(false); // Add this state
+    const [sponsorOrgSearch, setSponsorOrgSearch] = useState(""); // Add search for sponsor orgs
+    const [isFixingDrivers, setIsFixingDrivers] = useState(false);
 
     const fetchAllDrivers = async () => {
         try {
@@ -271,6 +282,57 @@ export default function AdminUserManagement() {
         } catch (error) {
             console.error('Network error fetching admins:', error);
             setAdmins([]);
+        }
+    };
+
+    const fetchSponsorOrgs = async () => {
+        try {
+            console.log('=== FETCHING SPONSOR ORGANIZATIONS ===');
+            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+            console.log('Sponsor orgs API response status:', response.status);
+            
+            if (response.ok) {
+                const responseText = await response.text();
+                console.log('Raw sponsor orgs response text:', responseText);
+                
+                let allSponsorOrgs;
+                try {
+                    allSponsorOrgs = JSON.parse(responseText);
+                    console.log('Parsed sponsor orgs data:', allSponsorOrgs);
+                } catch (parseError) {
+                    console.error('Failed to parse sponsor orgs JSON:', parseError);
+                    setSponsorOrgs([]);
+                    return;
+                }
+                
+                if (!Array.isArray(allSponsorOrgs)) {
+                    console.error('Sponsor orgs data is not an array:', allSponsorOrgs);
+                    setSponsorOrgs([]);
+                    return;
+                }
+                
+                // Process sponsor org data with fallbacks
+                const processedSponsorOrgs = allSponsorOrgs.map(org => ({
+                    ...org,
+                    SponsorID: org.SponsorID || org.sponsorID || org.sponsor_id,
+                    Name: org.Name || org.name || '',
+                    PointRatio: org.PointRatio !== undefined ? org.PointRatio : 
+                               org.pointRatio !== undefined ? org.pointRatio :
+                               org.point_ratio !== undefined ? org.point_ratio : 0.01,
+                    EnabledSponsor: org.EnabledSponsor !== undefined ? org.EnabledSponsor :
+                                   org.enabledSponsor !== undefined ? org.enabledSponsor :
+                                   org.enabled_sponsor !== undefined ? org.enabled_sponsor : 1
+                }));
+                
+                console.log('Processed sponsor orgs data:', processedSponsorOrgs);
+                setSponsorOrgs(processedSponsorOrgs);
+            } else {
+                console.error('Failed to fetch sponsor orgs - HTTP status:', response.status);
+                setSponsorOrgs([]);
+            }
+        } catch (error) {
+            console.error('Network error fetching sponsor orgs:', error);
+            setSponsorOrgs([]);
         }
     };
 
@@ -681,11 +743,22 @@ export default function AdminUserManagement() {
         return matchesSearch && matchesFilter;
     });
 
+    const filteredSponsorOrgs = sponsorOrgs.filter(org => {
+        const query = sponsorOrgSearch.toLowerCase();
+        const name = org.Name ? org.Name.toLowerCase() : '';
+        
+        return (
+            name.includes(query) ||
+            String(org.SponsorID).includes(query) ||
+            String(org.PointRatio).includes(query)
+        );
+    });
+
     useEffect(() => {
         const fetchData = async () => {
             console.log('Starting data fetch...');
             setLoading(true);
-            await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllSponsorUsers(), fetchAllAdmins()]);
+            await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllSponsorUsers(), fetchAllAdmins(), fetchSponsorOrgs()]);
             console.log('Data fetch completed');
             setLoading(false);
         };
@@ -733,6 +806,117 @@ export default function AdminUserManagement() {
         }
     };
 
+    const handleAddSponsorOrg = async (e) => {
+        e.preventDefault();
+
+        try {
+            const orgData = {
+                Name: newSponsorOrg.Name.trim(),
+                PointRatio: parseFloat(newSponsorOrg.PointRatio),
+                EnabledSponsor: parseInt(newSponsorOrg.EnabledSponsor)
+            };
+
+            console.log('Creating sponsor organization:', orgData);
+            
+            const response = await fetch(`http://localhost:4000/sponsorAPI/addSponsor`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(orgData)
+            });
+
+            if (response.ok) {
+                const responseData = await response.text();
+                console.log('Sponsor org creation response:', responseData);
+                alert('Sponsor organization added successfully!');
+                setShowAddSponsorOrgModal(false);
+                setNewSponsorOrg({
+                    Name: '',
+                    PointRatio: 0.01,
+                    EnabledSponsor: 1
+                });
+                fetchSponsorOrgs();
+            } else {
+                const errorText = await response.text();
+                console.error('Error adding sponsor org:', errorText);
+                alert(`Error adding sponsor organization: ${errorText}`);
+            }
+        } catch (error) {
+            console.error('Error adding sponsor org:', error);
+            alert('Error adding sponsor organization');
+        }
+    };
+
+    const handleEditSponsorOrg = (org) => {
+        setEditingSponsorOrg({ ...org });
+        setShowEditSponsorOrgModal(true);
+    };
+
+    const handleUpdateSponsorOrg = async (e) => {
+        e.preventDefault();
+        
+        try {
+            const updateData = {
+                SponsorID: editingSponsorOrg.SponsorID,
+                Name: editingSponsorOrg.Name.trim(),
+                PointRatio: parseFloat(editingSponsorOrg.PointRatio),
+                EnabledSponsor: parseInt(editingSponsorOrg.EnabledSponsor)
+            };
+
+            console.log('Sending sponsor org update data:', updateData);
+
+            // Note: Update endpoint may not exist yet, using placeholder
+            const response = await fetch(`http://localhost:4000/sponsorAPI/updateSponsor`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            if (response.ok) {
+                alert('Sponsor organization updated successfully!');
+                setShowEditSponsorOrgModal(false);
+                setEditingSponsorOrg(null);
+                fetchSponsorOrgs();
+            } else {
+                const errorText = await response.text();
+                console.error('Update error:', errorText);
+                alert('Error updating sponsor organization');
+            }
+        } catch (error) {
+            console.error('Error updating sponsor org:', error);
+            alert('Error updating sponsor organization');
+        }
+    };
+
+    const handleToggleSponsorOrg = async (sponsorID, sponsorName, isEnabled) => {
+        const action = isEnabled ? 'disable' : 'enable';
+        if (!window.confirm(`Are you sure you want to ${action} ${sponsorName}? This will affect all drivers associated with this sponsor.`)) {
+            return;
+        }
+
+        try {
+            console.log(`Toggling sponsor org ID: ${sponsorID}, Action: ${action}`);
+            const response = await fetch(`http://localhost:4000/sponsorAPI/toggleSponsorActivity/${sponsorID}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                alert(`Sponsor organization ${action}d successfully!`);
+                fetchSponsorOrgs();
+            } else {
+                const responseText = await response.text();
+                console.error('Server response:', responseText);
+                alert(`Error ${action}ing sponsor organization: ${responseText}`);
+            }
+        } catch (error) {
+            console.error(`Error ${action}ing sponsor org:`, error);
+            alert(`Error ${action}ing sponsor organization: ${error.message}`);
+        }
+    };
+
     if (loading) {
         return (
             <div>
@@ -775,181 +959,315 @@ export default function AdminUserManagement() {
                     </div>
                 </div>
 
-                <div className="row mb-3">
-                    <div className="col-md-8">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Search users by name, email, sponsor, type, or ID..."
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                        />
-                    </div>
-                    <div className="col-md-4">
-                        <select 
-                            className="form-select"
-                            value={userTypeFilter}
-                            onChange={e => setUserTypeFilter(e.target.value)}
+                {/* Tab Navigation */}
+                <ul className="nav nav-tabs mb-3">
+                    <li className="nav-item">
+                        <button 
+                            className={`nav-link ${activeTab === 'users' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('users')}
                         >
-                            <option value="all">All User Types</option>
-                            <option value="driver">Drivers Only</option>
-                            <option value="sponsor">Sponsors Only</option>
-                            <option value="admin">Admins Only</option>
-                        </select>
-                    </div>
-                </div>
+                            <i className="fas fa-users me-2"></i>
+                            User Accounts
+                        </button>
+                    </li>
+                    <li className="nav-item">
+                        <button 
+                            className={`nav-link ${activeTab === 'sponsors' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('sponsors')}
+                        >
+                            <i className="fas fa-building me-2"></i>
+                            Sponsor Organizations
+                        </button>
+                    </li>
+                </ul>
 
-                <div className="card mb-3">
-                    <div className="card-body">
-                        <h5 className="card-title">System Overview & Debug Info</h5>
-                        <div className="row">
-                            <div className="col-md-3">
-                                <p className="card-text">
-                                    <strong>Total Drivers:</strong> {drivers.length}
-                                </p>
+                {/* Users Tab */}
+                {activeTab === 'users' && (
+                    <>
+                        <div className="row mb-3">
+                            <div className="col-md-8">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Search users by name, email, sponsor, type, or ID..."
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
+                                />
                             </div>
-                            <div className="col-md-3">
-                                <p className="card-text">
-                                    <strong>Total Sponsor Users:</strong> {sponsorUsers.length}
-                                </p>
-                            </div>
-                            <div className="col-md-3">
-                                <p className="card-text">
-                                    <strong>Total Admins:</strong> {admins.length}
-                                </p>
-                            </div>
-                            <div className="col-md-3">
-                                <p className="card-text">
-                                    <strong>Total Users:</strong> {allUsers.length}
-                                </p>
+                            <div className="col-md-4">
+                                <select 
+                                    className="form-select"
+                                    value={userTypeFilter}
+                                    onChange={e => setUserTypeFilter(e.target.value)}
+                                >
+                                    <option value="all">All User Types</option>
+                                    <option value="driver">Drivers Only</option>
+                                    <option value="sponsor">Sponsors Only</option>
+                                    <option value="admin">Admins Only</option>
+                                </select>
                             </div>
                         </div>
-                        <div className="row mt-2">
-                            <div className="col-12">
-                                <small className="text-muted">
-                                    Debug: Check browser console for detailed API response information.
-                                    {drivers.length === 0 && " | No drivers found - check API endpoint."}
-                                    {sponsorUsers.length === 0 && " | No sponsor users found - check API endpoint."}
-                                    {admins.length === 0 && " | No admins found - check API endpoint."}
-                                </small>
-                                <br />
-                                <small className="text-warning">
-                                    <i className="fas fa-info-circle me-1"></i>
-                                    If approved applications don't show up for sponsors, use "Fix Missing Driver Records" button above.
-                                </small>
+
+                        <div className="card mb-3">
+                            <div className="card-body">
+                                <h5 className="card-title">System Overview & Debug Info</h5>
+                                <div className="row">
+                                    <div className="col-md-3">
+                                        <p className="card-text">
+                                            <strong>Total Drivers:</strong> {drivers.length}
+                                        </p>
+                                    </div>
+                                    <div className="col-md-3">
+                                        <p className="card-text">
+                                            <strong>Total Sponsor Users:</strong> {sponsorUsers.length}
+                                        </p>
+                                    </div>
+                                    <div className="col-md-3">
+                                        <p className="card-text">
+                                            <strong>Total Admins:</strong> {admins.length}
+                                        </p>
+                                    </div>
+                                    <div className="col-md-3">
+                                        <p className="card-text">
+                                            <strong>Total Users:</strong> {allUsers.length}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="row mt-2">
+                                    <div className="col-12">
+                                        <small className="text-muted">
+                                            Debug: Check browser console for detailed API response information.
+                                            {drivers.length === 0 && " | No drivers found - check API endpoint."}
+                                            {sponsorUsers.length === 0 && " | No sponsor users found - check API endpoint."}
+                                            {admins.length === 0 && " | No admins found - check API endpoint."}
+                                        </small>
+                                        <br />
+                                        <small className="text-warning">
+                                            <i className="fas fa-info-circle me-1"></i>
+                                            If approved applications don't show up for sponsors, use "Fix Missing Driver Records" button above.
+                                        </small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                {filteredUsers.length === 0 ? (
-                    <div className="alert alert-info">
-                        <h5>No Users Found</h5>
-                        <p>
-                            {search || userTypeFilter !== "all"
-                                ? "No users match your search criteria."
-                                : "There are no users in the system yet."
-                            }
-                        </p>
-                    </div>
-                ) : (
-                    <div className="table-responsive">
-                        <table className="table table-striped">
-                            <thead className="table-dark">
-                                <tr>
-                                    <th>User Type</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Sponsor</th>
-                                    <th>User ID</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredUsers.map((user) => (
-                                    <tr key={user.uniqueKey || `${user.userType}-${user.UserID}`}>
-                                        <td>
-                                            <span className={`badge ${
-                                                user.userType === 'Driver' ? 'bg-primary' :
-                                                user.userType === 'Sponsor' ? 'bg-success' :
-                                                'bg-warning text-dark'
-                                            }`}>
-                                                {user.userType}
-                                            </span>
-                                            {user.ActiveAccount === 0 && (
-                                                <span className="badge bg-danger ms-1">Inactive</span>
-                                            )}
-                                        </td>
-                                        <td>{user.FirstName} {user.LastName}</td>
-                                        <td>{user.Email}</td>
-                                        <td>
-                                            {user.userType === 'Driver' 
-                                                ? `${user.sponsorName} (ID: ${user.SponsorID})`
-                                                : user.sponsorName
-                                            }
-                                        </td>
-                                        <td>{user.UserID}</td>
-                                        <td>
-                                            {user.userType === 'Driver' && (
-                                                <>
+                        {filteredUsers.length === 0 ? (
+                            <div className="alert alert-info">
+                                <h5>No Users Found</h5>
+                                <p>
+                                    {search || userTypeFilter !== "all"
+                                        ? "No users match your search criteria."
+                                        : "There are no users in the system yet."
+                                    }
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="table-responsive">
+                                <table className="table table-striped">
+                                    <thead className="table-dark">
+                                        <tr>
+                                            <th>User Type</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Sponsor</th>
+                                            <th>User ID</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredUsers.map((user) => (
+                                            <tr key={user.uniqueKey || `${user.userType}-${user.UserID}`}>
+                                                <td>
+                                                    <span className={`badge ${
+                                                        user.userType === 'Driver' ? 'bg-primary' :
+                                                        user.userType === 'Sponsor' ? 'bg-success' :
+                                                        'bg-warning text-dark'
+                                                    }`}>
+                                                        {user.userType}
+                                                    </span>
+                                                    {user.ActiveAccount === 0 && (
+                                                        <span className="badge bg-danger ms-1">Inactive</span>
+                                                    )}
+                                                </td>
+                                                <td>{user.FirstName} {user.LastName}</td>
+                                                <td>{user.Email}</td>
+                                                <td>
+                                                    {user.userType === 'Driver' 
+                                                        ? `${user.sponsorName} (ID: ${user.SponsorID})`
+                                                        : user.sponsorName
+                                                    }
+                                                </td>
+                                                <td>{user.UserID}</td>
+                                                <td>
+                                                    {user.userType === 'Driver' && (
+                                                        <>
+                                                            <button 
+                                                                className="btn btn-sm btn-outline-primary me-2"
+                                                                onClick={() => handleEditDriver(user)}
+                                                            >
+                                                                <i className="fas fa-edit me-1"></i>
+                                                                Edit
+                                                            </button>
+                                                            <button 
+                                                                className={`btn btn-sm ${user.ActiveAccount === 1 ? 'btn-outline-warning' : 'btn-outline-success'}`}
+                                                                onClick={() => handleRemoveDriver(user.DriverID, `${user.FirstName} ${user.LastName}`, user.ActiveAccount === 1)}
+                                                            >
+                                                                <i className={`fas ${user.ActiveAccount === 1 ? 'fa-ban' : 'fa-check'} me-1`}></i>
+                                                                {user.ActiveAccount === 1 ? 'Deactivate' : 'Reactivate'}
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {user.userType === 'Sponsor' && (
+                                                        <>
+                                                            <button 
+                                                                className="btn btn-sm btn-outline-primary me-2"
+                                                                onClick={() => handleEditSponsor(user)}
+                                                            >
+                                                                <i className="fas fa-edit me-1"></i>
+                                                                Edit
+                                                            </button>
+                                                            <button 
+                                                                className={`btn btn-sm ${user.ActiveAccount === 1 ? 'btn-outline-warning' : 'btn-outline-success'}`}
+                                                                onClick={() => handleRemoveSponsor(user.UserID, `${user.FirstName} ${user.LastName}`, user.ActiveAccount === 1)}
+                                                            >
+                                                                <i className={`fas ${user.ActiveAccount === 1 ? 'fa-ban' : 'fa-check'} me-1`}></i>
+                                                                {user.ActiveAccount === 1 ? 'Deactivate' : 'Reactivate'}
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {user.userType === 'Admin' && (
+                                                        <>
+                                                            <button 
+                                                                className="btn btn-sm btn-outline-primary me-2"
+                                                                onClick={() => handleEditAdmin(user)}
+                                                            >
+                                                                <i className="fas fa-edit me-1"></i>
+                                                                Edit
+                                                            </button>
+                                                            <button 
+                                                                className={`btn btn-sm ${user.ActiveAccount === 1 ? 'btn-outline-warning' : 'btn-outline-success'}`}
+                                                                onClick={() => handleRemoveAdmin(user.UserID, `${user.FirstName} ${user.LastName}`, user.ActiveAccount === 1)}
+                                                            >
+                                                                <i className={`fas ${user.ActiveAccount === 1 ? 'fa-ban' : 'fa-check'} me-1`}></i>
+                                                                {user.ActiveAccount === 1 ? 'Deactivate' : 'Reactivate'}
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {/* Sponsor Organizations Tab */}
+                {activeTab === 'sponsors' && (
+                    <>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h4>Sponsor Organizations</h4>
+                            <button 
+                                className="btn btn-primary"
+                                onClick={() => setShowAddSponsorOrgModal(true)}
+                            >
+                                <i className="fas fa-plus me-2"></i>
+                                Add Sponsor Organization
+                            </button>
+                        </div>
+
+                        <div className="row mb-3">
+                            <div className="col-md-6">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Search sponsor organizations by name or ID..."
+                                    value={sponsorOrgSearch}
+                                    onChange={e => setSponsorOrgSearch(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="card mb-3">
+                            <div className="card-body">
+                                <h5 className="card-title">Sponsor Organizations Overview</h5>
+                                <div className="row">
+                                    <div className="col-md-4">
+                                        <p className="card-text">
+                                            <strong>Total Organizations:</strong> {sponsorOrgs.length}
+                                        </p>
+                                    </div>
+                                    <div className="col-md-4">
+                                        <p className="card-text">
+                                            <strong>Active Organizations:</strong> {sponsorOrgs.filter(org => org.EnabledSponsor === 1).length}
+                                        </p>
+                                    </div>
+                                    <div className="col-md-4">
+                                        <p className="card-text">
+                                            <strong>Disabled Organizations:</strong> {sponsorOrgs.filter(org => org.EnabledSponsor === 0).length}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {filteredSponsorOrgs.length === 0 ? (
+                            <div className="alert alert-info">
+                                <h5>No Sponsor Organizations Found</h5>
+                                <p>
+                                    {sponsorOrgSearch
+                                        ? "No sponsor organizations match your search criteria."
+                                        : "There are no sponsor organizations in the system yet."
+                                    }
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="table-responsive">
+                                <table className="table table-striped">
+                                    <thead className="table-dark">
+                                        <tr>
+                                            <th>Sponsor ID</th>
+                                            <th>Organization Name</th>
+                                            <th>Point Ratio</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredSponsorOrgs.map((org) => (
+                                            <tr key={org.SponsorID}>
+                                                <td>{org.SponsorID}</td>
+                                                <td>{org.Name}</td>
+                                                <td>{org.PointRatio}</td>
+                                                <td>
+                                                    <span className={`badge ${org.EnabledSponsor === 1 ? 'bg-success' : 'bg-danger'}`}>
+                                                        {org.EnabledSponsor === 1 ? 'Active' : 'Disabled'}
+                                                    </span>
+                                                </td>
+                                                <td>
                                                     <button 
                                                         className="btn btn-sm btn-outline-primary me-2"
-                                                        onClick={() => handleEditDriver(user)}
+                                                        onClick={() => handleEditSponsorOrg(org)}
                                                     >
                                                         <i className="fas fa-edit me-1"></i>
                                                         Edit
                                                     </button>
                                                     <button 
-                                                        className={`btn btn-sm ${user.ActiveAccount === 1 ? 'btn-outline-warning' : 'btn-outline-success'}`}
-                                                        onClick={() => handleRemoveDriver(user.DriverID, `${user.FirstName} ${user.LastName}`, user.ActiveAccount === 1)}
+                                                        className={`btn btn-sm ${org.EnabledSponsor === 1 ? 'btn-outline-warning' : 'btn-outline-success'}`}
+                                                        onClick={() => handleToggleSponsorOrg(org.SponsorID, org.Name, org.EnabledSponsor === 1)}
                                                     >
-                                                        <i className={`fas ${user.ActiveAccount === 1 ? 'fa-ban' : 'fa-check'} me-1`}></i>
-                                                        {user.ActiveAccount === 1 ? 'Deactivate' : 'Reactivate'}
+                                                        <i className={`fas ${org.EnabledSponsor === 1 ? 'fa-ban' : 'fa-check'} me-1`}></i>
+                                                        {org.EnabledSponsor === 1 ? 'Disable' : 'Enable'}
                                                     </button>
-                                                </>
-                                            )}
-                                            {user.userType === 'Sponsor' && (
-                                                <>
-                                                    <button 
-                                                        className="btn btn-sm btn-outline-primary me-2"
-                                                        onClick={() => handleEditSponsor(user)}
-                                                    >
-                                                        <i className="fas fa-edit me-1"></i>
-                                                        Edit
-                                                    </button>
-                                                    <button 
-                                                        className={`btn btn-sm ${user.ActiveAccount === 1 ? 'btn-outline-warning' : 'btn-outline-success'}`}
-                                                        onClick={() => handleRemoveSponsor(user.UserID, `${user.FirstName} ${user.LastName}`, user.ActiveAccount === 1)}
-                                                    >
-                                                        <i className={`fas ${user.ActiveAccount === 1 ? 'fa-ban' : 'fa-check'} me-1`}></i>
-                                                        {user.ActiveAccount === 1 ? 'Deactivate' : 'Reactivate'}
-                                                    </button>
-                                                </>
-                                            )}
-                                            {user.userType === 'Admin' && (
-                                                <>
-                                                    <button 
-                                                        className="btn btn-sm btn-outline-primary me-2"
-                                                        onClick={() => handleEditAdmin(user)}
-                                                    >
-                                                        <i className="fas fa-edit me-1"></i>
-                                                        Edit
-                                                    </button>
-                                                    <button 
-                                                        className={`btn btn-sm ${user.ActiveAccount === 1 ? 'btn-outline-warning' : 'btn-outline-success'}`}
-                                                        onClick={() => handleRemoveAdmin(user.UserID, `${user.FirstName} ${user.LastName}`, user.ActiveAccount === 1)}
-                                                    >
-                                                        <i className={`fas ${user.ActiveAccount === 1 ? 'fa-ban' : 'fa-check'} me-1`}></i>
-                                                        {user.ActiveAccount === 1 ? 'Deactivate' : 'Reactivate'}
-                                                    </button>
-                                                </>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* Add Driver Modal */}
@@ -1259,6 +1577,132 @@ export default function AdminUserManagement() {
                     </div>
                 )}
 
+                {/* Add Sponsor Organization Modal */}
+                {showAddSponsorOrgModal && (
+                    <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Add New Sponsor Organization</h5>
+                                    <button type="button" className="btn-close" onClick={() => setShowAddSponsorOrgModal(false)}></button>
+                                </div>
+                                <form onSubmit={handleAddSponsorOrg}>
+                                    <div className="modal-body">
+                                        <div className="mb-3">
+                                            <label className="form-label">Organization Name *</label>
+                                            <input 
+                                                type="text" 
+                                                className="form-control"
+                                                value={newSponsorOrg.Name}
+                                                onChange={(e) => setNewSponsorOrg({...newSponsorOrg, Name: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">Point Ratio *</label>
+                                            <input 
+                                                type="number" 
+                                                step="0.001"
+                                                min="0"
+                                                max="1"
+                                                className="form-control"
+                                                value={newSponsorOrg.PointRatio}
+                                                onChange={(e) => setNewSponsorOrg({...newSponsorOrg, PointRatio: e.target.value})}
+                                                required
+                                            />
+                                            <div className="form-text">Ratio of points earned per dollar spent (e.g., 0.01 = 1 point per $100)</div>
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">Status *</label>
+                                            <select 
+                                                className="form-control"
+                                                value={newSponsorOrg.EnabledSponsor}
+                                                onChange={(e) => setNewSponsorOrg({...newSponsorOrg, EnabledSponsor: e.target.value})}
+                                                required
+                                            >
+                                                <option value={1}>Active</option>
+                                                <option value={0}>Disabled</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="modal-footer">
+                                        <button type="button" className="btn btn-secondary" onClick={() => setShowAddSponsorOrgModal(false)}>
+                                            Cancel
+                                        </button>
+                                        <button type="submit" className="btn btn-primary">
+                                            Add Organization
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Edit Sponsor Organization Modal */}
+                {showEditSponsorOrgModal && editingSponsorOrg && (
+                    <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Edit Sponsor Organization</h5>
+                                    <button type="button" className="btn-close" onClick={() => setShowEditSponsorOrgModal(false)}></button>
+                                </div>
+                                <form onSubmit={handleUpdateSponsorOrg}>
+                                    <div className="modal-body">
+                                        <div className="alert alert-info">
+                                            <strong>Sponsor ID:</strong> {editingSponsorOrg.SponsorID}
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">Organization Name *</label>
+                                            <input 
+                                                type="text" 
+                                                className="form-control"
+                                                value={editingSponsorOrg.Name}
+                                                onChange={(e) => setEditingSponsorOrg({...editingSponsorOrg, Name: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">Point Ratio *</label>
+                                            <input 
+                                                type="number" 
+                                                step="0.001"
+                                                min="0"
+                                                max="1"
+                                                className="form-control"
+                                                value={editingSponsorOrg.PointRatio}
+                                                onChange={(e) => setEditingSponsorOrg({...editingSponsorOrg, PointRatio: e.target.value})}
+                                                required
+                                            />
+                                            <div className="form-text">Ratio of points earned per dollar spent (e.g., 0.01 = 1 point per $100)</div>
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">Status *</label>
+                                            <select 
+                                                className="form-control"
+                                                value={editingSponsorOrg.EnabledSponsor}
+                                                onChange={(e) => setEditingSponsorOrg({...editingSponsorOrg, EnabledSponsor: parseInt(e.target.value)})}
+                                                required
+                                            >
+                                                <option value={1}>Active</option>
+                                                <option value={0}>Disabled</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="modal-footer">
+                                        <button type="button" className="btn btn-secondary" onClick={() => setShowEditSponsorOrgModal(false)}>
+                                            Cancel
+                                        </button>
+                                        <button type="submit" className="btn btn-primary">
+                                            Update Organization
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
