@@ -188,3 +188,29 @@ export const getItemMappings = (productId) => apiCall('GET', '/cartAPI/getItemMa
  * @param {string|number} driverId - The ID of the driver whose cart should be cleared.
  */
 export const deleteUserCartItems = (driverId) => apiCall('DELETE', '/cartAPI/deleteCartItems', { DriverID: driverId });
+
+
+// --- Catalog API Calls ---
+
+/**
+ * Fetches all categories from a sponsor.
+ * @param {int} SponsorID - ID for catalogs sponsors.
+ */
+export const getAllSponsorCategories = (SponsorID) => apiCall('GET', '/catalogAPI/getAllCategories', {sponsorID: SponsorID});
+
+/**
+ * Adds a new category.
+ * @param {int} SponsorID - ID for catalogs sponsors.
+ * @param {string} CategoryID - Key for Best Buy API category type.
+ */
+export const addCategory = (sponsorID, categoryID) => apiCall('POST', '/catalogAPI/addCategory', {SponsorID: sponsorID, CategoryID: categoryID});
+
+/**
+ * Updates category to active/inactive.
+ * @param {int} SponsorID - ID for catalogs sponsors.
+ * @param {string} CategoryID - Key for Best Buy API category type.
+ * @param {boolean} Active - Boolean to set a category active/inactive
+ */
+export const updateCategoryStatus = (sponsorID, categoryID, active) => apiCall('POST', '/catalogAPI/updateCategoryStatus', {SponsorID: sponsorID, CategoryID: categoryID, Active: active});
+
+
