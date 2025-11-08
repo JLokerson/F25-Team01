@@ -8,10 +8,10 @@ const user = require('./userAPI');
  * @param {int} sponsorID - An int repersenting sponsorID.
  * @returns {Promise<object|null>} All sponsor categories object if found, otherwise null.
  */
-async function getAllCategories(sponsorID){
+async function getAllCategories(data){
     try{
-        console.log("Reading all category info from ", sponsorID);
-        const allCategories = await db.executeQuery("SELECT * from USER WHERE SponsorID = " + sponsorID);
+        console.log("Reading all category info from ", data.sponsorID);
+        const allCategories = await db.executeQuery("SELECT * from CATALOG WHERE SponsorID = " + data.sponsorID);
         console.log("Returning %s Categories", allCategories.length);
         return allCategories;
     }
@@ -33,7 +33,7 @@ async function AddCatalogCategory(data){
     let values;
 
     try {
-        sql = "INSERT INTO ORDERS (SponsorID, CategoryID) VALUES (?, ?)";
+        sql = "INSERT INTO CATALOG (SponsorID, CategoryID) VALUES (?, ?)";
         values = [data.SponsorID, data.CategoryID];
         const result = await db.executeQuery(sql, values);
         return result; 
@@ -72,8 +72,8 @@ router.get("/getAllCategories", async (req, res, next) => {
     const data = req.query;
     console.log('Received POST data for category GET: ', data);
     try {
-        const result = await getAllCategories(data);
-        res.status(200).json({ message: 'Category item added successfully!', id: result.insertId });
+        const categories = await getAllCategories(data);
+        res.status(200).json(categories);
     } catch (error) {
         res.status(500).send('Error getting category items.');
     }
