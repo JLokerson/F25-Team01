@@ -40,6 +40,7 @@ var adminAPIRouter = require("./DB_API/adminAPI").router;
 var sponsorAPIRouter = require("./DB_API/sponsorAPI").router;
 var driverAPIRouter = require("./DB_API/driverAPI").router;
 var cartAPIRouter = require("./DB_API/CartAPI").router;
+var catalogAPIRouter = require("./DB_API/catalogAPI").router;
 var bestbuyAPIRouter = require("./Best_Buy_API/router");
 
 // var userTest = require("./testAPI");
@@ -51,6 +52,7 @@ app.use("/adminAPI", adminAPIRouter);
 app.use("/sponsorAPI", sponsorAPIRouter);
 app.use("/driverAPI", driverAPIRouter);
 app.use("/cartAPI", cartAPIRouter);
+app.use("/catalogAPI", catalogAPIRouter);
 app.use("/api/bestbuy", bestbuyAPIRouter);
 // app.use("/testAPI", userTest);
 
