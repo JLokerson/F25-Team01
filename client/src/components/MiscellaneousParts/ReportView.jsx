@@ -4,13 +4,12 @@ import {getAllAuditRecords} from './ServerCall.js';
 // we can apply to the data after initial retrieval, though none have yet been implemented.
 function ReportView(Filter) {
   let returned = getAllAuditRecords();
-  const listItems = returned.map(person =>
+  const listItems = returned.map(entry =>
     <li>
-      <img src={getImageUrl(person)} alt={person.name}/>
-      <p>
-        <b>{person.name}:</b>
-        {' ' + person.profession + ' '}
-        known for {person.accomplishment}
+      <p>This is a single entry
+        <b>{entry.ActionName}:</b>
+        {' ' + entry.EventTime + ' '}
+        {entry.AffectedUserID}
       </p>
     </li>
   );

@@ -8,8 +8,8 @@ import ReportView from './MiscellaneousParts/ReportView.jsx';
 export default function AdminAuditView(){
     return (
         <div>
-            {AdminNavbar}
-            {ReportView}
+            <AdminNavbar />
+            <ReportView />
         </div>
     );
 }
