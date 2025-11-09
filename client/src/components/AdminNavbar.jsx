@@ -134,6 +134,9 @@ export default function AdminNavbar() {
                             <li className="nav-item">
                                 <Link className="nav-link" to="/MakeNewUser" style={textStyle}>Make New User</Link>
                             </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/adminauditview" style={textStyle}>Reports</Link>
+                            </li>
                         </ul>
                         <div className="d-flex align-items-center">
                             {/* Impostor Mode Controls */}
