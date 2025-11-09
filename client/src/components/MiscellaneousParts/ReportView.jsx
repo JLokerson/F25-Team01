@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 // we can apply to the data after initial retrieval, though none have yet been implemented.
 function ReportView(Filter) {
   const [entries, setEntries] = useState([]);
-  let loading = true;
+  const [loading, setLoading] = useState([]);
 
   const fetchAllData = async () => {
     try {
@@ -56,7 +56,11 @@ function ReportView(Filter) {
   };
 
   try{
-    fetchAllData();
+    useEffect(() => {
+      setLoading(true);
+      fetchAllData();
+      setLoading(false);
+    }, []);
   }catch(error){
     console.log("Unknown error occurred.")
   }
@@ -78,7 +82,7 @@ function ReportView(Filter) {
   );
   return <ul>{listItems}</ul>;
   */
- if (loading) {
+  if (loading) {
          return (
              <div>
                  <div className="container mt-4">
@@ -91,7 +95,26 @@ function ReportView(Filter) {
              </div>
          );
   }
- return ;
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>ActionName</th>
+          <th>EventTime</th>
+          <th>AffectedUserID</th>
+        </tr>
+      </thead>
+      <tbody>
+        {entries.map((entry) => (
+          <tr key={`${entry.ActionName}-${entry.EventTime}-${entry.AffectedUserID}`}>
+            <td>{entry.ActionName}</td>
+            <td>{entry.EventTime}</td>
+            <td>{entry.AffectedUserID}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
 }
 
 export default ReportView;
