@@ -20,17 +20,27 @@ app.use(express.urlencoded({ extended: true }));
 
 // Log every request and its body (for debugging)
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
-  // Only log body for POST/PUT
-  if (req.method === 'POST' || req.method === 'PUT') {
-    console.log('Request headers:', req.headers['content-type']);
-    console.log('Parsed body:', req.body);
-    console.log('Query params:', req.query);
+  // Skip logging for WebSocket and development-related requests
+  const skipLogging = [
+    '/ws', 
+    '/sockjs-node', 
+    '/favicon.ico',
+    '/__webpack_dev_server__'
+  ].some(path => req.originalUrl.startsWith(path));
+  
+  if (!skipLogging) {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+    // Only log body for POST/PUT
+    if (req.method === 'POST' || req.method === 'PUT') {
+      console.log('Request headers:', req.headers['content-type']);
+      console.log('Parsed body:', req.body);
+      console.log('Query params:', req.query);
+    }
+    // Log response status after response is sent
+    res.on('finish', () => {
+      console.log(`[${new Date().toISOString()}] Response status: ${res.statusCode} for ${req.method} ${req.originalUrl}`);
+    });
   }
-  // Log response status after response is sent
-  res.on('finish', () => {
-    console.log(`[${new Date().toISOString()}] Response status: ${res.statusCode} for ${req.method} ${req.originalUrl}`);
-  });
   next();
 });
 

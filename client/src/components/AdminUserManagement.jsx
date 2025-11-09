@@ -432,6 +432,10 @@ export default function AdminUserManagement() {
         e.preventDefault();
         
         try {
+            // Check if sponsor is being changed
+            const originalDriver = drivers.find(d => d.UserID === editingDriver.UserID);
+            const sponsorChanged = originalDriver && originalDriver.SponsorID !== editingDriver.SponsorID;
+            
             const updateData = {
                 UserID: editingDriver.UserID,
                 FirstName: editingDriver.FirstName,
@@ -439,12 +443,16 @@ export default function AdminUserManagement() {
                 Email: editingDriver.Email,
                 Password: editingDriver.Password,
                 PasswordSalt: editingDriver.PasswordSalt,
-                SponsorID: editingDriver.SponsorID // Make sure this is included
+                SponsorID: editingDriver.SponsorID,
+                // Reset points to 0 if sponsor is changing
+                ResetPoints: sponsorChanged
             };
 
-            console.log('Sending driver update data:', updateData); // Debug log
+            console.log('Sending driver update data:', updateData);
+            console.log('Sponsor changed:', sponsorChanged);
 
-            const response = await fetch(`http://localhost:4000/driverAPI/updateDriver`, {
+            // Use a new endpoint that handles both DRIVER and SPONSOR_USER updates
+            const response = await fetch(`http://localhost:4000/driverAPI/updateDriverWithSponsor`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -453,18 +461,27 @@ export default function AdminUserManagement() {
             });
 
             if (response.ok) {
-                alert('Driver updated successfully!');
+                const responseData = await response.json();
+                console.log('Driver update response:', responseData);
+                
+                let message = 'Driver updated successfully!';
+                if (sponsorChanged) {
+                    message += '\n\nSponsor changed - driver points have been reset to 0.';
+                }
+                
+                alert(message);
                 setShowEditModal(false);
                 setEditingDriver(null);
-                fetchAllDrivers();
+                // Refresh all data to ensure proper state sync
+                await Promise.all([fetchAllDrivers(), fetchAllSponsorUsers()]);
             } else {
                 const errorText = await response.text();
                 console.error('Update error:', errorText);
-                alert('Error updating driver');
+                alert(`Error updating driver: ${errorText}`);
             }
         } catch (error) {
             console.error('Error updating driver:', error);
-            alert('Error updating driver');
+            alert(`Error updating driver: ${error.message}`);
         }
     };
 

@@ -453,6 +453,39 @@ router.post("/updateDriver", async (req, res, next) => {
     }
 });
 
+router.post("/updateDriverWithSponsor", async (req, res, next) => {
+    console.log('Received POST request for updateDriverWithSponsor');
+    console.log('Request headers:', req.get('Content-Type'));
+    console.log('Parsed body:', req.body);
+    console.log('Query params:', req.query);
+
+    const data = req.body;
+
+    if (!data.UserID) {
+        return res.status(400).json({ message: 'UserID is required' });
+    }
+
+    if (!data.SponsorID) {
+        return res.status(400).json({ message: 'SponsorID is required' });
+    }
+
+    try {
+        console.log('Calling updateDriverWithSponsor function with data:', data);
+        const result = await updateDriverWithSponsor(data);
+        console.log('updateDriverWithSponsor completed successfully:', result);
+        res.status(200).json({ 
+            message: 'Driver updated successfully with sponsor relationship!',
+            details: result
+        });
+    } catch (error) {
+        console.error('Error updating driver with sponsor:', error);
+        res.status(500).json({ 
+            message: 'Error updating driver with sponsor relationship.',
+            error: error.message 
+        });
+    }
+});
+
 router.delete("/removeDriver/:driverID", async (req, res, next) => {
     const driverID = req.params.driverID;
     console.log('Received DELETE request for driver ID:', driverID);
@@ -795,6 +828,123 @@ router.get("/getDriversForSponsor/:sponsorID", async (req, res, next) => {
             error: error.message 
         });
     }
+});
+
+/**
+ * Updates driver information including sponsor relationship and optionally resets points.
+ * Handles updates to USER, DRIVER, and SPONSOR_USER tables.
+ * @param {object} data - The driver data to be updated.
+ * @returns {Promise<object>} A promise that resolves with the result of the update.
+ */
+async function updateDriverWithSponsor(data) {
+    try {
+        const { UserID, FirstName, LastName, Email, Password, PasswordSalt, SponsorID, ResetPoints } = data;
+        
+        console.log(`Updating driver UserID ${UserID} with sponsor change capability`);
+        console.log('Reset points requested:', ResetPoints);
+        
+        // Step 1: Update USER table
+        let userSql = "UPDATE USER SET FirstName = ?, LastName = ?, Email = ?";
+        let userValues = [FirstName, LastName, Email];
+        
+        // Only update password if provided
+        if (Password && Password.trim() !== '' && Password !== 'auto-generated') {
+            const salt = PasswordSalt && PasswordSalt !== 'auto-generated' ? PasswordSalt : generateSalt();
+            const hashedPassword = hashPassword(Password, salt);
+            userSql += ", Password = ?, PasswordSalt = ?";
+            userValues.push(hashedPassword, salt);
+            console.log('Password will be updated with new hash');
+        }
+        
+        userSql += " WHERE UserID = ?";
+        userValues.push(UserID);
+        
+        console.log('Updating USER table...');
+        await db.executeQuery(userSql, userValues);
+        
+        // Step 2: Update DRIVER table (including SponsorID and optionally reset points)
+        let driverSql = "UPDATE DRIVER SET SponsorID = ?";
+        let driverValues = [SponsorID];
+        
+        if (ResetPoints) {
+            driverSql += ", Points = 0";
+            console.log('Resetting driver points to 0 due to sponsor change');
+        }
+        
+        driverSql += " WHERE UserID = ?";
+        driverValues.push(UserID);
+        
+        console.log('Updating DRIVER table...');
+        const driverResult = await db.executeQuery(driverSql, driverValues);
+        
+        // Step 3: Update SPONSOR_USER table (if the relationship exists)
+        console.log('Updating SPONSOR_USER relationship...');
+        try {
+            const updateSponsorUserSql = "UPDATE SPONSOR_USER SET SponsorID = ? WHERE UserID = ?";
+            const sponsorUserResult = await db.executeQuery(updateSponsorUserSql, [SponsorID, UserID]);
+            
+            if (sponsorUserResult.affectedRows === 0) {
+                console.log('No SPONSOR_USER record found to update, creating new one...');
+                // If no SPONSOR_USER record exists, create one
+                const insertSponsorUserSql = "INSERT INTO SPONSOR_USER (UserID, SponsorID) VALUES (?, ?)";
+                await db.executeQuery(insertSponsorUserSql, [UserID, SponsorID]);
+                console.log('Created new SPONSOR_USER relationship');
+            } else {
+                console.log('Updated existing SPONSOR_USER relationship');
+            }
+        } catch (sponsorUserError) {
+            console.warn('Failed to update SPONSOR_USER relationship (may not be critical):', sponsorUserError.message);
+        }
+        
+        console.log('Driver update with sponsor change completed successfully');
+        return {
+            message: 'Driver updated successfully',
+            userUpdated: true,
+            driverUpdated: driverResult.affectedRows > 0,
+            pointsReset: ResetPoints,
+            sponsorChanged: true
+        };
+        
+    } catch (error) {
+        console.error("Failed to update driver with sponsor:", error);
+        throw error;
+    }
+}
+
+router.post("/updateDriverWithSponsor", async (req, res, next) => {
+    console.log('Received POST request for updateDriverWithSponsor');
+    console.log('Request headers:', req.get('Content-Type'));
+    console.log('Parsed body:', req.body);
+    console.log('Query params:', req.query);
+
+    const data = req.body;
+
+    if (!data.UserID) {
+        return res.status(400).json({ message: 'UserID is required' });
+    }
+
+    if (!data.SponsorID) {
+        return res.status(400).json({ message: 'SponsorID is required' });
+    }
+
+    try {
+        const result = await updateDriverWithSponsor(data);
+        res.status(200).json({ 
+            message: 'Driver updated successfully with sponsor relationship!',
+            details: result
+        });
+    } catch (error) {
+        console.error('Error updating driver with sponsor:', error);
+        res.status(500).json({ 
+            message: 'Error updating driver with sponsor relationship.',
+            error: error.message 
+        });
+    }
+});
+
+// Test route to verify routing is working
+router.get("/testRoute", (req, res) => {
+    res.json({ message: "Test route is working", timestamp: new Date().toISOString() });
 });
 
 module.exports={router};
