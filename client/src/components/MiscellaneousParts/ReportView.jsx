@@ -55,6 +55,12 @@ function ReportView(Filter) {
     }
   };
 
+  try{
+    fetchAllData();
+  }catch(error){
+    console.log("Unknown error occurred.")
+  }
+
 
   let returned = [] // Placeholder until i can make what was here work.
   //returned = await getAllAuditRecords();
@@ -85,7 +91,7 @@ function ReportView(Filter) {
              </div>
          );
   }
- return <div></div>;
+ return ;
 }
 
 export default ReportView;
