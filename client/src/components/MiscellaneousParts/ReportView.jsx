@@ -11,24 +11,24 @@ function ReportView(Filter) {
     try {
       console.log('=== FETCHING AUDIT DATA ===');
       const response = await fetch(`http://localhost:4000/adminAPI/getAuditRecords`);
-      console.log('Admin API response status:', response.status);
+      console.log('Audit API response status:', response.status);
       
       if (response.ok) {
         const responseText = await response.text();
-        console.log('Raw admin response text:', responseText);
+        console.log('Raw audit response text:', responseText);
         
         let allEntries;
         try {
           allEntries = JSON.parse(responseText);
-          console.log('Parsed admin data:', allEntries);
+          console.log('Parsed audit data:', allEntries);
         }catch (parseError) {
-          console.error('Failed to parse admin JSON:', parseError);
+          console.error('Failed to parse audit JSON:', parseError);
           setEntries([]);
           return;
         }
         
         if(!Array.isArray(allEntries)) {
-          console.error('Admin data is not an array:', allEntries);
+          console.error('Audit data is not an array:', allEntries);
           setEntries([]);
           return;
         }
