@@ -8,17 +8,19 @@ const router = express.Router();
 router.use(express.json());
 
 /**
- * Normalize SponsorID/CategoryID inputs.
+ * Validate and normalize sponsor/category identifiers.
  * @param {object} data
  * @returns {{SponsorID:number, CategoryID:string}}
  */
 function extractSponsorCategory(data = {}) {
+  // Converts number from data.SponsorID and data.CategoryID into a String for later use
   const SponsorID = Number(data.SponsorID || data.sponsorID);
   const CategoryID = (data.CategoryID || data.categoryID || "")
     .toString()
     .trim();
 
-  if (!Number.isFinite(SponsorID) || SponsorID <= 0) {
+  // Check if SponsorID is a real number that is greater than 0
+  if (!Number.isFinite(SponsorID) || !isNaN(SponsorID) || SponsorID <= 0) {
     const err = new Error(
       "SponsorID is required and must be a positive number."
     );
@@ -26,12 +28,14 @@ function extractSponsorCategory(data = {}) {
     throw err;
   }
 
+  // Check if CategoryID is non null
   if (!CategoryID) {
     const err = new Error("CategoryID is required.");
     err.status = 400;
     throw err;
   }
 
+  console.log(`Got ${SponsorID} : ${CategoryID}`);
   return { SponsorID, CategoryID };
 }
 
@@ -49,24 +53,18 @@ async function getAllCategoriesForSponsor(sponsorID) {
   return db.executeQuery(sql, [sponsorID]);
 }
 
-/**
- * Either insert a brand new mapping or reactivate an existing one.
- * The table uses an AUTO_INCREMENT CatalogID and (SponsorID, CategoryID).
- */
 async function addCategoryForSponsor(payload) {
   const { SponsorID, CategoryID } = extractSponsorCategory(payload);
 
   const lookupSql =
     "SELECT CatalogID FROM CATALOG WHERE SponsorID = ? AND CategoryID = ? LIMIT 1";
   const existing = await db.executeQuery(lookupSql, [SponsorID, CategoryID]);
-
   if (existing.length) {
     await db.executeQuery("UPDATE CATALOG SET Active = 1 WHERE CatalogID = ?", [
       existing[0].CatalogID,
     ]);
     return { catalogId: existing[0].CatalogID, created: false };
   }
-
   const insertSql =
     "INSERT INTO CATALOG (SponsorID, CategoryID, Active) VALUES (?, ?, 1)";
   const result = await db.executeQuery(insertSql, [SponsorID, CategoryID]);
@@ -106,7 +104,7 @@ async function updateCategoryStatus(payload) {
 
 /**
  * GET /catalogAPI/getAllCategories
- * Returns every category code assigned to the sponsor (used by sprint8-feat-catalogapi-new).
+ * Returns every category code assigned to the sponsor (used in sprint8-feat-catalogapi-new).
  * Name/Img are currently null placeholders until we persist metadata locally.
  */
 router.get("/getAllCategories", async (req, res) => {
