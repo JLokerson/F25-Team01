@@ -44,6 +44,8 @@ function ReportView(Filter) {
         }));
         
         console.log('Processed audit data:', processedEntries);
+        processedEntries = processedEntries[0];
+        processedEntries = processedEntries.slice(0, -3)
         setEntries(processedEntries);
       }else {
         console.error('Failed to fetch audit data - HTTP status:', response.status);
@@ -82,6 +84,11 @@ function ReportView(Filter) {
   );
   return <ul>{listItems}</ul>;
   */
+  if(!loading){
+    entries.map((entry) => (
+          console.log(entry)
+        ));
+  }
   if (loading) {
          return (
              <div>
