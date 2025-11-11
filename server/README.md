@@ -63,6 +63,15 @@ jsonwebtoken (JWT): For implementing token-based authentication in web applicati
 
 CURRENT SPRINT: SPRINT 2
 
+### Sponsor Catalog API
+New endpoints expose CRUD-style helpers for sponsor catalog management (backed by the `SPONSOR_CATEGORIES` table).
+
+- `GET /catalogAPI/getAllCategories?SponsorID=1` &rarr; returns `{ sponsorID, categories: [{ CategoryID, Name, Img, Active }] }`
+- `POST /catalogAPI/addCategory` &rarr; accepts `SponsorID`, `CategoryID`, optional `CategoryName`/`CategoryImage`; creates or re-activates that mapping.
+- `POST /catalogAPI/updateCategoryStatus` &rarr; accepts `SponsorID`, `CategoryID`, `Active` (1/0) to toggle availability.
+
+Both POST routes accept JSON bodies or query parameters for Postman compatibility. Use these endpoints from the React client helpers in `ServerCall.js` (e.g., `getAllSponsorCategories`, `addCategory`, `updateCategoryStatus`) and verify the mutations in MySQL (`SPONSOR_CATEGORIES` table should reflect the inserts/toggles).
+
 ### DATABASE STORED PROCEDURE INFORMATION
 ## Format:
 # Name

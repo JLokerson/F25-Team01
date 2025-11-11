@@ -1,5 +1,6 @@
 // The base URL for your API endpoint.
-const API_BASE_URL = 'http://localhost:4000';
+const API_BASE_URL = "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws";
+//const API_BASE_URL = "http://localhost:4000"; // swap for localhost testing
 
 /**
  * A generic helper function to handle all API calls.
@@ -11,37 +12,41 @@ const API_BASE_URL = 'http://localhost:4000';
  * @throws {Error} - Throws an error if the network response is not ok.
  */
 const apiCall = async (method, path, params = null) => {
-    let url = `${API_BASE_URL}${path}`;
+  // Ensure the path starts with a slash so relative URLs are not generated
+  const normalizedPath = path && path.startsWith("/") ? path : `/${path}`;
+  let url = `${API_BASE_URL}${normalizedPath}`;
 
-    const options = {
-        method,
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    };
+  const options = {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
 
-    // If parameters are provided, construct the query string.
-    // This is used for both GET and POST requests as per your Postman setup.
-    if (params) {
-        const query = new URLSearchParams(params).toString();
-        url += `?${query}`;
+  // If parameters are provided, construct the query string.
+  // This is used for both GET and POST requests as per your Postman setup.
+  if (params) {
+    const query = new URLSearchParams(params).toString();
+    url += `?${query}`;
+  }
+
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(
+        `HTTP error! status: ${response.status} - ${response.statusText}`
+      );
     }
-
-    try {
-        const response = await fetch(url, options);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-        }
-        // Return null if the response has no content (e.g., 204 No Content)
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.indexOf("application/json") !== -1) {
-            return await response;
-        }
-        return null; 
-    } catch (error) {
-        console.error(`Error during API call to ${url}:`, error);
-        throw error;
+    // Return null if the response has no content (e.g., 204 No Content)
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      return await response;
     }
+    return null;
+  } catch (error) {
+    console.error(`Error during API call to ${url}:`, error);
+    throw error;
+  }
 };
 
 // --- User API Calls ---
@@ -49,13 +54,14 @@ const apiCall = async (method, path, params = null) => {
 /**
  * Fetches all users from the API.
  */
-export const getAllUsers = () => apiCall('GET', '/userAPI/getAllUsers');
+export const getAllUsers = () => apiCall("GET", "/userAPI/getAllUsers");
 
 /**
  * Fetches a single user by their ID.
  * @param {string|number} userId - The ID of the user to fetch.
  */
-export const getUser = (userId) => apiCall('GET', '/userAPI/getUser', { UserID: userId });
+export const getUser = (userId) =>
+  apiCall("GET", "/userAPI/getUser", { UserID: userId });
 
 /**
  * Adds a new user.
@@ -67,7 +73,8 @@ export const getUser = (userId) => apiCall('GET', '/userAPI/getUser', { UserID: 
  * @param {string} userData.PasswordSalt
  * @param {number} userData.UserType
  */
-export const addUser = (userData) => apiCall('POST', '/userAPI/addUser', userData);
+export const addUser = (userData) =>
+  apiCall("POST", "/userAPI/addUser", userData);
 
 /**
  * Updates a user's password.
@@ -75,7 +82,12 @@ export const addUser = (userData) => apiCall('POST', '/userAPI/addUser', userDat
  * @param {string} password
  * @param {string} passwordSalt
  */
-export const updatePassword = (userID, password, passwordSalt) => apiCall('POST', '/userAPI/updatePassword', { UserID: userID, Password: password, PasswordSalt: passwordSalt});
+export const updatePassword = (userID, password, passwordSalt) =>
+  apiCall("POST", "/userAPI/updatePassword", {
+    UserID: userID,
+    Password: password,
+    PasswordSalt: passwordSalt,
+  });
 
 /**
  * Logs a user in.
@@ -83,13 +95,15 @@ export const updatePassword = (userID, password, passwordSalt) => apiCall('POST'
  * @param {string} credentials.Email
  * @param {string} credentials.Password
  */
-export const login = (credentials) => apiCall('POST', '/userAPI/login', credentials);
+export const login = (credentials) =>
+  apiCall("POST", "/userAPI/login", credentials);
 
 /**
  * Checks if an email already exists in the USER database.
  * @param {string} Email - The email to check.
  */
-export const checkEmailExist = (Email) => apiCall('GET', '/userAPI/checkEmail', { email: Email });
+export const checkEmailExist = (Email) =>
+  apiCall("GET", "/userAPI/checkEmail", { email: Email });
 
 // --- Admin API Calls ---
 
@@ -97,7 +111,7 @@ export const checkEmailExist = (Email) => apiCall('GET', '/userAPI/checkEmail', 
  * Fetches all admins.
  * Note: Corrected path from '/userAPI/getAllUsers' to '/adminAPI/getAllAdmins' based on API structure.
  */
-export const getAllAdmins = () => apiCall('GET', '/adminAPI/getAllAdmins');
+export const getAllAdmins = () => apiCall("GET", "/adminAPI/getAllAdmins");
 
 /**
  * Adds a new admin user.
@@ -132,7 +146,7 @@ export const updateApplicationStatus = (applicationData) => apiCall('POST', '/ad
 /**
  * Fetches all drivers.
  */
-export const getAllDrivers = () => apiCall('GET', '/driverAPI/getAllDrivers');
+export const getAllDrivers = () => apiCall("GET", "/driverAPI/getAllDrivers");
 
 /**
  * Adds a new driver.
@@ -146,40 +160,46 @@ export const getAllDrivers = () => apiCall('GET', '/driverAPI/getAllDrivers');
  * @param {number} driverData.UserType
  * @param {number} driverData.SponsorID
  */
-export const addDriver = (driverData) => apiCall('POST', '/driverAPI/addDriver', driverData);
-
+export const addDriver = (driverData) =>
+  apiCall("POST", "/driverAPI/addDriver", driverData);
 
 // --- Sponsor API Calls ---
 
 /**
  * Fetches all sponsors.
  */
-export const getAllSponsors = () => apiCall('GET', '/sponsorAPI/getAllSponsors');
+export const getAllSponsors = () =>
+  apiCall("GET", "/sponsorAPI/getAllSponsors");
 
 /**
  * Fetches all users associated with sponsors.
  */
-export const getAllSponsorUsers = () => apiCall('GET', '/sponsorAPI/getAllSponsorUsers');
+export const getAllSponsorUsers = () =>
+  apiCall("GET", "/sponsorAPI/getAllSponsorUsers");
 
 /**
  * Get the sponsor record associated with a given UserID
  * @param {number} userID - The ID of the user.
  */
-export const getSponsorForUser = (userId) => apiCall('GET', '/sponsorAPI/getSponsorForUser', {UserID: userId});
+export const getSponsorForUser = (userId) =>
+  apiCall("GET", "/sponsorAPI/getSponsorForUser", { UserID: userId });
 
 /**
  * Adds a new sponsor.
  * @param {Object} sponsorData - The sponsor data.
  * @param {string} sponsorData.Name
  */
-export const addSponsor = (sponsorData) => apiCall('POST', '/sponsorAPI/addSponsor', sponsorData);
+export const addSponsor = (sponsorData) =>
+  apiCall("POST", "/sponsorAPI/addSponsor", sponsorData);
 
 /**
  * Adds a new user for a sponsor.
  * @param {Object} sponsorUserData - The sponsor user data.
  */
-export const addSponsorUser = (sponsorUserData) => apiCall('POST', '/sponsorAPI/addSponsorUser', sponsorUserData);
+export const addSponsorUser = (sponsorUserData) =>
+  apiCall("POST", "/sponsorAPI/addSponsorUser", sponsorUserData);
 
+// keep existing getSponsorForUser helper (already defined above)
 
 // --- Cart API Calls ---
 
@@ -187,7 +207,8 @@ export const addSponsorUser = (sponsorUserData) => apiCall('POST', '/sponsorAPI/
  * Gets all cart items for a specific driver.
  * @param {string|number} driverId - The ID of the driver.
  */
-export const getCartItems = (driverId) => apiCall('GET', '/cartAPI/getCartItems', { DriverID: driverId });
+export const getCartItems = (driverId) =>
+  apiCall("GET", "/cartAPI/getCartItems", { DriverID: driverId });
 
 /**
  * Adds an item to a driver's cart.
@@ -195,13 +216,15 @@ export const getCartItems = (driverId) => apiCall('GET', '/cartAPI/getCartItems'
  * @param {string|number} itemData.DriverID
  * @param {string|number} itemData.ProductID
  */
-export const addCartItem = (itemData) => apiCall('POST', '/cartAPI/addCartItem', itemData);
+export const addCartItem = (itemData) =>
+  apiCall("POST", "/cartAPI/addCartItem", itemData);
 
 /**
  * Gets mappings for a specific item/product.
  * @param {string|number} productId - The ID of the product.
  */
-export const getItemMappings = (productId) => apiCall('GET', '/cartAPI/getItemMappings', { ProductID: productId });
+export const getItemMappings = (productId) =>
+  apiCall("GET", "/cartAPI/getItemMappings", { ProductID: productId });
 
 /**
  * Deletes all cart items for a specific user/driver.
@@ -233,3 +256,37 @@ export const updateApplicationStatusData = (applicationData) => apiCall('POST', 
  * @param {Object} applicationData - The application data.
  */
 export const createApplicationData = (applicationData) => apiCall('POST', '/applicationAPI/createApplication', applicationData);
+
+
+// --- Catalog API Calls ---
+
+/**
+ * Fetches all categories from a sponsor.
+ * @param {int} SponsorID - ID for catalogs sponsors.
+ */
+export const getAllSponsorCategories = (sponsorID) =>
+  apiCall("GET", "/catalogAPI/getAllCategories", { SponsorID: sponsorID });
+
+/**
+ * Adds a new category.
+ * @param {int} SponsorID - ID for catalogs sponsors.
+ * @param {string} CategoryID - Key for Best Buy API category type.
+ */
+export const addCategory = (sponsorID, categoryID) =>
+  apiCall("POST", "/catalogAPI/addCategory", {
+    SponsorID: sponsorID,
+    CategoryID: categoryID,
+  });
+
+  /**
+ * Updates category to active/inactive.
+ * @param {int} SponsorID - ID for catalogs sponsors.
+ * @param {string} CategoryID - Key for Best Buy API category type.
+ * @param {boolean} Active - Boolean to set a category active/inactive
+ */
+export const updateCategoryStatus = (sponsorID, categoryID, activeFlag) =>
+  apiCall("POST", "/catalogAPI/updateCategoryStatus", {
+    SponsorID: sponsorID,
+    CategoryID: categoryID,
+    Active: activeFlag,
+  });
