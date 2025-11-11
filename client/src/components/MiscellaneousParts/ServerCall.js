@@ -1,20 +1,6 @@
-// The base URL for your API endpoint. Prefer REACT_APP_SERVER_URL during dev,
-// otherwise fall back to the published lambda endpoint for remote API calls.
-const API_BASE_URL = (() => {
-  const envUrl = process.env.REACT_APP_SERVER_URL
-    ? process.env.REACT_APP_SERVER_URL.trim()
-    : "";
-  if (envUrl) {
-    return envUrl.replace(/\/$/, "");
-  }
-
-  if (typeof window !== "undefined") {
-    const { protocol, hostname } = window.location;
-    return `${protocol}//${hostname}:4000`;
-  }
-
-  return "http://localhost:4000";
-})();
+// The base URL for your API endpoint.
+const API_BASE_URL = "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws";
+//const API_BASE_URL = "http://localhost:4000"; // swap for localhost testing
 
 /**
  * A generic helper function to handle all API calls.
@@ -193,25 +179,6 @@ export const addSponsor = (sponsorData) =>
 export const addSponsorUser = (sponsorUserData) =>
   apiCall("POST", "/sponsorAPI/addSponsorUser", sponsorUserData);
 
-/**
- * Catalog helpers used by the Sponsor Catalog UI
- */
-export const getAllSponsorCategories = (sponsorID) =>
-  apiCall("GET", "/catalogAPI/getAllCategories", { SponsorID: sponsorID });
-
-export const addCategory = (sponsorID, categoryID) =>
-  apiCall("POST", "/catalogAPI/addCategory", {
-    SponsorID: sponsorID,
-    CategoryID: categoryID,
-  });
-
-export const updateCategoryStatus = (sponsorID, categoryID, activeFlag) =>
-  apiCall("POST", "/catalogAPI/updateCategoryStatus", {
-    SponsorID: sponsorID,
-    CategoryID: categoryID,
-    Active: activeFlag,
-  });
-
 // keep existing getSponsorForUser helper (already defined above)
 
 // --- Cart API Calls ---
@@ -245,3 +212,36 @@ export const getItemMappings = (productId) =>
  */
 export const deleteUserCartItems = (driverId) =>
   apiCall("DELETE", "/cartAPI/deleteCartItems", { DriverID: driverId });
+
+// --- Sponsor API Calls ---
+
+/**
+ * Fetches all categories from a sponsor.
+ * @param {int} SponsorID - ID for catalogs sponsors.
+ */
+export const getAllSponsorCategories = (sponsorID) =>
+  apiCall("GET", "/catalogAPI/getAllCategories", { SponsorID: sponsorID });
+
+/**
+ * Adds a new category.
+ * @param {int} SponsorID - ID for catalogs sponsors.
+ * @param {string} CategoryID - Key for Best Buy API category type.
+ */
+export const addCategory = (sponsorID, categoryID) =>
+  apiCall("POST", "/catalogAPI/addCategory", {
+    SponsorID: sponsorID,
+    CategoryID: categoryID,
+  });
+
+  /**
+ * Updates category to active/inactive.
+ * @param {int} SponsorID - ID for catalogs sponsors.
+ * @param {string} CategoryID - Key for Best Buy API category type.
+ * @param {boolean} Active - Boolean to set a category active/inactive
+ */
+export const updateCategoryStatus = (sponsorID, categoryID, activeFlag) =>
+  apiCall("POST", "/catalogAPI/updateCategoryStatus", {
+    SponsorID: sponsorID,
+    CategoryID: categoryID,
+    Active: activeFlag,
+  });
