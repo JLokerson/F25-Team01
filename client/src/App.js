@@ -24,6 +24,7 @@ import DriverOrderConfirmation from './components/DriverOrderConfirmation';
 import Home from './components/Home';
 import Testing from './components/Testing.jsx';
 import { CookiesProvider, useCookies } from 'react-cookie';
+import AdminAuditView from './components/AdminAuditView';
 
 function AppContent() {
   const location = useLocation();
@@ -56,6 +57,7 @@ function AppContent() {
         <Route path="/adminprofile" element={<AdminProfile />} />
         <Route path="/admin-applications" element={<AdminApplications />} />
         <Route path="/admin-user-management" element={<AdminUserManagement />} />
+        <Route path="/adminauditview" element={<AdminAuditView />} />
 
         {/* Sponsor routes */}
         <Route path="/sponsorhome" element={<SponsorHome />} />

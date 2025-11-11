@@ -1,5 +1,5 @@
 // The base URL for your API endpoint.
-const API_BASE_URL = 'https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws';
+const API_BASE_URL = 'http://localhost:4000';
 
 /**
  * A generic helper function to handle all API calls.
@@ -110,6 +110,11 @@ export const addAdmin = (adminData) => apiCall('POST', '/adminAPI/addAdmin', adm
  * Fetches all driver applications from all sponsor organizations.
  */
 export const getAllApplications = () => apiCall('GET', '/adminAPI/getAllApplications');
+
+/**
+ * Fetches all audit records.
+ */
+export const getAllAuditRecords = () => apiCall('GET', '/adminAPI/getAuditRecords');
 
 /**
  * Updates an application status (approve/deny).

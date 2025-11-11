@@ -20,6 +20,21 @@ async function getAllAdmins(){
     }
 }
 
+// Fetches audit log records
+async function getAuditRecords(){
+    try {
+        console.log("Reading audit records");
+
+        const query = "call RetrieveAuditData();";
+        const AuditRecords = await db.executeQuery(query);
+        console.log("Returning %s audit records", AuditRecords.length);
+        return AuditRecords;
+    } catch (error) {
+        console.error("Failed to get all audit records: ", error);
+        throw error;
+    }
+}
+
 /**
  * Creates a new user and then adds the corresponding UserID to the Admin table.
  * @param {object} data - The user data to be added.
@@ -161,6 +176,15 @@ router.get("/getAllAdmins", async (req, res, next) => {
     try {
         const admins = await getAllAdmins();
         res.json(admins);
+    } catch (error) {
+        res.status(500).send('Database error.');
+    }
+});
+
+router.get("/getAuditRecords", async (req, res, next) => {
+    try {
+        const auditlog = await getAuditRecords();
+        res.json(auditlog);
     } catch (error) {
         res.status(500).send('Database error.');
     }
