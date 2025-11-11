@@ -36,7 +36,7 @@ function ReportView(Filter) {
         // Process entries. I don't know how this works,
         // and allegedly neither does julia. I just hope
         // the way I changed it doesn't break anything.
-        const processedEntries = allEntries.map(entry => ({
+        let processedEntries = allEntries.map(entry => ({
             ...entry,
             ActionName: entry.ActionName,
             EventTime: entry.EventTime,
@@ -45,7 +45,18 @@ function ReportView(Filter) {
         
         console.log('Processed audit data:', processedEntries);
         processedEntries = processedEntries[0];
+
+        /*
+        processedEntries = Object.values(processedEntries)
         processedEntries = processedEntries.slice(0, -3)
+        */
+
+        delete processedEntries.ActionName;
+        delete processedEntries.AffectedUserID;
+        delete processedEntries.EventTime;
+
+        processedEntries = Object.values(processedEntries);
+
         setEntries(processedEntries);
       }else {
         console.error('Failed to fetch audit data - HTTP status:', response.status);
@@ -84,11 +95,6 @@ function ReportView(Filter) {
   );
   return <ul>{listItems}</ul>;
   */
-  if(!loading){
-    entries.map((entry) => (
-          console.log(entry)
-        ));
-  }
   if (loading) {
          return (
              <div>
