@@ -204,65 +204,27 @@ export const getItemMappings = (productId) => apiCall('GET', '/cartAPI/getItemMa
  */
 export const deleteUserCartItems = (driverId) => apiCall('DELETE', '/cartAPI/deleteCartItems', { DriverID: driverId });
 
-// Application Management Functions - Using unique names to avoid conflicts
-export const fetchAllApplicationsData = async () => {
-    try {
-        const response = await fetch(`http://localhost:4000/applicationAPI/getAllApplications`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        return response;
-    } catch (error) {
-        console.error('Error fetching all applications:', error);
-        throw error;
-    }
-};
+// --- Application API Calls ---
 
-export const fetchApplicationsBySponsorData = async (sponsorId) => {
-    try {
-        const response = await fetch(`http://localhost:4000/applicationAPI/getApplicationsBySponsor/${sponsorId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        return response;
-    } catch (error) {
-        console.error('Error fetching sponsor applications:', error);
-        throw error;
-    }
-};
+/**
+ * Fetches all applications.
+ */
+export const fetchAllApplicationsData = () => apiCall('GET', '/applicationAPI/getAllApplications');
 
-export const updateApplicationStatusData = async (applicationData) => {
-    try {
-        const response = await fetch(`http://localhost:4000/applicationAPI/updateApplicationStatus`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(applicationData)
-        });
-        return response;
-    } catch (error) {
-        console.error('Error updating application status:', error);
-        throw error;
-    }
-};
+/**
+ * Fetches applications for a specific sponsor.
+ * @param {string|number} sponsorId - The ID of the sponsor.
+ */
+export const fetchApplicationsBySponsorData = (sponsorId) => apiCall('GET', `/applicationAPI/getApplicationsBySponsor/${sponsorId}`);
 
-export const createApplicationData = async (applicationData) => {
-    try {
-        const response = await fetch(`http://localhost:4000/applicationAPI/createApplication`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(applicationData)
-        });
-        return response;
-    } catch (error) {
-        console.error('Error creating application:', error);
-        throw error;
-    }
-};
+/**
+ * Updates an application status.
+ * @param {Object} applicationData - The application update data.
+ */
+export const updateApplicationStatusData = (applicationData) => apiCall('POST', '/applicationAPI/updateApplicationStatus', applicationData);
+
+/**
+ * Creates a new application.
+ * @param {Object} applicationData - The application data.
+ */
+export const createApplicationData = (applicationData) => apiCall('POST', '/applicationAPI/createApplication', applicationData);
