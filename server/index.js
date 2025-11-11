@@ -99,7 +99,7 @@ app.get("/test-driver-api", (req, res) => {
   res.json({ message: "Driver API test route working" });
 });
 
-if (port) {
+if (port == 4000) {
   console.log("Port found - Running local host server");
   app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

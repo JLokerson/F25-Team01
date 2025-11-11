@@ -58,6 +58,9 @@ function AppContent() {
         {/* Admin routes */}
         <Route path="/adminhome" element={<AdminHome />} />
         <Route path="/adminprofile" element={<AdminProfile />} />
+        <Route path="/admin-applications" element={<AdminApplications />} />
+        <Route path="/admin-user-management" element={<AdminUserManagement />} />
+        <Route path="/adminauditview" element={<AdminAuditView />} />
 
         {/* Sponsor routes */}
         <Route path="/sponsorhome" element={<SponsorHome />} />

@@ -99,6 +99,10 @@ Both POST routes accept JSON bodies or query parameters for Postman compatibilit
 - SponsorID: ID of a sponsor organisation to be enabled/disabled.
 - Updates the entry for the row matching the provided sponsorID to set the Enabled status to whatever it wasn't before. Can cause sponsors to be hidden upon retrieving generic driverinfo.
 
+## AcceptApplicationByDriverSponsorPair
+- DriverID: ID of a driver to use for the mapping identification, SponsorID: ID of a sponsor organization to use for the mapping identification.
+- Updates entry for any applications of that driver, sponsor pair in the mappings table to be the opposite of what they previously were. If multiple such mappings exist (they shouldn't save for testing situations, any live data instance would be abnormal behaviour and they should be kept in sync anyway), then all of them get updated.
+
 
 ## PointsUpdate
 - DriverID: ID of the driver to update points for, PointChangeAmount: Amount to increase points by, SponsorID sponsor to change driver's points for, SponsorID: ID of the sponsor for the mapping (in case user has multiple sponsors)

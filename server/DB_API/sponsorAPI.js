@@ -2,7 +2,27 @@ const express = require("express");
 const db = require("./db");
 const user = require("./userAPI");
 
-const router = express.Router();
+/**
+ * Creates a new Sponsor.
+ * @param {object} data - The Sponsor data to be added.
+ * @returns {Promise<object>} A promise that resolves with the result of the sponsor table insertion.
+ */
+async function addSponsor(data) {
+    try {
+        console.log("Inserting new Company to Sponsor Table");
+        console.log(data);
+        
+        // Handle both Name only and full sponsor data
+        let sql, values;
+        if (data.PointRatio !== undefined && data.EnabledSponsor !== undefined) {
+            // Full sponsor organization with all fields
+            sql = "INSERT INTO SPONSOR (Name, PointRatio, EnabledSponsor) VALUES (?, ?, ?)";
+            values = [data.Name, data.PointRatio, data.EnabledSponsor];
+        } else {
+            // Simple sponsor with just name (for backward compatibility)
+            sql = "INSERT INTO SPONSOR (Name) VALUES (?)";
+            values = [data.Name];
+        }
 
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
@@ -12,27 +32,24 @@ async function getAllSponsors() {
   return db.executeQuery(query);
 }
 
-async function addSponsor({ Name }) {
-  if (!Name || !Name.trim()) {
-    throw new Error("Sponsor name is required.");
-  }
-  const sql = "INSERT INTO SPONSOR (Name) VALUES (?)";
-  return db.executeQuery(sql, [Name.trim()]);
-}
+/**
+ * Retrieves all Sponsor Users by joining the Sponsor User and User tables.
+ * @returns {Promise<Array<Object>>} A promise that resolves with an array of admin user objects.
+ */
+async function getAllSponsorUsers(){
+    try {
+        console.log("Reading all sponsor user info (including inactive accounts)");
 
-async function getAllSponsorUsers() {
-  const query = `
-    SELECT
-      SU.SponsorUserID,
-      SU.SponsorID,
-      SU.UserID,
-      U.FirstName,
-      U.LastName,
-      U.Email
-    FROM SPONSOR_USER SU
-    INNER JOIN USER U ON SU.UserID = U.UserID
-  `;
-  return db.executeQuery(query);
+        const query = "SELECT SPONSOR_USER.SponsorUserID, SPONSOR_USER.SponsorID,\
+                        SPONSOR_USER.UserID, USER.FirstName, USER.LastName, USER.Email, USER.ActiveAccount FROM SPONSOR_USER \
+                        INNER JOIN USER ON SPONSOR_USER.USERID = USER.USERID;";
+        const allSponsorUsers = await db.executeQuery(query);
+        console.log("Returning %s Sponsor Users (including inactive)", allSponsorUsers.length);
+        return allSponsorUsers;
+    } catch (error) {
+        console.error("Failed to get all sponsor users: ", error);
+        throw error;
+    }
 }
 
 async function addSponsorUser(data) {
@@ -131,14 +148,27 @@ router.post("/addSponsor", async (req, res) => {
   }
 });
 
-router.get("/getAllSponsorUsers", async (req, res) => {
-  try {
-    const sponsorUsers = await getAllSponsorUsers();
-    res.json(sponsorUsers);
-  } catch (error) {
-    console.error("Failed to fetch sponsor users:", error);
-    res.status(500).send("Database error.");
-  }
+router.post("/addSponsor", async (req, res, next) => {
+    console.log('Request body:', req.body);
+    console.log('Request query:', req.query);
+    
+    // Use req.body directly since it's being parsed correctly
+    const data = req.body;
+    
+    // Fallback to query if body is empty (for backward compatibility)
+    if (!data || Object.keys(data).length === 0) {
+        data = req.query;
+    }
+    
+    console.log('Final data being used:', data);
+    
+    try {
+        const result = await addSponsor(data);
+        res.status(200).json({ message: 'Sponsor added successfully!', id: result.insertId });
+    } catch (error) {
+        console.error('Error in addSponsor route:', error);
+        res.status(500).send('Error adding sponsor.');
+    }
 });
 
 router.post("/addSponsorUser", async (req, res) => {
@@ -189,10 +219,103 @@ router.post("/toggleSponsorActivity/:sponsorId", async (req, res) => {
 });
 
 router.get("/debug", (req, res) => {
-  res.json({
-    message: "SponsorAPI debug route working",
-    timestamp: new Date().toISOString(),
-  });
+    console.log('Debug route hit successfully');
+    res.json({ 
+        message: 'SponsorAPI debug route working',
+        timestamp: new Date().toISOString(),
+        routes: 'All routes functional'
+    });
+});
+
+router.post("/toggleSponsorUserActivity/:sponsorID", async (req, res, next) => {
+    const sponsorID = req.params.sponsorID;
+    console.log('Received disable request for sponsor ID:', sponsorID);
+    try {
+        const result = await toggleSponsorUserActivity(sponsorID);
+        res.status(200).json({ message: 'Sponsor user activity toggled successfully!' });
+    } catch (error) {
+        console.error('Error toggling activity for sponsor user:', error);
+        res.status(500).send('Error toggling activity for sponsor user.');
+    }
+});
+
+router.post("/toggleSponsorActivity/:sponsorID", async (req, res, next) => {
+    const sponsorID = req.params.sponsorID;
+    console.log('Received disable request for sponsor ID:', sponsorID);
+    try {
+        const result = await toggleSponsorActivity(sponsorID);
+        res.status(200).json({ message: 'Sponsor activity toggled successfully!' });
+    } catch (error) {
+        console.error('Error toggling activity for sponsor:', error);
+        res.status(500).send('Error toggling activity for sponsor.');
+    }
+});
+
+/**
+ * Updates an existing Sponsor organization.
+ * @param {object} data - The Sponsor data to be updated.
+ * @returns {Promise<object>} A promise that resolves with the result of the sponsor table update.
+ */
+async function updateSponsor(data) {
+    try {
+        console.log("Updating sponsor organization");
+        console.log(data);
+        const sql = "UPDATE SPONSOR SET Name = ?, PointRatio = ?, EnabledSponsor = ? WHERE SponsorID = ?";
+        const values = [data.Name, data.PointRatio, data.EnabledSponsor, data.SponsorID];
+
+        const result = await db.executeQuery(sql, values);
+
+        console.log("Sponsor organization updated, ID: " + data.SponsorID);
+        return result; 
+    }
+    catch (error) {
+        console.error("Failed to update sponsor:", error);
+        throw error;
+    }
+}
+
+/**
+ * Updates a sponsor user's information.
+ * @param {object} data - The sponsor user data to be updated.
+ * @returns {Promise<object>} A promise that resolves with the result of the update.
+ */
+async function updateSponsorUser(data) {
+    try {
+        console.log("Updating sponsor user with data:", data);
+        
+        // Update the USER table first
+        const userResult = await user.updateUser(data);
+        
+        console.log("Sponsor user updated successfully");
+        return userResult;
+    } catch (error) {
+        console.error("Failed to update sponsor user:", error);
+        throw error;
+    }
+}
+
+router.post("/updateSponsor", async (req, res, next) => {
+    const data = req.body;
+    console.log('Received POST data for sponsor update: ', data);
+    try {
+        const result = await updateSponsor(data);
+        res.status(200).json({ message: 'Sponsor organization updated successfully!', result });
+    } catch (error) {
+        console.error('Error updating sponsor:', error);
+        res.status(500).send('Error updating sponsor organization.');
+    }
+});
+
+router.post("/updateSponsorUser", async (req, res, next) => {
+    const data = req.body;
+    console.log('Received POST data for sponsor user update: ', data);
+    try {
+        const result = await updateSponsorUser(data);
+        res.status(200).json({ message: 'Sponsor user updated successfully!', result });
+    } catch (error) {
+        console.error('Error updating sponsor user:', error);
+        res.status(500).send('Error updating sponsor user.');
+    }
 });
 
 module.exports = router;

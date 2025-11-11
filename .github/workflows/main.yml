@@ -1,0 +1,36 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+    - main
+    - Sprint9
+
+jobs:
+  deploy_lambda:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '23'
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: npm install
+        env:
+          CI: true
+        run: |
+          ls
+          cd ./server
+          npm install
+      - name: deploy
+        run: |
+          ls
+          zip -r server.zip server -x "server/*.md"
+          ls
+          aws lambda update-function-code --function-name=Team01-LambdaFunction --zip-file=fileb://server.zip 
+      

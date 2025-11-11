@@ -118,8 +118,28 @@ export const getAllAdmins = () => apiCall("GET", "/adminAPI/getAllAdmins");
  * Note: Corrected path from '/userAPI/addUser' to '/adminAPI/addAdmin' based on API structure.
  * @param {Object} adminData - The admin user data.
  */
-export const addAdmin = (adminData) =>
-  apiCall("POST", "/adminAPI/addAdmin", adminData);
+export const addAdmin = (adminData) => apiCall('POST', '/adminAPI/addAdmin', adminData);
+
+/**
+ * Fetches all driver applications from all sponsor organizations.
+ */
+export const getAllApplications = () => apiCall('GET', '/adminAPI/getAllApplications');
+
+/**
+ * Fetches all audit records.
+ */
+export const getAllAuditRecords = () => apiCall('GET', '/adminAPI/getAuditRecords');
+
+/**
+ * Updates an application status (approve/deny).
+ * @param {Object} applicationData - The application update data.
+ * @param {number} applicationData.applicationId - The ID of the application.
+ * @param {string} applicationData.status - The new status ('approved' or 'denied').
+ * @param {string} applicationData.processedBy - The admin who processed the application.
+ * @param {string} [applicationData.denialReason] - The reason for denial (if denied).
+ */
+export const updateApplicationStatus = (applicationData) => apiCall('POST', '/adminAPI/updateApplicationStatus', applicationData);
+
 
 // --- Driver API Calls ---
 
@@ -210,10 +230,35 @@ export const getItemMappings = (productId) =>
  * Deletes all cart items for a specific user/driver.
  * @param {string|number} driverId - The ID of the driver whose cart should be cleared.
  */
-export const deleteUserCartItems = (driverId) =>
-  apiCall("DELETE", "/cartAPI/deleteCartItems", { DriverID: driverId });
+export const deleteUserCartItems = (driverId) => apiCall('DELETE', '/cartAPI/deleteCartItems', { DriverID: driverId });
 
-// --- Sponsor API Calls ---
+// --- Application API Calls ---
+
+/**
+ * Fetches all applications.
+ */
+export const fetchAllApplicationsData = () => apiCall('GET', '/applicationAPI/getAllApplications');
+
+/**
+ * Fetches applications for a specific sponsor.
+ * @param {string|number} sponsorId - The ID of the sponsor.
+ */
+export const fetchApplicationsBySponsorData = (sponsorId) => apiCall('GET', `/applicationAPI/getApplicationsBySponsor/${sponsorId}`);
+
+/**
+ * Updates an application status.
+ * @param {Object} applicationData - The application update data.
+ */
+export const updateApplicationStatusData = (applicationData) => apiCall('POST', '/applicationAPI/updateApplicationStatus', applicationData);
+
+/**
+ * Creates a new application.
+ * @param {Object} applicationData - The application data.
+ */
+export const createApplicationData = (applicationData) => apiCall('POST', '/applicationAPI/createApplication', applicationData);
+
+
+// --- Catalog API Calls ---
 
 /**
  * Fetches all categories from a sponsor.

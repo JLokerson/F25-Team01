@@ -81,7 +81,7 @@ export default function Login() {
       // If user is a sponsor, fetch their sponsor record so we know which catalog to load
       if (data.user.UserType === 2) {
         try {
-          const sponsorResp = await await getSponsorForUser(data.user.UserID);
+          const sponsorResp = await getSponsorForUser(data.user.UserID);
           if (sponsorResp.ok) {
             const sponsor = await sponsorResp.json();
             localStorage.setItem("sponsor", JSON.stringify(sponsor));
