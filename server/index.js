@@ -59,6 +59,7 @@ const adminAPIRouter = require("./DB_API/adminAPI").router;
 const sponsorAPIRouter = require("./DB_API/sponsorAPI");
 const driverAPIRouter = require("./DB_API/driverAPI").router;
 const cartAPIRouter = require("./DB_API/cartAPI").router;
+const catalogAPIRouter = require("./DB_API/catalogAPI").router;
 const bestbuyAPIRouter = require("./Best_Buy_API/router");
 const bbProxyRouter = require("./routes/bbProxy");
 
@@ -69,6 +70,7 @@ app.use("/adminAPI", adminAPIRouter);
 app.use("/sponsorAPI", sponsorAPIRouter);
 app.use("/driverAPI", driverAPIRouter);
 app.use("/cartAPI", cartAPIRouter);
+app.use("/catalogAPI", catalogAPIRouter);
 app.use("/api/bestbuy", bestbuyAPIRouter);
 app.use("/bb", bbProxyRouter);
 // Serve static files from the 'public' directory

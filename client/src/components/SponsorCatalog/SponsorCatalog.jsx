@@ -78,6 +78,15 @@ export default function SponsorCatalog() {
   const [activePattern, setActivePattern] = useState("");
   const [categoryReloadKey, setCategoryReloadKey] = useState(0);
 
+  // New state for catalog management
+  const [activeTab, setActiveTab] = useState("all"); // "all" or "my-catalog"
+  const [myCatalog, setMyCatalog] = useState([]);
+  const [catalogStatus, setCatalogStatus] = useState({
+    loading: false,
+    error: "",
+  });
+  const [catalogReloadKey, setCatalogReloadKey] = useState(0);
+
   const categoryHeading = useMemo(() => {
     if (!activePattern) {
       return "All Categories";
@@ -210,6 +219,147 @@ export default function SponsorCatalog() {
   const retrySponsor = () => setSponsorReloadKey((count) => count + 1);
   const retryCategories = () => setCategoryReloadKey((count) => count + 1);
 
+  // Load sponsor's catalog from database
+  const loadMyCatalog = useCallback(() => {
+    if (!sponsor) return;
+
+    setCatalogStatus({ loading: true, error: "" });
+
+    const url = withApiBase(
+      `/catalogAPI/getAllCategories?SponsorID=${encodeURIComponent(
+        sponsor.SponsorID
+      )}`
+    );
+
+    fetch(url)
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(
+            await parseError(res, "Unable to fetch your catalog.")
+          );
+        }
+        return res.json();
+      })
+      .then((payload) => {
+        let items = Array.isArray(payload?.categories)
+          ? payload.categories
+          : [];
+
+        // Enrich catalog entries with category name and image from the all categories list
+        items = items.map((entry) => {
+          const matchedCategory = categories.find(
+            (cat) => cat.id === entry.categoryId
+          );
+          return {
+            ...entry,
+            name: matchedCategory?.name || null,
+            image: matchedCategory?.image || null,
+          };
+        });
+
+        setMyCatalog(items);
+        setCatalogStatus({ loading: false, error: "" });
+      })
+      .catch((error) => {
+        console.error("loadMyCatalog error:", error);
+        setMyCatalog([]);
+        setCatalogStatus({
+          loading: false,
+          error: error.message || "Failed to fetch your catalog.",
+        });
+      });
+  }, [sponsor, categories]);
+
+  // Add category to sponsor's catalog
+  const addCategoryToCatalog = useCallback(
+    async (category) => {
+      if (!sponsor) return;
+
+      try {
+        const res = await fetch(withApiBase("/catalogAPI/addCategory"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            SponsorID: sponsor.SponsorID,
+            CategoryID: category.id,
+          }),
+        });
+
+        if (!res.ok) {
+          const errorMsg = await parseError(
+            res,
+            "Failed to add category to catalog."
+          );
+          throw new Error(errorMsg);
+        }
+
+        // Reload catalog to show the new addition
+        setCatalogReloadKey((count) => count + 1);
+      } catch (error) {
+        console.error("addCategoryToCatalog error:", error);
+        alert(`Error adding category: ${error.message}`);
+      }
+    },
+    [sponsor]
+  );
+
+  // Toggle category active status
+  const toggleCategoryStatus = useCallback(
+    async (catalogEntry) => {
+      if (!sponsor) return;
+
+      try {
+        const newStatus = catalogEntry.active ? 0 : 1;
+        const res = await fetch(
+          withApiBase("/catalogAPI/updateCategoryStatus"),
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              SponsorID: sponsor.SponsorID,
+              CategoryID: catalogEntry.categoryId,
+              Active: newStatus,
+            }),
+          }
+        );
+
+        if (!res.ok) {
+          const errorMsg = await parseError(
+            res,
+            "Failed to update category status."
+          );
+          throw new Error(errorMsg);
+        }
+
+        // Update local state
+        setMyCatalog((prev) =>
+          prev.map((entry) =>
+            entry.categoryId === catalogEntry.categoryId
+              ? { ...entry, active: Boolean(newStatus) }
+              : entry
+          )
+        );
+      } catch (error) {
+        console.error("toggleCategoryStatus error:", error);
+        alert(`Error updating category: ${error.message}`);
+      }
+    },
+    [sponsor]
+  );
+
+  // Load my catalog when sponsor changes or reload key changes
+  useEffect(() => {
+    loadMyCatalog();
+  }, [sponsor, catalogReloadKey, loadMyCatalog]);
+
+  // Helper to check if category is in my catalog
+  const isCategoryInCatalog = useCallback(
+    (categoryId) => {
+      return myCatalog.some((entry) => entry.categoryId === categoryId);
+    },
+    [myCatalog]
+  );
+
   return (
     <>
       <SponsorNavbar />
@@ -228,22 +378,60 @@ export default function SponsorCatalog() {
                 </p>
               )}
             </div>
-            <form className="catalog-search" onSubmit={handleSearchSubmit}>
-              <label htmlFor="category-search" className="visually-hidden">
-                Category filter
-              </label>
-              <input
-                id="category-search"
-                className="form-control"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search categories"
-              />
-              <button className="btn btn-primary" type="submit">
-                Search
-              </button>
-            </form>
+            {activeTab === "all" && (
+              <form className="catalog-search" onSubmit={handleSearchSubmit}>
+                <label htmlFor="category-search" className="visually-hidden">
+                  Category filter
+                </label>
+                <input
+                  id="category-search"
+                  className="form-control"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="Search categories"
+                />
+                <button className="btn btn-primary" type="submit">
+                  Search
+                </button>
+              </form>
+            )}
           </header>
+
+          {/* Tabs */}
+          <ul className="nav nav-tabs mb-3" role="tablist">
+            <li className="nav-item" role="presentation">
+              <button
+                className={`nav-link ${activeTab === "all" ? "active" : ""}`}
+                id="all-tab"
+                type="button"
+                role="tab"
+                aria-controls="all-panel"
+                aria-selected={activeTab === "all"}
+                onClick={() => {
+                  setActiveTab("all");
+                  setSearchInput("");
+                  setActivePattern("");
+                }}
+              >
+                All Categories
+              </button>
+            </li>
+            <li className="nav-item" role="presentation">
+              <button
+                className={`nav-link ${
+                  activeTab === "my-catalog" ? "active" : ""
+                }`}
+                id="catalog-tab"
+                type="button"
+                role="tab"
+                aria-controls="catalog-panel"
+                aria-selected={activeTab === "my-catalog"}
+                onClick={() => setActiveTab("my-catalog")}
+              >
+                My Catalog ({myCatalog.length})
+              </button>
+            </li>
+          </ul>
 
           {sponsorStatus.error && (
             <div className="alert alert-danger d-flex justify-content-between align-items-center">
@@ -257,60 +445,121 @@ export default function SponsorCatalog() {
             </div>
           )}
 
-          <section className="category-panel">
-            <div className="category-panel__header">
-              <h3>{categoryHeading}</h3>
-              {categoryStatus.loading && (
-                <span className="text-muted">Loading categories…</span>
-              )}
-            </div>
-
-            {categoryStatus.error && (
-              <div className="alert alert-warning d-flex justify-content-between align-items-center">
-                <span>{categoryStatus.error}</span>
-                <button
-                  className="btn btn-sm btn-outline-secondary"
-                  onClick={retryCategories}
-                >
-                  Try again
-                </button>
-              </div>
-            )}
-
-            {!categoryStatus.loading && !categoryStatus.error && (
-              <div className="category-panel__content">
-                {categories.length === 0 ? (
-                  <div className="category-card empty-state">
-                    No categories match this pattern.
-                  </div>
-                ) : (
-                  <div className="catalog-grid">
-                    {categories.map((category) => (
-                      <CatalogItemCard
-                        key={category.id}
-                        product={{
-                          name: category.name,
-                          image: category.image || CATEGORY_PLACEHOLDER,
-                        }}
-                        meta={`ID: ${category.id}`}
-                        actionLabel={category.url ? "View" : undefined}
-                        onAction={
-                          category.url
-                            ? () =>
-                                window.open(
-                                  category.url,
-                                  "_blank",
-                                  "noopener,noreferrer"
-                                )
-                            : undefined
-                        }
-                      />
-                    ))}
-                  </div>
+          {/* All Categories Tab */}
+          {activeTab === "all" && (
+            <section className="category-panel">
+              <div className="category-panel__header">
+                <h3>{categoryHeading}</h3>
+                {categoryStatus.loading && (
+                  <span className="text-muted">Loading categories…</span>
                 )}
               </div>
-            )}
-          </section>
+
+              {categoryStatus.error && (
+                <div className="alert alert-warning d-flex justify-content-between align-items-center">
+                  <span>{categoryStatus.error}</span>
+                  <button
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={retryCategories}
+                  >
+                    Try again
+                  </button>
+                </div>
+              )}
+
+              {!categoryStatus.loading && !categoryStatus.error && (
+                <div className="category-panel__content">
+                  {categories.length === 0 ? (
+                    <div className="category-card empty-state">
+                      No categories match this pattern.
+                    </div>
+                  ) : (
+                    <div className="catalog-grid">
+                      {categories.map((category) => {
+                        const inCatalog = isCategoryInCatalog(category.id);
+                        return (
+                          <div
+                            key={category.id}
+                            style={{ position: "relative" }}
+                          >
+                            <CatalogItemCard
+                              product={{
+                                name: category.name,
+                                image: category.image || CATEGORY_PLACEHOLDER,
+                              }}
+                              meta={`ID: ${category.id}`}
+                              actionLabel={inCatalog ? "Added" : "Add"}
+                              onAction={
+                                !inCatalog
+                                  ? () => addCategoryToCatalog(category)
+                                  : undefined
+                              }
+                              enabled={!inCatalog}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* My Catalog Tab */}
+          {activeTab === "my-catalog" && (
+            <section className="category-panel">
+              <div className="category-panel__header">
+                <h3>My Catalog</h3>
+                {catalogStatus.loading && (
+                  <span className="text-muted">Loading catalog...</span>
+                )}
+              </div>
+
+              {catalogStatus.error && (
+                <div className="alert alert-warning d-flex justify-content-between align-items-center">
+                  <span>{catalogStatus.error}</span>
+                  <button
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => setCatalogReloadKey((count) => count + 1)}
+                  >
+                    Try again
+                  </button>
+                </div>
+              )}
+
+              {!catalogStatus.loading && !catalogStatus.error && (
+                <div className="category-panel__content">
+                  {myCatalog.length === 0 ? (
+                    <div className="category-card empty-state">
+                      No categories in your catalog yet. Go to "All Categories"
+                      and add some!
+                    </div>
+                  ) : (
+                    <div className="catalog-grid">
+                      {myCatalog.map((entry) => (
+                        <div
+                          key={entry.categoryId}
+                          style={{ position: "relative" }}
+                        >
+                          <CatalogItemCard
+                            product={{
+                              name:
+                                entry.name || `Category ${entry.categoryId}`,
+                              image: entry.image || CATEGORY_PLACEHOLDER,
+                            }}
+                            actionLabel={entry.active ? "Active" : "Inactive"}
+                            onAction={() => toggleCategoryStatus(entry)}
+                            enabled={true}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+          )}
         </div>
       </div>
     </>

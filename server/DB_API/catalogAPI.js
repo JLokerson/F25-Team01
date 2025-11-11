@@ -20,7 +20,7 @@ function extractSponsorCategory(data = {}) {
     .trim();
 
   // Check if SponsorID is a real number that is greater than 0
-  if (!Number.isFinite(SponsorID) || !isNaN(SponsorID) || SponsorID <= 0) {
+  if (!Number.isFinite(SponsorID) || SponsorID <= 0) {
     const err = new Error(
       "SponsorID is required and must be a positive number."
     );
