@@ -1,35 +1,41 @@
 // client/src/App.js
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import About from './components/About';
-import Login from './components/Login';
-import AdminHome from './components/AdminHome';
-import DriverHome from './components/DriverHome';
-import SponsorHome from './components/SponsorHome';
-import Recover from './components/Recover';
-import Register from './components/Register';
-import AdminProfile from './components/ProfilePages/AdminProfile'
-import DriverProfile from './components/ProfilePages/DriverProfile'
-import SponsorProfile from './components/ProfilePages/SponsorProfile';
-import SponsorDriverManagement from './components/SponsorDriverManagement';
-import PendingApplications from './components/PendingApplications';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
+import About from "./components/About";
+import Login from "./components/Login";
+import AdminHome from "./components/AdminHome";
+import DriverHome from "./components/DriverHome";
+import SponsorHome from "./components/SponsorHome";
+import Recover from "./components/Recover";
+import Register from "./components/Register";
+import AdminProfile from "./components/ProfilePages/AdminProfile";
+import DriverProfile from "./components/ProfilePages/DriverProfile";
+import SponsorProfile from "./components/ProfilePages/SponsorProfile";
+import SponsorDriverManagement from "./components/SponsorDriverManagement";
+import PendingApplications from "./components/PendingApplications";
 import AdminApplications from './components/AdminApplications';
 import AdminUserManagement from './components/AdminUserManagement';
-import CatalogBuilder from './components/SponsorCatalog/CatalogBuilder';
-import CategoryExplorer from './components/SponsorCatalog/CategoryExplorer';
-import Products from './components/Products';
-import MakeNewUser from './components/MakeNewUser'; 
-import DriverCart from './components/DriverCart';
-import DriverOrderConfirmation from './components/DriverOrderConfirmation';
-import Home from './components/Home';
-import Testing from './components/Testing.jsx';
-import { CookiesProvider, useCookies } from 'react-cookie';
+import SponsorCatalog from "./components/SponsorCatalog/SponsorCatalog";
+import Products from "./components/Products";
+import MakeNewUser from "./components/MakeNewUser";
+import DriverCart from "./components/DriverCart";
+import DriverOrderConfirmation from "./components/DriverOrderConfirmation";
+import Home from "./components/Home";
+import Testing from "./components/Testing.jsx";
+import { CookiesProvider, useCookies } from "react-cookie";
 import AdminAuditView from './components/AdminAuditView';
 
 function AppContent() {
   const location = useLocation();
   // Simple auth check: presence of "user" in localStorage
-  const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+  const userRaw =
+    typeof window !== "undefined" ? localStorage.getItem("user") : null;
   let user = null;
   try {
     user = userRaw ? JSON.parse(userRaw) : null;
@@ -50,7 +56,7 @@ function AppContent() {
         <Route path="/testing" element={<Testing />} />
         {/* <Route path="/OrderConfirmation" element={<OrderConfirmation/>}/> */}
         {/* <Route path="/Cart" element={<CartPage/>}/> */}
-        <Route path="/MakeNewUser" element={<MakeNewUser />} /> 
+        <Route path="/MakeNewUser" element={<MakeNewUser />} />
 
         {/* Admin routes */}
         <Route path="/adminhome" element={<AdminHome />} />
@@ -62,16 +68,21 @@ function AppContent() {
         {/* Sponsor routes */}
         <Route path="/sponsorhome" element={<SponsorHome />} />
         <Route path="/sponsorprofile" element={<SponsorProfile />} />
-        <Route path="/sponsor-driver-management" element={<SponsorDriverManagement />} />
+        <Route
+          path="/sponsor-driver-management"
+          element={<SponsorDriverManagement />}
+        />
         <Route path="/pending-applications" element={<PendingApplications />} />
-        <Route path="/sponsorcatalog" element={<CatalogBuilder />} />
-        <Route path="/sponsorcatalog/explore" element={<CategoryExplorer />} />
+        <Route path="/sponsorcatalog" element={<SponsorCatalog />} />
 
         {/* Driver routes */}
         <Route path="/driverhome" element={<DriverHome />} />
         <Route path="/driverprofile" element={<DriverProfile />} />
         <Route path="/drivercart" element={<DriverCart />} />
-        <Route path="/driverorderconfirmation" element={<DriverOrderConfirmation />} />
+        <Route
+          path="/driverorderconfirmation"
+          element={<DriverOrderConfirmation />}
+        />
 
         {/* Shared pages */}
 

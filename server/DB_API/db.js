@@ -1,21 +1,23 @@
-require('dotenv').config();
+require("dotenv").config();
 const dbConfig = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
-  dbName: process.env.DB_NAME
+  dbName: process.env.DB_NAME,
 };
 
 //set up sql conneciton
-const mysql = require('mysql2');
-const pool = mysql.createPool({
+const mysql = require("mysql2");
+const pool = mysql
+  .createPool({
     host: dbConfig.host,
     user: dbConfig.user,
     password: dbConfig.password,
     database: dbConfig.dbName,
     waitForConnections: true,
-    queueLimit: 0
-}).promise();
+    queueLimit: 0,
+  })
+  .promise();
 
 /**
  * A reusable function to execute a MySQL query using promises.
@@ -26,14 +28,13 @@ const pool = mysql.createPool({
  * @throws {Error} Throws an error if the query fails.
  */
 async function executeQuery(query, values = []) {
-    try {
-        const [rows, metadata] = await pool.query(query, values);
-        return rows;
-    }
-    catch (error) {
-        console.error('Database query failed:', error);
-        throw error;
-    }
+  try {
+    const [rows, metadata] = await pool.query(query, values);
+    return rows;
+  } catch (error) {
+    console.error("(!) Database query failed:", error);
+    throw error;
+  }
 }
 
-module.exports = {executeQuery};
+module.exports = { executeQuery };

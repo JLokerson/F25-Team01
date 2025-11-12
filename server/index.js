@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 const app = express();
-const port = process.env.SERVER_PORT || 4000; 
+const port = process.env.SERVER_PORT; 
 
 // More specific CORS configuration
 const corsOptions = {
@@ -52,6 +52,7 @@ var driverAPIRouter = require("./DB_API/driverAPI").router;
 var cartAPIRouter = require("./DB_API/CartAPI").router;
 var catalogAPIRouter = require("./DB_API/catalogAPI").router;
 var bestbuyAPIRouter = require("./Best_Buy_API/router");
+var bbProxyRouter = require("./routes/bbProxy");
 
 // var userTest = require("./testAPI");
 
@@ -64,6 +65,7 @@ app.use("/driverAPI", driverAPIRouter);
 app.use("/cartAPI", cartAPIRouter);
 app.use("/catalogAPI", catalogAPIRouter);
 app.use("/api/bestbuy", bestbuyAPIRouter);
+app.use("/bb", bbProxyRouter);
 // app.use("/testAPI", userTest);
 
 // Serve about.html at the root URL

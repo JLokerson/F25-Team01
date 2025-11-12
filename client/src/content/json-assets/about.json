@@ -3,8 +3,8 @@
   "team": "Team 1",
   "members": ["Jason L", "Ohm P", "Julia L", "Emerson K"],
   "productName": "Driver Rewards Demo",
-  "version": "0.8.0",
-  "versionDate": "2025-11-02",
+  "version": "0.9.5",
+  "versionDate": "2025-11-11",
   "description": "A demo application showcasing a driver rewards program with a points system and product catalog.",
   "technologies": ["React", "Node.js", "MySQL", "AWS"]
 }
