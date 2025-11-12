@@ -189,6 +189,7 @@ export default function DriverProfile() {
                                                 <>
                                                     <p><strong>Driver ID:</strong> {driverInfo.DriverID}</p>
                                                     <p><strong>Sponsor ID:</strong> {driverInfo.SponsorID}{sponsorName ? ` (${sponsorName})` : ''}</p>
+                                                    <p><strong>Points:</strong> {driverInfo.Points || 0}</p>
                                                 </>
                                             ) : (
                                                 <div className="alert alert-info">
