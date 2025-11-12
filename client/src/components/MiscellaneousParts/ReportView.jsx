@@ -10,7 +10,7 @@ function ReportView(Filter) {
   const fetchAllData = async () => {
     try {
       console.log('=== FETCHING AUDIT DATA ===');
-      const response = await fetch(`http://localhost:4000/adminAPI/getAuditRecords`);
+      const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/adminAPI/getAuditRecords`);
       console.log('Audit API response status:', response.status);
       
       if (response.ok) {
