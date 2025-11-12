@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 function ReportView(Filter) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState([]);
+  const [searchUserId, setSearchUserId] = useState('');
 
   const fetchAllData = async () => {
     try {
@@ -79,22 +80,12 @@ function ReportView(Filter) {
   }
 
 
-  let returned = [] // Placeholder until i can make what was here work.
-  //returned = await getAllAuditRecords();
-  console.log(returned);
-//  returned = JSON.parse(returned);
-/*
-  const listItems = returned.map(entry =>
-    <li>
-      <p>This is a single entry
-        <b>{entry.ActionName}:</b>
-        {' ' + entry.EventTime + ' '}
-        {entry.AffectedUserID}
-      </p>
-    </li>
-  );
-  return <ul>{listItems}</ul>;
-  */
+  // Filter entries based on search
+  const filteredEntries = entries.filter(entry => {
+    if (!searchUserId) return true;
+    return entry.AffectedUserID && entry.AffectedUserID.toString().includes(searchUserId);
+  });
+
   if (loading) {
          return (
              <div>
@@ -109,24 +100,69 @@ function ReportView(Filter) {
          );
   }
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>ActionName</th>
-          <th>EventTime</th>
-          <th>AffectedUserID</th>
-        </tr>
-      </thead>
-      <tbody>
-        {entries.map((entry) => (
-          <tr key={`${entry.ActionName}-${entry.EventTime}-${entry.AffectedUserID}`}>
-            <td>{entry.ActionName}</td>
-            <td>{entry.EventTime}</td>
-            <td>{entry.AffectedUserID}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="container mt-4">
+      <h3 className="mb-4">Audit Records</h3>
+      
+      {/* Search Input */}
+      <div className="row mb-3">
+        <div className="col-md-8"></div>
+        <div className="col-md-4">
+          <div className="d-flex">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search by User ID..."
+              value={searchUserId}
+              onChange={(e) => setSearchUserId(e.target.value)}
+            />
+            {searchUserId && (
+              <button
+                className="btn btn-outline-secondary ms-2"
+                type="button"
+                onClick={() => setSearchUserId('')}
+                title="Clear search"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            )}
+          </div>
+          {searchUserId && (
+            <small className="text-muted">
+              Showing {filteredEntries.length} of {entries.length} records
+            </small>
+          )}
+        </div>
+      </div>
+
+      <div className="table-responsive">
+        <table className="table table-striped table-hover">
+          <thead className="table-dark">
+            <tr>
+              <th scope="col">Action Name</th>
+              <th scope="col">Event Time</th>
+              <th scope="col">Affected User ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredEntries.length === 0 ? (
+              <tr>
+                <td colSpan="3" className="text-center text-muted">
+                  {searchUserId ? `No audit records found for User ID containing "${searchUserId}"` : "No audit records found"}
+                </td>
+              </tr>
+            ) : (
+              filteredEntries.map((entry, index) => (
+                <tr key={`${entry.ActionName}-${entry.EventTime}-${entry.AffectedUserID}-${index}`}>
+                  <td>{entry.ActionName}</td>
+                  <td>{entry.EventTime}</td>
+                  <td>{entry.AffectedUserID}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 
