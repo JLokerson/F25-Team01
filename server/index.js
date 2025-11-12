@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 const app = express();
-const port = process.env.SERVER_PORT || 4000; 
+const port = process.env.SERVER_PORT; 
 
 // More specific CORS configuration
 const corsOptions = {
@@ -20,17 +20,27 @@ app.use(express.urlencoded({ extended: true }));
 
 // Log every request and its body (for debugging)
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
-  // Only log body for POST/PUT
-  if (req.method === 'POST' || req.method === 'PUT') {
-    console.log('Request headers:', req.headers['content-type']);
-    console.log('Parsed body:', req.body);
-    console.log('Query params:', req.query);
+  // Skip logging for WebSocket and development-related requests
+  const skipLogging = [
+    '/ws', 
+    '/sockjs-node', 
+    '/favicon.ico',
+    '/__webpack_dev_server__'
+  ].some(path => req.originalUrl.startsWith(path));
+  
+  if (!skipLogging) {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+    // Only log body for POST/PUT
+    if (req.method === 'POST' || req.method === 'PUT') {
+      console.log('Request headers:', req.headers['content-type']);
+      console.log('Parsed body:', req.body);
+      console.log('Query params:', req.query);
+    }
+    // Log response status after response is sent
+    res.on('finish', () => {
+      console.log(`[${new Date().toISOString()}] Response status: ${res.statusCode} for ${req.method} ${req.originalUrl}`);
+    });
   }
-  // Log response status after response is sent
-  res.on('finish', () => {
-    console.log(`[${new Date().toISOString()}] Response status: ${res.statusCode} for ${req.method} ${req.originalUrl}`);
-  });
   next();
 });
 
@@ -39,8 +49,10 @@ var userAPIRouter = require("./DB_API/userAPI").router;
 var adminAPIRouter = require("./DB_API/adminAPI").router;
 var sponsorAPIRouter = require("./DB_API/sponsorAPI").router;
 var driverAPIRouter = require("./DB_API/driverAPI").router;
-var cartAPIRouter = require("./DB_API/cartAPI").router;
+var cartAPIRouter = require("./DB_API/CartAPI").router;
+var catalogAPIRouter = require("./DB_API/catalogAPI").router;
 var bestbuyAPIRouter = require("./Best_Buy_API/router");
+var bbProxyRouter = require("./routes/bbProxy");
 
 // var userTest = require("./testAPI");
 
@@ -51,7 +63,9 @@ app.use("/adminAPI", adminAPIRouter);
 app.use("/sponsorAPI", sponsorAPIRouter);
 app.use("/driverAPI", driverAPIRouter);
 app.use("/cartAPI", cartAPIRouter);
+app.use("/catalogAPI", catalogAPIRouter);
 app.use("/api/bestbuy", bestbuyAPIRouter);
+app.use("/bb", bbProxyRouter);
 // app.use("/testAPI", userTest);
 
 // Serve about.html at the root URL

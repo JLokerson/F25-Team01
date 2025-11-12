@@ -4,7 +4,7 @@ on:
   push:
     branches:
     - main
-    - sprint8
+    - Sprint9
 
 jobs:
   deploy_lambda:
@@ -26,7 +26,7 @@ jobs:
         run: |
           ls
           cd ./server
-          npm ci
+          npm install
       - name: deploy
         run: |
           ls
