@@ -19,6 +19,8 @@ import DriverProfile from "./components/ProfilePages/DriverProfile";
 import SponsorProfile from "./components/ProfilePages/SponsorProfile";
 import SponsorDriverManagement from "./components/SponsorDriverManagement";
 import PendingApplications from "./components/PendingApplications";
+import AdminApplications from './components/AdminApplications';
+import AdminUserManagement from './components/AdminUserManagement';
 import SponsorCatalog from "./components/SponsorCatalog/SponsorCatalog";
 import Products from "./components/Products";
 import MakeNewUser from "./components/MakeNewUser";
@@ -27,6 +29,7 @@ import DriverOrderConfirmation from "./components/DriverOrderConfirmation";
 import Home from "./components/Home";
 import Testing from "./components/Testing.jsx";
 import { CookiesProvider, useCookies } from "react-cookie";
+import AdminAuditView from './components/AdminAuditView';
 
 function AppContent() {
   const location = useLocation();
