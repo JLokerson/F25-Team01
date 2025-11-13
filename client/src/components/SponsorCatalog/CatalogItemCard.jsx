@@ -1,7 +1,3 @@
-/**
- * Irrelevant for now (Worry about this later)
- */
-
 import React from "react";
 
 export default function CatalogItemCard({
@@ -38,21 +34,11 @@ export default function CatalogItemCard({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          marginBottom: 8,
+          fontWeight: 700,
+          fontSize: 20,
         }}
       >
-        <img
-          src={
-            product.image ||
-            product.ITEM_IMG ||
-            "https://via.placeholder.com/150"
-          }
-          alt={product.name || product.ITEM_NAME}
-          style={{ maxHeight: 110, maxWidth: "100%" }}
-        />
-      </div>
-      <div style={{ fontWeight: 700, fontSize: small ? 13 : 14 }}>
-        {product.name}
+        {product.name || product.ITEM_NAME}
       </div>
       {meta && (
         <div style={{ fontSize: small ? 11 : 12, color: "#6c757d" }}>
