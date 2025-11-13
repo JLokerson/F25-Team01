@@ -201,6 +201,15 @@ export const addSponsorUser = (sponsorUserData) =>
 
 // keep existing getSponsorForUser helper (already defined above)
 
+/**
+ * Updates the points for a single driver.
+ * @param {int} DriverID 
+ * @param {int} PointUpdate - positive or negative change to drivers current points
+ * @param {int} SponsorID
+ */
+export const updateDriverPoints = (driverID , pointUpdate, sponsorID) =>
+  apiCall("POST", "/sponsorAPI/updateDriverPoints", {DriverID: driverID , PointChange: pointUpdate, SponsorID: sponsorID});
+
 // --- Cart API Calls ---
 
 /**
