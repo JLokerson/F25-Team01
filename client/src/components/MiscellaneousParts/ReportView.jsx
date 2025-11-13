@@ -46,11 +46,6 @@ function ReportView(Filter) {
         console.log('Processed audit data:', processedEntries);
         processedEntries = processedEntries[0];
 
-        /*
-        processedEntries = Object.values(processedEntries)
-        processedEntries = processedEntries.slice(0, -3)
-        */
-
         delete processedEntries.ActionName;
         delete processedEntries.AffectedUserID;
         delete processedEntries.EventTime;
