@@ -61,7 +61,7 @@ export default function App() {
           <input
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            placeholder="Enter a category name (examples: Phones, Laptops, TVs)"
+            placeholder="Enter a category name"
             style={{
               flex: 1,
               padding: "10px 12px",
