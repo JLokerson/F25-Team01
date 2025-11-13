@@ -14,6 +14,18 @@ export default function DriverNavbar() {
     const impostorMode = localStorage.getItem('impostorMode');
     const isAdminImpostor = impostorMode && localStorage.getItem('impostorType') === 'driver';
 
+    // Get cart items count
+    const getCartItemCount = () => {
+        try {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            return cart.reduce((total, item) => total + (item.quantity || 1), 0);
+        } catch (e) {
+            return 0;
+        }
+    };
+
+    const cartItemCount = getCartItemCount();
+
     // Prevent navigation back to protected pages after logout
     const handleLogout = () => {
         localStorage.removeItem('user');
@@ -87,12 +99,6 @@ export default function DriverNavbar() {
                             <li className="nav-item">
                                 <Link className="nav-link" to="/products">Catalog</Link>
                             </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/drivercart">Cart</Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to="#">My Orders</Link>
-                            </li>
                         </ul>
                         <div className="d-flex align-items-center">
                             {isAdminImpostor && (
@@ -117,6 +123,24 @@ export default function DriverNavbar() {
                                     </button>
                                 </>
                             )}
+                            <Link className="nav-link position-relative d-flex align-items-center me-3" to="/drivercart">
+                                <img 
+                                    src="/cart.png" 
+                                    alt="Cart" 
+                                    style={{width: '20px', height: '20px'}}
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'inline';
+                                    }}
+                                />
+                                <span style={{display: 'none'}}>Cart</span>
+                                {cartItemCount > 0 && (
+                                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        {cartItemCount}
+                                        <span className="visually-hidden">items in cart</span>
+                                    </span>
+                                )}
+                            </Link>
                             <span className="navbar-text me-3">
                                 Hello, {firstName}!
                             </span>
