@@ -75,21 +75,7 @@ function ReportView(Filter) {
 
 
   let returned = [] // Placeholder until i can make what was here work.
-  //returned = await getAllAuditRecords();
   console.log(returned);
-//  returned = JSON.parse(returned);
-/*
-  const listItems = returned.map(entry =>
-    <li>
-      <p>This is a single entry
-        <b>{entry.ActionName}:</b>
-        {' ' + entry.EventTime + ' '}
-        {entry.AffectedUserID}
-      </p>
-    </li>
-  );
-  return <ul>{listItems}</ul>;
-  */
   if (loading) {
          return (
              <div>
