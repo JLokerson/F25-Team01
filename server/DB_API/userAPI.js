@@ -64,6 +64,35 @@ async function getUser(data) {
   }
 }
 
+async function getSaltForUser(data) {
+  let sql;
+  let values;
+
+  // Search by the only possible field, email.
+  if (data.Email) {
+    console.log(`Querying user by UserID: ${data.Email}`);
+    sql = "SELECT * FROM USER WHERE Email = ?";
+    values = [data.Email];
+  }else {
+    console.log("Bad data to get salt.");
+    return null;
+  }
+
+  try {
+    const users = await db.executeQuery(sql, values);
+    if (users.length > 0) {
+      console.log("User found. Returning salt.");
+      return users; // users[0] Return the first user found (should be unique by ID or email combo)
+    } else {
+      console.log("User not found. Returning no salt.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Failed to get salt:", error);
+    throw error;
+  }
+}
+
 async function addNewUser(data){
     try {
         console.log("Inserting new User to User Table");
@@ -223,6 +252,22 @@ router.get("/getUser", async function (req, res, next) {
       res
         .status(404)
         .json({ message: "User not found or bad query parameters." });
+    }
+  } catch (error) {
+    res.status(500).send("Database error.");
+  }
+});
+
+// Similar to above, only cares about email.
+router.get("/getSaltForUser", async function (req, res, next) {
+  try {
+    const user = await getSaltForUser(req.query);
+    if (user) {
+      res.json(user);
+    } else {
+      res
+        .status(404)
+        .json({ message: "User not found or bad query parameters. Cannot return salt." });
     }
   } catch (error) {
     res.status(500).send("Database error.");

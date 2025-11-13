@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link, useNavigate } from "react-router-dom";
 import { CookiesProvider, useCookies } from "react-cookie";
-import { login, getSponsorForUser } from "./MiscellaneousParts/ServerCall";
+import { login, getSponsorForUser, getSaltForUser } from "./MiscellaneousParts/ServerCall";
 
 export default function Login() {
   // Not secure - for demonstration purposes only
@@ -20,8 +20,17 @@ export default function Login() {
       Email: username,
       Password: password,
     });
-
+    
     try {
+      // Retrieve salt.
+      let LoginSalt;
+      try{
+        // Use email to retrieve it.
+        LoginSalt = getSaltForUser(username);
+      }catch(errorno){
+        alert("Could not retrieve salt, please try again later.");
+      }
+
       const response = await login({ Email: username, Password: password });
 
       // Debug: Log the response status and text
