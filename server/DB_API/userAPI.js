@@ -71,7 +71,7 @@ async function getSaltForUser(data) {
   // Search by the only possible field, email.
   if (data.Email) {
     console.log(`Querying user by UserID: ${data.Email}`);
-    sql = "SELECT * FROM USER WHERE Email = ?";
+    sql = "SELECT PasswordSalt FROM USER WHERE Email = ?";
     values = [data.Email];
   }else {
     console.log("Bad data to get salt.");

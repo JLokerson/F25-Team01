@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Link, useNavigate } from "react-router-dom";
 import { CookiesProvider, useCookies } from "react-cookie";
 import { login, getSponsorForUser, getSaltForUser } from "./MiscellaneousParts/ServerCall";
+import { HashPassword } from './MiscellaneousParts/HashPass';
 
 export default function Login() {
   // Not secure - for demonstration purposes only
@@ -23,15 +24,15 @@ export default function Login() {
     
     try {
       // Retrieve salt.
-      let LoginSalt;
+      let LoginSalt = "";
       try{
         // Use email to retrieve it.
         LoginSalt = getSaltForUser(username);
       }catch(errorno){
         alert("Could not retrieve salt, please try again later.");
       }
-
-      const response = await login({ Email: username, Password: password });
+      const truepassword = HashPassword(password, LoginSalt);
+      const response = await login({ Email: username, Password: truepassword });
 
       // Debug: Log the response status and text
       console.log("Response status:", response.status);
@@ -65,7 +66,7 @@ export default function Login() {
 
       // Login successful
       setFailedAttempts(0);
-      setCookie("password", password, { path: "/" });
+      setCookie("password", truepassword, { path: "/" });
       setCookie("username", username, { path: "/" });
       // Store user info in localStorage
       if (!data.user) {
