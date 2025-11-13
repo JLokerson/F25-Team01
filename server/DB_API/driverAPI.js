@@ -27,30 +27,11 @@ function hashPassword(password, salt) {
  */
 async function getAllDrivers(){
     try {
-        console.log("Reading all driver user info (including inactive accounts)");
+        console.log("Reading all driver user info");
 
-        // Simplified query to ensure we get all the right data
-        const query = `
-            SELECT 
-                u.FirstName, 
-                u.LastName, 
-                u.Email, 
-                u.UserID, 
-                u.ActiveAccount,
-                d.DriverID, 
-                d.SponsorID, 
-                COALESCE(d.Points, 0) as Points
-            FROM DRIVER d
-            INNER JOIN USER u ON d.UserID = u.UserID
-            WHERE u.UserType = 1
-            ORDER BY u.ActiveAccount DESC, d.SponsorID, u.LastName, u.FirstName
-        `;
-        
+        const query = "call GetDriverInfo();";
         const allDrivers = await db.executeQuery(query);
-        console.log("Raw SQL result:", allDrivers);
-        console.log("Returning %s Drivers (including inactive)", allDrivers.length);
-        
-        // Ensure we return the data in a consistent format
+        console.log("Returning %s Drivers", allDrivers.length);
         return allDrivers;
     } catch (error) {
         console.error("Failed to get all drivers: ", error);
@@ -141,154 +122,19 @@ async function createMissingDriverRecords() {
  * @returns {Promise<object>} A promise that resolves with the result of the driver table insertion.
  */
 async function addDriver(data) {
-    console.log("=== ADDDRIVER FUNCTION START - NEW VERSION ===");
-    console.log("This is the updated version that should NOT call AddDriver stored procedure");
-    
     try {
         const sponsorID = data.SponsorID;
-        
-        // Generate salt and hash password BEFORE creating userData object
-        if (!data.Password || data.Password === '') {
-            throw new Error('Password is required');
-        }
-        
-        // Always generate a salt, with fallback
-        let salt;
-        try {
-            salt = generateSalt();
-            if (!salt || salt.length === 0) {
-                throw new Error('Salt generation failed');
-            }
-        } catch (saltError) {
-            console.warn('Salt generation failed, using fallback:', saltError);
-            salt = 'temp-salt-' + Date.now() + '-' + Math.random().toString(36).substring(2, 15);
-        }
-        
-        const hashedPassword = hashPassword(data.Password, salt);
-        
-        console.log("Generated salt:", salt ? '[GENERATED]' : 'NULL');
-        console.log("Generated salt length:", salt ? salt.length : 0);
-        console.log("Hashed password:", hashedPassword ? '[HASHED]' : 'NULL');
-        
-        // Create user data with properly generated salt and hashed password
-        const userData = {
-            FirstName: data.FirstName,
-            LastName: data.LastName,
-            Email: data.Email,
-            Password: hashedPassword,
-            PasswordSalt: salt,
-            UserType: data.UserType || 1
-        };
-        
-        // Verify salt is included before calling addNewUser
-        if (!userData.PasswordSalt) {
-            console.error('PasswordSalt is still undefined, setting emergency fallback');
-            userData.PasswordSalt = 'emergency-salt-' + Date.now();
-        }
-        
-        console.log("Adding new driver user with hashed password and salt");
-        console.log("User data being sent (with verification):", {
-            FirstName: userData.FirstName,
-            LastName: userData.LastName,
-            Email: userData.Email,
-            Password: userData.Password ? '[HASHED]' : 'NULL',
-            PasswordSalt: userData.PasswordSalt ? `[GENERATED-${userData.PasswordSalt.length}chars]` : 'NULL',
-            UserType: userData.UserType
-        });
-        
-        const userResult = await user.addNewUser(userData);
+        const userResult = await user.addNewUser(data);
         const newUserId = userResult.insertId;
-        console.log("Record inserted user, ID:", newUserId);
 
-        // Create the SPONSOR_USER relationship first
-        console.log("Creating SPONSOR_USER relationship for UserID:", newUserId, "with SponsorID:", sponsorID);
-        try {
-            const sponsorUserSql = "INSERT INTO SPONSOR_USER (UserID, SponsorID) VALUES (?, ?)";
-            const sponsorUserResult = await db.executeQuery(sponsorUserSql, [newUserId, sponsorID]);
-            console.log("SPONSOR_USER relationship created successfully:", sponsorUserResult);
-        } catch (sponsorUserError) {
-            console.error("Failed to create SPONSOR_USER relationship:", sponsorUserError);
-            // Continue - this is not critical for basic functionality
-        }
-        
-        // === ABSOLUTELY NO STORED PROCEDURES - DIRECT DATABASE ACCESS ONLY ===
-        console.log("=== STARTING DIRECT DATABASE ACCESS FOR DRIVER TABLE ===");
-        console.log("IMPORTANT: This code will NEVER call 'AddDriver' stored procedure");
-        console.log("If you see 'call AddDriver' in the logs after this, the server is using old cached code");
-        
-        // Create DRIVER record using only direct SQL
-        console.log("Step 1: Creating DRIVER table record with direct SQL");
-        console.log("Target SQL: INSERT INTO DRIVER (UserID, SponsorID, Points) VALUES (?, ?, 0)");
-        console.log("Target values:", [newUserId, sponsorID, 0]);
-        
-        let driverCreationSuccess = false;
-        let driverID = null;
-        
-        try {
-            const directDriverSQL = "INSERT INTO DRIVER (UserID, SponsorID, Points) VALUES (?, ?, 0)";
-            console.log("Executing direct SQL:", directDriverSQL);
-            console.log("With parameters:", [newUserId, sponsorID]);
-            
-            const directDriverResult = await db.executeQuery(directDriverSQL, [newUserId, sponsorID]);
-            driverID = directDriverResult.insertId;
-            
-            console.log("SUCCESS: Direct DRIVER insertion completed");
-            console.log("New DriverID:", driverID);
-            driverCreationSuccess = true;
-            
-        } catch (directDriverError) {
-            console.error("FAILURE: Direct DRIVER insertion failed");
-            console.error("Error details:", directDriverError);
-            console.error("SQL that failed:", "INSERT INTO DRIVER (UserID, SponsorID, Points) VALUES (?, ?, 0)");
-            console.error("Parameters that failed:", [newUserId, sponsorID]);
-        }
-        
-        // Optional: Try DRIVER_SPONSOR_MAPPINGS if direct DRIVER worked
-        if (driverCreationSuccess && driverID) {
-            console.log("Step 2: Attempting DRIVER_SPONSOR_MAPPINGS table (optional)");
-            try {
-                const mappingSQL = "INSERT INTO DRIVER_SPONSOR_MAPPINGS (DriverID, SponsorID, Points, ApplicationAccepted) VALUES (?, ?, 0, 1)";
-                console.log("Executing mapping SQL:", mappingSQL);
-                console.log("With parameters:", [driverID, sponsorID, 0, 1]);
-                
-                const mappingResult = await db.executeQuery(mappingSQL, [driverID, sponsorID]);
-                console.log("SUCCESS: DRIVER_SPONSOR_MAPPINGS created with MappingID:", mappingResult.insertId);
-            } catch (mappingError) {
-                console.warn("OPTIONAL FAILURE: DRIVER_SPONSOR_MAPPINGS failed (not critical):", mappingError.message);
-            }
-        }
-        
-        // Return results based on what succeeded
-        console.log("=== FINAL RESULT DETERMINATION ===");
-        if (driverCreationSuccess && driverID) {
-            console.log("COMPLETE SUCCESS: Both USER and DRIVER records created");
-            const successResult = {
-                insertId: driverID,
-                userID: newUserId,
-                driverID: driverID,
-                sponsorID: sponsorID,
-                message: "Driver created successfully with direct SQL - stored procedures bypassed completely",
-                method: "direct_sql_success"
-            };
-            console.log("Returning success result:", successResult);
-            return successResult;
-        } else {
-            console.log("PARTIAL SUCCESS: USER created but DRIVER table failed");
-            const partialResult = {
-                insertId: newUserId,
-                userID: newUserId,
-                message: "User account created but DRIVER table insertion failed. Use 'Fix Missing Driver Records' to complete setup.",
-                method: "partial_success",
-                requiresDriverFix: true,
-                error: "Direct DRIVER table insertion failed - check server logs"
-            };
-            console.log("Returning partial result:", partialResult);
-            return partialResult;
-        }
-        
+        console.log("Adding new driver with UserID:", newUserId);
+        const sql = "call AddDriver (?, ?)";
+        const adminResult = await db.executeQuery(sql, [newUserId, sponsorID]);
+
+        console.log("New driver record created successfully.");
+        return adminResult;
     } catch (error) {
-        console.error("=== ADDDRIVER FUNCTION COMPLETE FAILURE ===");
-        console.error("Top-level error in addDriver function:", error);
+        console.error("Failed to add new driver:", error);
         throw error;
     }
 }
