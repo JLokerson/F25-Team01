@@ -52,10 +52,12 @@ export default function CatalogItemCard({
         />
       </div>
       <div style={{ fontWeight: 700, fontSize: small ? 13 : 14 }}>
-        {product.name || product.ITEM_NAME}
+        {product.name}
       </div>
       {meta && (
-        <div style={{ fontSize: small ? 11 : 12, color: "#6c757d" }}>{meta}</div>
+        <div style={{ fontSize: small ? 11 : 12, color: "#6c757d" }}>
+          {meta}
+        </div>
       )}
       {price !== null && (
         <div
