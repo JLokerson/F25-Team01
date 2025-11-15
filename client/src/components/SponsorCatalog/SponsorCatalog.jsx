@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import SponsorNavbar from "../SponsorNavbar";
 import CatalogItemCard from "./CatalogItemCard";
 import "./SponsorCatalog.css";
+//import { ShoppingCart } from "lucide-react";
 
 const CATEGORY_PLACEHOLDER =
   "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Best_Buy_Logo.svg/640px-Best_Buy_Logo.svg.png";
@@ -367,22 +368,20 @@ export default function SponsorCatalog() {
         <div className="container">
           <header className="catalog-header">
             <div>
-              <h2>Sponsor Catalog</h2>
-              {sponsor ? (
-                <p className="text-muted mb-0">
-                  Serving catalog for <strong>{sponsor.Name}</strong>
-                </p>
-              ) : (
-                <p className="text-muted mb-0">
-                  Resolving sponsor information for your account.
-                </p>
-              )}
+              <h2>
+                {sponsor ? (
+                  <p className="mb-0">
+                    <strong>{sponsor.Name}</strong>'s Catalog
+                  </p>
+                ) : (
+                  <p className="text-muted mb-0">
+                    Resolving sponsor information for your account.
+                  </p>
+                )}
+              </h2>
             </div>
             {activeTab === "all" && (
               <form className="catalog-search" onSubmit={handleSearchSubmit}>
-                <label htmlFor="category-search" className="visually-hidden">
-                  Category filter
-                </label>
                 <input
                   id="category-search"
                   className="form-control"
@@ -397,7 +396,7 @@ export default function SponsorCatalog() {
             )}
           </header>
 
-          {/* Tabs */}
+          {/* Tabs: All Categories and My Catalog */}
           <ul className="nav nav-tabs mb-3" role="tablist">
             <li className="nav-item" role="presentation">
               <button
