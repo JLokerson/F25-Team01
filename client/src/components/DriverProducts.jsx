@@ -67,7 +67,8 @@ export default function DriverProducts() {
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [categoriesError, setCategoriesError] = useState("");
   const [currentCategoryPage, setCurrentCategoryPage] = useState(1);
-  const CATEGORIES_PER_PAGE = 16; // 4 columns × 4 rows
+  // 4 columns by 4 rows per page
+  const CATEGORIES_PER_PAGE = 16;
 
   // Product modal state
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -107,7 +108,7 @@ export default function DriverProducts() {
         const data = await res.json();
         let items = Array.isArray(data?.categories) ? data.categories : [];
 
-        // Filter to only active categories
+        // Filter to fetch only active categories, inactive categories are hidden except from sponsor users
         items = items.filter((cat) => cat.active === true);
 
         setCategories(items);
@@ -207,7 +208,7 @@ export default function DriverProducts() {
   return (
     <div className="driver-products">
       <div className="driver-products__header">
-        <h1>Product Catalog</h1>
+        <h1>{driver.SponsorName}'s Product Catalog</h1>
         {driver && (
           <p className="text-muted">
             Browsing products from{" "}
@@ -221,7 +222,7 @@ export default function DriverProducts() {
         <div className="driver-products__section-title">
           <h2>Categories</h2>
           {categoriesLoading && (
-            <span className="text-muted">Loading categories…</span>
+            <span className="text-muted">Loading categories...</span>
           )}
         </div>
 
@@ -247,7 +248,7 @@ export default function DriverProducts() {
                   onClick={() => handleCategoryClick(category)}
                   role="button"
                   tabIndex={0}
-                  onKeyPress={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === "Enter") handleCategoryClick(category);
                   }}
                 >
