@@ -288,12 +288,10 @@ router.post("/addDriver", async (req, res, next) => {
   console.log("Received POST data for new driver: ", data);
   try {
     const result = await addDriver(data);
-    res
-      .status(200)
-      .json({
-        message: "Driver user added successfully!",
-        id: result.insertId,
-      });
+    res.status(200).json({
+      message: "Driver user added successfully!",
+      id: result.insertId,
+    });
   } catch (error) {
     res.status(500).send("Error adding driver user.");
   }
@@ -645,12 +643,10 @@ router.post("/fixAllDataIntegrityIssues", async (req, res, next) => {
     res.status(200).json(result);
   } catch (error) {
     console.error("Error fixing data integrity issues:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error fixing data integrity issues.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error fixing data integrity issues.",
+      error: error.message,
+    });
   }
 });
 
@@ -667,12 +663,10 @@ router.post(
       res.status(200).json(result);
     } catch (error) {
       console.error("Error cleaning up duplicate drivers:", error);
-      res
-        .status(500)
-        .json({
-          message: "Error cleaning up duplicate drivers.",
-          error: error.message,
-        });
+      res.status(500).json({
+        message: "Error cleaning up duplicate drivers.",
+        error: error.message,
+      });
     }
   }
 );
@@ -684,12 +678,10 @@ router.post("/createMissingDriverRecords", async (req, res, next) => {
     res.status(200).json(result);
   } catch (error) {
     console.error("Error creating missing DRIVER records:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error creating missing DRIVER records.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error creating missing DRIVER records.",
+      error: error.message,
+    });
   }
 });
 
@@ -892,7 +884,7 @@ router.post("/updateDriverWithSponsor", async (req, res, next) => {
   }
 });
 
-/**
+/** ---
  * Get the SponsorID for a given DriverID from DRIVER_SPONSOR_MAPPINGS table
  * @param {number} driverID - The driver ID to look up
  * @returns {Promise<Object>} A promise that resolves with sponsor info including SponsorID
@@ -921,10 +913,7 @@ async function getSponsorForDriver(driverID) {
       return null;
     }
 
-    console.log(
-      `Found sponsor mapping for DriverID ${driverID}:`,
-      result[0]
-    );
+    console.log(`Found sponsor mapping for DriverID ${driverID}:`, result[0]);
     return result[0];
   } catch (error) {
     console.error(`Failed to get sponsor for driver ${driverID}:`, error);
