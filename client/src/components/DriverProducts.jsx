@@ -69,10 +69,7 @@ async function getDriverIdForUser(userID) {
  */
 async function getSponsorIdForDriver(driverID) {
   try {
-    // We need an endpoint that gets sponsor info for a driver
-    // For now, we'll fetch all mappings and find the matching one
-    // Ideally this would be a dedicated endpoint
-    const url = withApiBase(`/driverSponsorAPI/getSponsorForDriver?DriverID=${driverID}`);
+    const url = withApiBase(`/driverAPI/getSponsorForDriver?DriverID=${driverID}`);
     const res = await fetch(url);
     if (!res.ok) return null;
     

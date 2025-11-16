@@ -892,6 +892,76 @@ router.post("/updateDriverWithSponsor", async (req, res, next) => {
   }
 });
 
+/**
+ * Get the SponsorID for a given DriverID from DRIVER_SPONSOR_MAPPINGS table
+ * @param {number} driverID - The driver ID to look up
+ * @returns {Promise<Object>} A promise that resolves with sponsor info including SponsorID
+ */
+async function getSponsorForDriver(driverID) {
+  try {
+    console.log(`Reading sponsor info for DriverID: ${driverID}`);
+
+    const query = `
+      SELECT 
+        d.DriverID,
+        d.UserID,
+        dsm.SponsorID,
+        COALESCE(dsm.Points, 0) as Points,
+        dsm.ApplicationAccepted
+      FROM DRIVER d
+      LEFT JOIN DRIVER_SPONSOR_MAPPINGS dsm ON d.DriverID = dsm.DriverID
+      WHERE d.DriverID = ?
+      LIMIT 1
+    `;
+
+    const result = await db.executeQuery(query, [driverID]);
+
+    if (result.length === 0) {
+      console.log(`No sponsor mapping found for DriverID ${driverID}`);
+      return null;
+    }
+
+    console.log(
+      `Found sponsor mapping for DriverID ${driverID}:`,
+      result[0]
+    );
+    return result[0];
+  } catch (error) {
+    console.error(`Failed to get sponsor for driver ${driverID}:`, error);
+    throw error;
+  }
+}
+
+router.get("/getSponsorForDriver", async (req, res, next) => {
+  const driverID = req.query.DriverID || req.body.DriverID;
+  console.log("Received request for sponsor info for DriverID:", driverID);
+
+  if (!driverID || isNaN(driverID) || driverID <= 0) {
+    console.error("Invalid DriverID provided:", driverID);
+    return res.status(400).json({
+      message: "Invalid DriverID provided",
+      received: driverID,
+    });
+  }
+
+  try {
+    const result = await getSponsorForDriver(parseInt(driverID));
+    if (result === null) {
+      return res.status(404).json({
+        message: "No sponsor mapping found for this driver",
+        driverID: parseInt(driverID),
+      });
+    }
+    res.json(result);
+  } catch (error) {
+    console.error("Error fetching sponsor for driver:", error);
+    res.status(500).json({
+      message: "Database error.",
+      error: error.message,
+    });
+  }
+});
+
 // Test route to verify routing is working
 router.get("/testRoute", (req, res) => {
   res.json({
