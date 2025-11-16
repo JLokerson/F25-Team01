@@ -833,6 +833,61 @@ router.get("/getDriverSponsorMappings/:userID", async (req, res, next) => {
     }
 });
 
+/**
+ * Retrieves points change history for a specific driver-sponsor mapping
+ * @param {number} mappingID - The DriverSponsorMappingID to get history for
+ * @returns {Promise<Array<Object>>} A promise that resolves with points change history
+ */
+async function getPointsHistory(mappingID) {
+    try {
+        console.log(`Getting points history for MappingID: ${mappingID}`);
+        
+        const query = `
+            SELECT 
+                pcl.PointChangeID,
+                pcl.DriverSponsorMappingID,
+                pcl.PointChange,
+                pcl.EventTime
+            FROM POINTCHANGELOG pcl
+            WHERE pcl.DriverSponsorMappingID = ?
+            ORDER BY pcl.EventTime DESC, pcl.PointChangeID DESC
+        `;
+        
+        const pointsHistory = await db.executeQuery(query, [mappingID]);
+        console.log(`Found ${pointsHistory.length} points history records for MappingID ${mappingID}`);
+        
+        return pointsHistory;
+    } catch (error) {
+        console.error(`Failed to get points history for MappingID ${mappingID}:`, error);
+        throw error;
+    }
+}
+
+router.get("/getPointsHistory/:mappingID", async (req, res, next) => {
+    const mappingID = req.params.mappingID;
+    console.log('Received request for points history for MappingID:', mappingID);
+    
+    // Validate mappingID
+    if (isNaN(mappingID) || mappingID <= 0) {
+        console.error('Invalid MappingID provided:', mappingID);
+        return res.status(400).json({ 
+            message: 'Invalid MappingID provided',
+            received: mappingID
+        });
+    }
+    
+    try {
+        const result = await getPointsHistory(parseInt(mappingID));
+        res.json(result);
+    } catch (error) {
+        console.error('Error fetching points history:', error);
+        res.status(500).json({ 
+            message: 'Database error.',
+            error: error.message 
+        });
+    }
+});
+
 // Test route to verify routing is working
 router.get("/testRoute", (req, res) => {
     res.json({ message: "Test route is working", timestamp: new Date().toISOString() });

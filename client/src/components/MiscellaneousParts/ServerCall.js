@@ -216,6 +216,13 @@ export const getDriverSponsorMappings = async (userId) => {
   }
 };
 
+/**
+ * Fetches points change history for a specific driver-sponsor mapping.
+ * @param {string|number} mappingID - The DriverSponsorMappingID.
+ */
+export const getPointsHistory = (mappingID) =>
+  apiCall("GET", `/driverAPI/getPointsHistory/${mappingID}`);
+
 // --- Sponsor API Calls ---
 
 /**

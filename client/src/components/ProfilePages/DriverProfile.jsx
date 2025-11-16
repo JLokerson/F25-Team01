@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import DriverNavbar from '../DriverNavbar';
 import HelperPasswordChange from './HelperPasswordChange';
-import { CookiesProvider, useCookies } from 'react-cookie';
-import { getAllSponsors, getAllDrivers, getDriverSponsorMappings } from '../MiscellaneousParts/ServerCall';
+import { getAllSponsors, getAllDrivers, getDriverSponsorMappings, getPointsHistory } from '../MiscellaneousParts/ServerCall';
 
 export default function DriverProfile() {
-    const [cookies, setCookie] = useCookies(['driverinfo']);
     const [activeTab, setActiveTab] = useState('profile'); // tab state
     const [showPasswordChangeButton, setShowPasswordChangeButton] = useState(false);
     const [driverInfo, setDriverInfo] = useState(null);
@@ -14,7 +12,8 @@ export default function DriverProfile() {
     const [selectedMappingIndex, setSelectedMappingIndex] = useState(0);
     const [sponsorNames, setSponsorNames] = useState({});
     const [driverInfoLoading, setDriverInfoLoading] = useState(true);
-    const [testResults, setTestResults] = useState(null);
+    const [pointsHistory, setPointsHistory] = useState([]);
+    const [pointsHistoryLoading, setPointsHistoryLoading] = useState(false);
 
     const checkLastLogin = () => {
         const userString = localStorage.getItem('user');
@@ -39,7 +38,34 @@ export default function DriverProfile() {
         }
     };
 
-    const fetchDriverInfo = async () => {
+    const fetchPointsHistory = useCallback(async (mappingID) => {
+        if (!mappingID) {
+            console.log('No mappingID provided for points history');
+            return;
+        }
+
+        setPointsHistoryLoading(true);
+        try {
+            console.log('Fetching points history for MappingID:', mappingID);
+            const response = await getPointsHistory(mappingID);
+            
+            if (response && response.ok) {
+                const historyData = await response.json();
+                console.log('Points history response:', historyData);
+                setPointsHistory(historyData);
+            } else {
+                console.error('Failed to fetch points history');
+                setPointsHistory([]);
+            }
+        } catch (error) {
+            console.error('Error fetching points history:', error);
+            setPointsHistory([]);
+        } finally {
+            setPointsHistoryLoading(false);
+        }
+    }, []);
+
+    const fetchDriverInfo = useCallback(async () => {
         const userInfo = getUserInfo();
         console.log('DriverProfile - UserInfo:', userInfo);
         if (userInfo && userInfo.UserID) {
@@ -97,6 +123,8 @@ export default function DriverProfile() {
                                 // Handle sponsor name from either stored procedure response or need to fetch separately
                                 SponsorName: mapping.Name || null,
                                 PointRatio: mapping.PointRatio || '0.01',
+                                // Add MappingID for points history lookup
+                                MappingID: mapping.MappingID,
                                 // Add a unique key to help with dropdown rendering
                                 mappingKey: `${mapping.UserID}-${mapping.SponsorID}`
                             };
@@ -106,6 +134,11 @@ export default function DriverProfile() {
                         console.log('DriverProfile - Setting', transformedMappings.length, 'mappings in state');
                         setAllDriverMappings(transformedMappings);
                         
+                        // Fetch points history for the first (default) mapping
+                        if (transformedMappings.length > 0 && transformedMappings[0].MappingID) {
+                            fetchPointsHistory(transformedMappings[0].MappingID);
+                        }
+
                         // Create sponsor name mapping from the response data or fetch sponsor names
                         const sponsorNameMap = {};
                         const sponsorIdsToFetch = [];
@@ -149,7 +182,7 @@ export default function DriverProfile() {
             console.log('DriverProfile - No UserID found in userInfo');
             setDriverInfoLoading(false);
         }
-    };
+    }, [fetchPointsHistory]);
 
     const fetchDriverInfoFallback = async (userInfo) => {
         try {
@@ -277,6 +310,11 @@ export default function DriverProfile() {
 
     const handleSponsorChange = (index) => {
         setSelectedMappingIndex(index);
+        // Fetch points history for the newly selected mapping
+        const selectedMapping = allDriverMappings[index];
+        if (selectedMapping && selectedMapping.MappingID) {
+            fetchPointsHistory(selectedMapping.MappingID);
+        }
     };
 
     const getCurrentMapping = () => {
@@ -286,11 +324,7 @@ export default function DriverProfile() {
     useEffect(() => {
         checkLastLogin();
         fetchDriverInfo();
-
-        return () => {
-            // Cleanup if needed
-        };
-    }, []);
+    }, [fetchDriverInfo]);
 
     const getUserInfo = () => {
         const userString = localStorage.getItem('user');
@@ -331,6 +365,45 @@ export default function DriverProfile() {
 
     const userInfo = getUserInfo();
 
+    const formatDateTime = (dateTimeString) => {
+        if (!dateTimeString) return 'No date recorded';
+        
+        try {
+            const date = new Date(dateTimeString);
+            return date.toLocaleString();
+        } catch (error) {
+            return 'Invalid date';
+        }
+    };
+
+    const formatPointChange = (pointChange) => {
+        if (pointChange > 0) {
+            return `+${pointChange}`;
+        }
+        return pointChange.toString();
+    };
+
+    const getPointChangeClass = (pointChange) => {
+        if (pointChange > 0) {
+            return 'text-success'; // Green for positive
+        } else if (pointChange < 0) {
+            return 'text-danger'; // Red for negative
+        }
+        return 'text-muted'; // Gray for zero
+    };
+
+    const generatePointsDescription = (pointChange, eventTime) => {
+        if (!pointChange) return 'No change recorded';
+        
+        if (pointChange > 0) {
+            return `Points awarded (+${pointChange})`;
+        } else if (pointChange < 0) {
+            return `Points deducted (${pointChange})`;
+        } else {
+            return 'Points adjustment (0)';
+        }
+    };
+
     return (
         <div>
             {DriverNavbar()}
@@ -346,6 +419,14 @@ export default function DriverProfile() {
                             onClick={() => setActiveTab('profile')}
                         >
                             Profile
+                        </button>
+                    </li>
+                    <li className="nav-item">
+                        <button
+                            className={`nav-link ${activeTab === 'points' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('points')}
+                        >
+                            Points History
                         </button>
                     </li>
                     <li className="nav-item">
@@ -450,6 +531,95 @@ export default function DriverProfile() {
 
                         {/* Remove the entire legacy driver section that shows the warning */}
                     </>
+                )}
+
+                {activeTab === 'points' && (
+                    <div>
+                        <h5>Points History</h5>
+                        
+                        {driverInfoLoading ? (
+                            <div className="text-center">
+                                <div className="spinner-border" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                </div>
+                                <p>Loading driver information...</p>
+                            </div>
+                        ) : !driverInfo || allDriverMappings.length === 0 ? (
+                            <div className="alert alert-info">
+                                <i className="fas fa-info-circle me-2"></i>
+                                No driver record or sponsor relationships found. Points history is not available.
+                            </div>
+                        ) : (
+                            <>
+                                {/* Sponsor Selector */}
+                                <div className="mb-3">
+                                    <label className="form-label"><strong>Select Sponsor:</strong></label>
+                                    <select 
+                                        className="form-select"
+                                        value={selectedMappingIndex}
+                                        onChange={(e) => handleSponsorChange(parseInt(e.target.value))}
+                                    >
+                                        {allDriverMappings.map((mapping, index) => {
+                                            const sponsorName = mapping.SponsorName || sponsorNames[mapping.SponsorID] || `Sponsor ID: ${mapping.SponsorID}`;
+                                            return (
+                                                <option key={mapping.mappingKey || `${mapping.DriverID}-${index}`} value={index}>
+                                                    {sponsorName} (Current Points: {mapping.Points || 0})
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                </div>
+
+                                {/* Points History Table */}
+                                {pointsHistoryLoading ? (
+                                    <div className="text-center">
+                                        <div className="spinner-border spinner-border-sm" role="status">
+                                            <span className="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p>Loading points history...</p>
+                                    </div>
+                                ) : pointsHistory.length === 0 ? (
+                                    <div className="alert alert-info">
+                                        <i className="fas fa-info-circle me-2"></i>
+                                        No points history found for this sponsor relationship.
+                                    </div>
+                                ) : (
+                                    <div className="card">
+                                        <div className="card-header">
+                                            <h6 className="mb-0">
+                                                <i className="fas fa-history me-2"></i>
+                                                Points Change History ({pointsHistory.length} records)
+                                            </h6>
+                                        </div>
+                                        <div className="card-body p-0">
+                                            <div className="table-responsive">
+                                                <table className="table table-hover mb-0">
+                                                    <thead className="table-light">
+                                                        <tr>
+                                                            <th>Date & Time</th>
+                                                            <th>Points Change</th>
+                                                            <th>Description</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {pointsHistory.map((record, index) => (
+                                                            <tr key={record.PointChangeID || index}>
+                                                                <td>{formatDateTime(record.EventTime)}</td>
+                                                                <td className={getPointChangeClass(record.PointChange)}>
+                                                                    <strong>{formatPointChange(record.PointChange)}</strong>
+                                                                </td>
+                                                                <td>{generatePointsDescription(record.PointChange, record.EventTime)}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
                 )}
 
                 {activeTab === 'password' && (
