@@ -146,7 +146,7 @@ export default function DriverProducts() {
         const data = await res.json();
         let items = Array.isArray(data?.categories) ? data.categories : [];
 
-        // Filter to show only active categories
+        // Filter to show only active categories, inactive categories are hidden except from sponsor users
         items = items.filter((cat) => cat.active === true);
 
         setCategories(items);
