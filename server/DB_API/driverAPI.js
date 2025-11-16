@@ -788,6 +788,51 @@ router.post("/updateDriverWithSponsor", async (req, res, next) => {
     }
 });
 
+/**
+ * Retrieves driver-sponsor mappings for a specific UserID using stored procedure
+ * @param {number} userID - The UserID to get driver-sponsor mappings for
+ * @returns {Promise<Array<Object>>} A promise that resolves with driver-sponsor mapping data
+ */
+async function getDriverSponsorMappings(userID) {
+    try {
+        console.log(`Getting driver-sponsor mappings for UserID: ${userID}`);
+        
+        const query = "CALL GetDriverInfoSpecific(?)";
+        const mappings = await db.executeQuery(query, [userID]);
+        
+        console.log(`Found ${mappings.length} driver-sponsor mappings for UserID ${userID}:`, mappings);
+        return mappings;
+    } catch (error) {
+        console.error(`Failed to get driver-sponsor mappings for UserID ${userID}:`, error);
+        throw error;
+    }
+}
+
+router.get("/getDriverSponsorMappings/:userID", async (req, res, next) => {
+    const userID = req.params.userID;
+    console.log('Received request for driver-sponsor mappings for UserID:', userID);
+    
+    // Validate userID
+    if (isNaN(userID) || userID <= 0) {
+        console.error('Invalid UserID provided:', userID);
+        return res.status(400).json({ 
+            message: 'Invalid UserID provided',
+            received: userID
+        });
+    }
+    
+    try {
+        const result = await getDriverSponsorMappings(parseInt(userID));
+        res.json(result);
+    } catch (error) {
+        console.error('Error fetching driver-sponsor mappings:', error);
+        res.status(500).json({ 
+            message: 'Database error.',
+            error: error.message 
+        });
+    }
+});
+
 // Test route to verify routing is working
 router.get("/testRoute", (req, res) => {
     res.json({ message: "Test route is working", timestamp: new Date().toISOString() });

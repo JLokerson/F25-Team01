@@ -163,6 +163,59 @@ export const getAllDrivers = () => apiCall("GET", "/driverAPI/getAllDrivers");
 export const addDriver = (driverData) =>
   apiCall("POST", "/driverAPI/addDriver", driverData);
 
+/**
+ * Fetches driver-sponsor mappings for a specific user using GetDriverInfoSpecific stored procedure.
+ * Falls back to getAllDrivers if the specific endpoint is not available (deployment issues).
+ * @param {string|number} userId - The ID of the user.
+ * 
+ * This is longer than it needs to be, but I can't get it work without the fallback
+ * so for now imma keep it like this - J.L.
+ */
+export const getDriverSponsorMappings = async (userId) => {
+  try {
+    // Try the specific endpoint first
+    return await apiCall("GET", `/driverAPI/getDriverSponsorMappings/${userId}`);
+  } catch (error) {
+    console.warn(`getDriverSponsorMappings endpoint failed for userId ${userId}, attempting fallback:`, error.message);
+    
+    // If the specific endpoint fails (404, etc.), try to simulate the same result
+    // using the getAllDrivers endpoint which we know works
+    try {
+      const allDriversResponse = await getAllDrivers();
+      if (allDriversResponse && allDriversResponse.ok) {
+        const allDriversData = await allDriversResponse.json();
+        
+        // Extract the actual drivers array from the response
+        let driversArray = allDriversData;
+        if (Array.isArray(allDriversData) && allDriversData.length > 0 && Array.isArray(allDriversData[0])) {
+          driversArray = allDriversData[0];
+        }
+        
+        // Filter for the specific user
+        const userDrivers = driversArray.filter(driver => 
+          Number(driver.UserID) === Number(userId)
+        );
+        
+        console.log(`Fallback found ${userDrivers.length} driver records for userId ${userId}`);
+        
+        // Create a mock response object that matches what the specific endpoint would return
+        const mockResponse = {
+          ok: true,
+          status: 200,
+          json: async () => userDrivers
+        };
+        
+        return mockResponse;
+      }
+    } catch (fallbackError) {
+      console.error('Fallback to getAllDrivers also failed:', fallbackError);
+    }
+    
+    // If both approaches fail, re-throw the original error
+    throw error;
+  }
+};
+
 // --- Sponsor API Calls ---
 
 /**

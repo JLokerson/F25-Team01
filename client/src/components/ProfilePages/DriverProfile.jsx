@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import DriverNavbar from '../DriverNavbar';
 import HelperPasswordChange from './HelperPasswordChange';
 import { CookiesProvider, useCookies } from 'react-cookie';
-import { getAllSponsors, getAllDrivers } from '../MiscellaneousParts/ServerCall';
+import { getAllSponsors, getAllDrivers, getDriverSponsorMappings } from '../MiscellaneousParts/ServerCall';
 
 export default function DriverProfile() {
     const [cookies, setCookie] = useCookies(['driverinfo']);
@@ -14,6 +14,7 @@ export default function DriverProfile() {
     const [selectedMappingIndex, setSelectedMappingIndex] = useState(0);
     const [sponsorNames, setSponsorNames] = useState({});
     const [driverInfoLoading, setDriverInfoLoading] = useState(true);
+    const [testResults, setTestResults] = useState(null);
 
     const checkLastLogin = () => {
         const userString = localStorage.getItem('user');
@@ -43,36 +44,104 @@ export default function DriverProfile() {
         console.log('DriverProfile - UserInfo:', userInfo);
         if (userInfo && userInfo.UserID) {
             try {
-                // First get the driver record to get DriverID from UserID
-                const driversResponse = await getAllDrivers();
-                if (driversResponse.ok) {
-                    const allDrivers = await driversResponse.json();
-                    console.log('DriverProfile - All drivers from DRIVER table:', allDrivers);
+                // Try the new API endpoint using the ServerCall helper
+                console.log('DriverProfile - Attempting to use getDriverSponsorMappings...');
+                const response = await getDriverSponsorMappings(userInfo.UserID);
+                
+                if (response && response.ok) {
+                    const mappingsData = await response.json();
+                    console.log('DriverProfile - GetDriverInfoSpecific response:', mappingsData);
                     
-                    // Find driver record by UserID
-                    const driverRecord = allDrivers.find(d => Number(d.UserID) === Number(userInfo.UserID));
-                    console.log('DriverProfile - Found driver record for UserID', userInfo.UserID, ':', driverRecord);
+                    // Handle the response structure - could be from stored procedure or fallback
+                    let allMappings = mappingsData;
                     
-                    if (driverRecord) {
-                        console.log('DriverProfile - Using DriverID:', driverRecord.DriverID);
-                        setDriverInfo(driverRecord); // Keep basic driver info
+                    // The stored procedure returns results in a nested array format
+                    // But the fallback returns a flat array directly
+                    if (Array.isArray(mappingsData) && mappingsData.length > 0) {
+                        // Check if the first element is an array (nested structure from stored procedure)
+                        if (Array.isArray(mappingsData[0])) {
+                            allMappings = mappingsData[0];
+                        }
+                        // If it's already a flat array of objects, use it as-is (fallback case)
+                        else if (typeof mappingsData[0] === 'object' && mappingsData[0].hasOwnProperty('DriverID')) {
+                            allMappings = mappingsData;
+                        }
+                    }
+                    
+                    console.log('DriverProfile - Processed mappings:', allMappings);
+                    console.log('DriverProfile - Number of mappings found:', allMappings.length);
+                    
+                    if (Array.isArray(allMappings) && allMappings.length > 0) {
+                        // Set driver info from the first mapping
+                        const firstMapping = allMappings[0];
+                        setDriverInfo({
+                            DriverID: firstMapping.DriverID,
+                            UserID: firstMapping.UserID,
+                            FirstName: firstMapping.FirstName,
+                            LastName: firstMapping.LastName,
+                            Email: firstMapping.Email
+                        });
                         
-                        // Now fetch driver-sponsor mappings using the DriverID
-                        await fetchDriverSponsorMappings(driverRecord.DriverID);
+                        // Transform ALL mappings to match expected structure
+                        // Each mapping represents a different sponsor relationship
+                        const transformedMappings = allMappings.map((mapping, index) => {
+                            console.log(`DriverProfile - Processing mapping ${index + 1}:`, mapping);
+                            return {
+                                DriverID: mapping.DriverID,
+                                SponsorID: mapping.SponsorID,
+                                Points: mapping.Points || 0,
+                                UserID: mapping.UserID,
+                                FirstName: mapping.FirstName,
+                                LastName: mapping.LastName,
+                                Email: mapping.Email,
+                                // Handle sponsor name from either stored procedure response or need to fetch separately
+                                SponsorName: mapping.Name || null,
+                                PointRatio: mapping.PointRatio || '0.01',
+                                // Add a unique key to help with dropdown rendering
+                                mappingKey: `${mapping.UserID}-${mapping.SponsorID}`
+                            };
+                        });
+                        
+                        console.log('DriverProfile - Transformed mappings:', transformedMappings);
+                        console.log('DriverProfile - Setting', transformedMappings.length, 'mappings in state');
+                        setAllDriverMappings(transformedMappings);
+                        
+                        // Create sponsor name mapping from the response data or fetch sponsor names
+                        const sponsorNameMap = {};
+                        const sponsorIdsToFetch = [];
+                        
+                        allMappings.forEach(mapping => {
+                            if (mapping.Name) {
+                                // If sponsor name is already in the response (from stored procedure)
+                                sponsorNameMap[mapping.SponsorID] = mapping.Name;
+                                console.log(`DriverProfile - Added sponsor mapping from response: ${mapping.SponsorID} -> ${mapping.Name}`);
+                            } else {
+                                // If sponsor name is not in response, we need to fetch it
+                                sponsorIdsToFetch.push(mapping.SponsorID);
+                            }
+                        });
+                        
+                        setSponsorNames(sponsorNameMap);
+                        
+                        // If we need to fetch sponsor names separately (fallback case)
+                        if (sponsorIdsToFetch.length > 0) {
+                            console.log('DriverProfile - Fetching sponsor names for IDs:', sponsorIdsToFetch);
+                            await fetchSponsorNames(sponsorIdsToFetch);
+                        } else {
+                            console.log('DriverProfile - All sponsor names already available from response');
+                        }
+                        
                     } else {
-                        console.log('DriverProfile - No driver record found for UserID:', userInfo.UserID);
-                        setDriverInfo(false);
-                        setAllDriverMappings([]);
+                        console.log('DriverProfile - No driver-sponsor mappings found, falling back');
+                        await fetchDriverInfoFallback(userInfo);
                     }
                 } else {
-                    console.error('DriverProfile - Failed to fetch drivers:', driversResponse.status);
-                    setDriverInfo(false);
-                    setAllDriverMappings([]);
+                    console.log('DriverProfile - getDriverSponsorMappings failed, falling back to getAllDrivers approach');
+                    await fetchDriverInfoFallback(userInfo);
                 }
             } catch (error) {
-                console.error('Error fetching driver info:', error);
-                setDriverInfo(false);
-                setAllDriverMappings([]);
+                console.error('Error with getDriverSponsorMappings, falling back:', error);
+                await fetchDriverInfoFallback(userInfo);
             } finally {
                 setDriverInfoLoading(false);
             }
@@ -82,84 +151,107 @@ export default function DriverProfile() {
         }
     };
 
-    const fetchDriverSponsorMappings = async (driverID) => {
+    const fetchDriverInfoFallback = async (userInfo) => {
         try {
-            console.log('DriverProfile - Fetching mappings for DriverID:', driverID);
-            
-            // Try the direct API endpoint first
-            let response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/adminAPI/getDriverSponsorMappings`);
-            
-            // If 404, try alternative endpoint or create fallback data
-            if (!response.ok && response.status === 404) {
-                console.log('DriverProfile - getDriverSponsorMappings endpoint not found, trying alternative approach');
+            // Fallback to original getAllDrivers approach
+            const driversResponse = await getAllDrivers();
+            if (driversResponse.ok) {
+                const driversData = await driversResponse.json();
+                console.log('DriverProfile - Fallback: Raw drivers response:', driversData);
                 
-                // Create fallback data based on CSV structure you provided
-                // This is temporary until the proper API endpoint is available
-                const fallbackMappings = [
-                    {MappingID: 1, SponsorID: 1, DriverID: 1, Points: 20, ApplicationAccepted: 1},
-                    {MappingID: 2, SponsorID: 1, DriverID: 3, Points: 90, ApplicationAccepted: 1},
-                    {MappingID: 3, SponsorID: 1, DriverID: 4, Points: 0, ApplicationAccepted: 1},
-                    {MappingID: 4, SponsorID: 1, DriverID: 5, Points: 0, ApplicationAccepted: 1},
-                    {MappingID: 5, SponsorID: 1, DriverID: 2, Points: 100, ApplicationAccepted: 1},
-                    {MappingID: 6, SponsorID: 2, DriverID: 11, Points: 200, ApplicationAccepted: 1},
-                    {MappingID: 9, SponsorID: 3, DriverID: 6, Points: 0, ApplicationAccepted: 1},
-                    {MappingID: 10, SponsorID: 3, DriverID: 14, Points: 0, ApplicationAccepted: 1},
-                    {MappingID: 11, SponsorID: 3, DriverID: 6, Points: 0, ApplicationAccepted: 1},
-                    {MappingID: 12, SponsorID: 3, DriverID: 15, Points: 0, ApplicationAccepted: 1}
-                ];
-                
-                console.log('DriverProfile - Using fallback mappings data');
-                
-                // Filter mappings for this driver where ApplicationAccepted = 1
-                const driverMappings = fallbackMappings.filter(mapping => {
-                    console.log(`DriverProfile - Checking mapping: DriverID ${mapping.DriverID} === ${driverID} && ApplicationAccepted ${mapping.ApplicationAccepted} === 1`);
-                    return Number(mapping.DriverID) === Number(driverID) && 
-                           Number(mapping.ApplicationAccepted) === 1;
-                });
-                
-                console.log('DriverProfile - Filtered driver mappings for DriverID', driverID, ':', driverMappings);
-                setAllDriverMappings(driverMappings);
-                
-                if (driverMappings.length > 0) {
-                    // Fetch sponsor names for all mappings
-                    const sponsorIds = [...new Set(driverMappings.map(mapping => mapping.SponsorID))];
-                    console.log('DriverProfile - Fetching sponsor names for IDs:', sponsorIds);
-                    await fetchSponsorNames(sponsorIds);
-                } else {
-                    console.log('DriverProfile - No accepted mappings found for DriverID:', driverID);
+                // Handle different possible response structures
+                let allDrivers = driversData;
+                if (Array.isArray(driversData) && driversData.length > 0 && Array.isArray(driversData[0])) {
+                    allDrivers = driversData[0];
                 }
-                return;
-            }
-            
-            if (response.ok) {
-                const allMappings = await response.json();
-                console.log('DriverProfile - All mappings from DRIVER_SPONSOR_MAPPINGS:', allMappings);
                 
-                // Filter mappings for this driver where ApplicationAccepted = 1
-                const driverMappings = allMappings.filter(mapping => {
-                    console.log(`DriverProfile - Checking mapping: DriverID ${mapping.DriverID} === ${driverID} && ApplicationAccepted ${mapping.ApplicationAccepted} === 1`);
-                    return Number(mapping.DriverID) === Number(driverID) && 
-                           Number(mapping.ApplicationAccepted) === 1;
-                });
-                
-                console.log('DriverProfile - Filtered driver mappings for DriverID', driverID, ':', driverMappings);
-                setAllDriverMappings(driverMappings);
-                
-                if (driverMappings.length > 0) {
-                    // Fetch sponsor names for all mappings
-                    const sponsorIds = [...new Set(driverMappings.map(mapping => mapping.SponsorID))];
-                    console.log('DriverProfile - Fetching sponsor names for IDs:', sponsorIds);
-                    await fetchSponsorNames(sponsorIds);
-                } else {
-                    console.log('DriverProfile - No accepted mappings found for DriverID:', driverID);
+                if (Array.isArray(allDrivers)) {
+                    const driverRecord = allDrivers.find(d => Number(d.UserID) === Number(userInfo.UserID));
+                    console.log('DriverProfile - Fallback: Found driver record:', driverRecord);
+                    
+                    if (driverRecord) {
+                        setDriverInfo(driverRecord);
+                        
+                        const driverMappings = [{
+                            DriverID: driverRecord.DriverID,
+                            SponsorID: driverRecord.SponsorID,
+                            Points: driverRecord.Points || 0,
+                            UserID: driverRecord.UserID,
+                            FirstName: driverRecord.FirstName,
+                            LastName: driverRecord.LastName,
+                            Email: driverRecord.Email
+                        }];
+                        
+                        setAllDriverMappings(driverMappings);
+                        await fetchSponsorNames([driverRecord.SponsorID]);
+                    } else {
+                        setDriverInfo(false);
+                        setAllDriverMappings([]);
+                    }
                 }
-            } else {
-                console.error('DriverProfile - Failed to fetch mappings:', response.status);
-                setAllDriverMappings([]);
             }
         } catch (error) {
-            console.error('Error fetching driver-sponsor mappings:', error);
+            console.error('Fallback fetch error:', error);
+            setDriverInfo(false);
             setAllDriverMappings([]);
+        }
+    };
+
+    const testGetDriverInfoSpecific = async () => {
+        const userInfo = getUserInfo();
+        if (!userInfo || !userInfo.UserID) {
+            alert('No user logged in');
+            return;
+        }
+
+        try {
+            console.log('Testing GetDriverInfoSpecific for UserID:', userInfo.UserID);
+            
+            const testResults = [];
+
+            // Only test the ServerCall helper - no direct URL calls
+            try {
+                console.log('Testing ServerCall helper...');
+                const serverCallResponse = await getDriverSponsorMappings(userInfo.UserID);
+                if (serverCallResponse && serverCallResponse.ok) {
+                    const data = await serverCallResponse.json();
+                    testResults.push({
+                        url: 'ServerCall helper (getDriverSponsorMappings)',
+                        success: true,
+                        status: serverCallResponse.status,
+                        data: data
+                    });
+                    console.log('ServerCall helper success:', data);
+                } else {
+                    testResults.push({
+                        url: 'ServerCall helper (getDriverSponsorMappings)',
+                        success: false,
+                        status: serverCallResponse?.status || 'Unknown',
+                        error: 'ServerCall failed'
+                    });
+                }
+            } catch (serverCallError) {
+                testResults.push({
+                    url: 'ServerCall helper (getDriverSponsorMappings)',
+                    success: false,
+                    error: serverCallError.message
+                });
+                console.log('ServerCall helper error:', serverCallError.message);
+            }
+
+            setTestResults({
+                success: testResults.some(r => r.success),
+                testResults: testResults,
+                timestamp: new Date().toISOString()
+            });
+
+        } catch (error) {
+            console.error('Test error:', error);
+            setTestResults({
+                success: false,
+                error: error.message,
+                timestamp: new Date().toISOString()
+            });
         }
     };
 
@@ -298,12 +390,19 @@ export default function DriverProfile() {
                                                             value={selectedMappingIndex}
                                                             onChange={(e) => handleSponsorChange(parseInt(e.target.value))}
                                                         >
-                                                            {allDriverMappings.map((mapping, index) => (
-                                                                <option key={mapping.MappingID} value={index}>
-                                                                    {sponsorNames[mapping.SponsorID] || `Sponsor ID: ${mapping.SponsorID}`}
-                                                                </option>
-                                                            ))}
+                                                            {allDriverMappings.map((mapping, index) => {
+                                                                const sponsorName = mapping.SponsorName || sponsorNames[mapping.SponsorID] || `Sponsor ID: ${mapping.SponsorID}`;
+                                                                console.log(`Rendering option ${index}: ${sponsorName} (SponsorID: ${mapping.SponsorID})`);
+                                                                return (
+                                                                    <option key={mapping.mappingKey || `${mapping.DriverID}-${index}`} value={index}>
+                                                                        {sponsorName} (Points: {mapping.Points || 0})
+                                                                    </option>
+                                                                );
+                                                            })}
                                                         </select>
+                                                        <small className="form-text text-muted">
+                                                            Showing {allDriverMappings.length} sponsor relationship{allDriverMappings.length !== 1 ? 's' : ''}
+                                                        </small>
                                                     </div>
                                                     
                                                     <p><strong>Current Points:</strong> {getCurrentMapping()?.Points || 0}</p>
