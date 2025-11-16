@@ -38,7 +38,6 @@ export default function AdminUserManagement() {
     const [search, setSearch] = useState("");
     const [userTypeFilter, setUserTypeFilter] = useState("all");
     const [sponsorOrgSearch, setSponsorOrgSearch] = useState(""); // Add search for sponsor orgs
-    const [isFixingDrivers, setIsFixingDrivers] = useState(false);
 
     const fetchAllUsers = async () => {
         try {
@@ -813,42 +812,6 @@ export default function AdminUserManagement() {
         combineAllUsers();
     }, [drivers, sponsors, sponsorUsers, admins]);
 
-    const handleFixMissingDriverRecords = async () => {
-        if (!window.confirm('This will create DRIVER records for users who have SPONSOR_USER relationships but no DRIVER records. Continue?')) {
-            return;
-        }
-
-        setIsFixingDrivers(true);
-        try {
-            console.log('Attempting to fix missing DRIVER records...');
-            const response = await fetch(`http://localhost:4000/driverAPI/createMissingDriverRecords`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log('Fix result:', result);
-                
-                alert(`Fix completed!\n\nFound: ${result.found} users missing DRIVER records\nCreated: ${result.created.length} new DRIVER records\n\nRefreshing data...`);
-                
-                // Refresh all data to show the updates
-                await Promise.all([fetchAllDrivers(), fetchAllSponsorUsers(), fetchAllAdmins()]);
-            } else {
-                const errorText = await response.text();
-                console.error('Fix failed:', errorText);
-                alert(`Failed to fix missing DRIVER records: ${errorText}`);
-            }
-        } catch (error) {
-            console.error('Error fixing missing DRIVER records:', error);
-            alert(`Error fixing missing DRIVER records: ${error.message}`);
-        } finally {
-            setIsFixingDrivers(false);
-        }
-    };
-
     const handleAddSponsorOrg = async (e) => {
         e.preventDefault();
 
@@ -981,25 +944,6 @@ export default function AdminUserManagement() {
             <div className="container mt-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2>User Management</h2>
-                    <div>
-                        <button 
-                            className="btn btn-warning me-2"
-                            onClick={handleFixMissingDriverRecords}
-                            disabled={isFixingDrivers}
-                        >
-                            {isFixingDrivers ? (
-                                <>
-                                    <div className="spinner-border spinner-border-sm me-2" role="status"></div>
-                                    Fixing...
-                                </>
-                            ) : (
-                                <>
-                                    <i className="fas fa-wrench me-2"></i>
-                                    Fix Missing Driver Records
-                                </>
-                            )}
-                        </button>
-                    </div>
                 </div>
 
                 {/* Tab Navigation */}
@@ -1076,18 +1020,6 @@ export default function AdminUserManagement() {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="row mt-2">
-                                    <div className="col-12">
-                                        <small className="text-muted">
-                                            Data source: USER table via userAPI/getAllUsers
-                                        </small>
-                                        <br />
-                                        <small className="text-info">
-                                            <i className="fas fa-info-circle me-1"></i>
-                                            All user data now comes from a single source - no more duplicates!
-                                        </small>
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -1109,7 +1041,6 @@ export default function AdminUserManagement() {
                                             <th>User Type</th>
                                             <th>Name</th>
                                             <th>Email</th>
-                                            <th>Sponsor</th>
                                             <th>User ID</th>
                                             <th>Actions</th>
                                         </tr>
@@ -1131,12 +1062,6 @@ export default function AdminUserManagement() {
                                                 </td>
                                                 <td>{user.FirstName} {user.LastName}</td>
                                                 <td>{user.Email}</td>
-                                                <td>
-                                                    {user.userType === 'Driver' 
-                                                        ? `${user.sponsorName} (ID: ${user.SponsorID})`
-                                                        : user.sponsorName
-                                                    }
-                                                </td>
                                                 <td>{user.UserID}</td>
                                                 <td>
                                                     {user.userType === 'Driver' && (
