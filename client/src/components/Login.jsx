@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link, useNavigate } from "react-router-dom";
 import { CookiesProvider, useCookies } from "react-cookie";
-import { login, getSponsorForUser, getDriverForUser } from "./MiscellaneousParts/ServerCall";
+import { login, getSponsorForUser } from "./MiscellaneousParts/ServerCall";
 
 export default function Login() {
   // Not secure - for demonstration purposes only
@@ -91,22 +91,6 @@ export default function Login() {
           }
         } catch (err) {
           console.error("Failed to fetch sponsor record:", err);
-        }
-      }
-
-      // If user is a driver, fetch their driver record so we know their sponsor
-      if (data.user.UserType === 1) {
-        try {
-          const driverResp = await getDriverForUser(data.user.UserID);
-          if (driverResp.ok) {
-            const driver = await driverResp.json();
-            localStorage.setItem("driver", JSON.stringify(driver));
-            console.log("Driver stored in localStorage:", driver);
-          } else {
-            console.warn("No driver record found for user");
-          }
-        } catch (err) {
-          console.error("Failed to fetch driver record:", err);
         }
       }
 
