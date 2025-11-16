@@ -617,6 +617,76 @@ router.post("/createMissingDriverRecords", async (req, res, next) => {
 });
 
 /**
+ * Retrieves the driver record for a specific user ID.
+ * @param {number} userID - The user ID to look up
+ * @returns {Promise<Object>} A promise that resolves with the driver record including SponsorID.
+ */
+async function getDriverForUser(userID) {
+    try {
+        console.log(`Reading driver info for UserID: ${userID}`);
+
+        const query = `
+            SELECT 
+                d.DriverID,
+                d.UserID,
+                d.SponsorID,
+                COALESCE(d.Points, 0) as Points,
+                u.FirstName,
+                u.LastName,
+                u.Email
+            FROM DRIVER d
+            INNER JOIN USER u ON d.UserID = u.UserID
+            WHERE d.UserID = ?
+            LIMIT 1
+        `;
+        
+        const driverRecord = await db.executeQuery(query, [userID]);
+        
+        if (driverRecord.length === 0) {
+            console.log(`No driver record found for UserID ${userID}`);
+            return null;
+        }
+        
+        console.log(`Found driver record for UserID ${userID}:`, driverRecord[0]);
+        return driverRecord[0];
+    } catch (error) {
+        console.error(`Failed to get driver for user ${userID}:`, error);
+        throw error;
+    }
+}
+
+router.get("/getDriverForUser", async (req, res, next) => {
+    const userID = req.query.UserID || req.body.UserID;
+    console.log('Received request for driver info for UserID:', userID);
+    
+    // Validate userID
+    if (!userID || isNaN(userID) || userID <= 0) {
+        console.error('Invalid UserID provided:', userID);
+        return res.status(400).json({ 
+            message: 'Invalid UserID provided',
+            received: userID
+        });
+    }
+    
+    try {
+        const result = await getDriverForUser(parseInt(userID));
+        if (result === null) {
+            return res.status(404).json({ 
+                message: 'No driver record found for this user',
+                userID: parseInt(userID)
+            });
+        }
+        res.json(result);
+    } catch (error) {
+        console.error('Error fetching driver for user:', error);
+        res.status(500).json({ 
+            message: 'Database error.',
+            error: error.message 
+        });
+    }
+});
+
+/**
  * Retrieves drivers for a specific sponsor, including inactive accounts.
  * @param {number} sponsorID - The sponsor ID to filter by
  * @returns {Promise<Array<Object>>} A promise that resolves with an array of driver user objects.
