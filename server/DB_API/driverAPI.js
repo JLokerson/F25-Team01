@@ -884,7 +884,8 @@ router.post("/updateDriverWithSponsor", async (req, res, next) => {
   }
 });
 
-/** ---
+// --- Gets the SponsorID from the DRIVER_SPONSOR_MAPPINGS table not the DRIVER table -JL
+/**
  * Get the SponsorID for a given DriverID from DRIVER_SPONSOR_MAPPINGS table
  * @param {number} driverID - The driver ID to look up
  * @returns {Promise<Object>} A promise that resolves with sponsor info including SponsorID
@@ -920,7 +921,7 @@ async function getSponsorForDriver(driverID) {
     throw error;
   }
 }
-
+// --- Gets the SponsorID from the DRIVER_SPONSOR_MAPPINGS table not the DRIVER table -JL
 router.get("/getSponsorForDriver", async (req, res, next) => {
   const driverID = req.query.DriverID || req.body.DriverID;
   console.log("Received request for sponsor info for DriverID:", driverID);

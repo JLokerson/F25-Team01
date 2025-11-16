@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import "./DriverProducts.css";
 
+
 const CATEGORY_PLACEHOLDER =
   "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Best_Buy_Logo.svg/640px-Best_Buy_Logo.svg.png";
 
@@ -246,11 +247,10 @@ export default function DriverProducts() {
   return (
     <div className="driver-products">
       <div className="driver-products__header">
-        <h1>{driver.SponsorName}'s Product Catalog</h1>
-        {driver && (
+        <h1>Product Catalog</h1>
+        {user && (
           <p className="text-muted">
-            Browsing products from{" "}
-            <strong>{driver.SponsorName || "your sponsor"}</strong>
+            Welcome, <strong>{user.FirstName}</strong>! Browse products from your sponsor.
           </p>
         )}
       </div>
