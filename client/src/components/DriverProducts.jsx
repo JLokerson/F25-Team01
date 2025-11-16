@@ -54,7 +54,7 @@ async function getDriverIdForUser(userID) {
     const url = withApiBase(`/driverAPI/getSpecificDriver?UserID=${userID}`);
     const res = await fetch(url);
     if (!res.ok) return null;
-    
+
     const data = await res.json();
     // getSpecificDriver returns array of drivers, get first one
     return data && data.length > 0 ? data[0].DriverID : null;
@@ -69,10 +69,12 @@ async function getDriverIdForUser(userID) {
  */
 async function getSponsorIdForDriver(driverID) {
   try {
-    const url = withApiBase(`/driverAPI/getSponsorForDriver?DriverID=${driverID}`);
+    const url = withApiBase(
+      `/driverAPI/getSponsorForDriver?DriverID=${driverID}`
+    );
     const res = await fetch(url);
     if (!res.ok) return null;
-    
+
     const data = await res.json();
     return data?.SponsorID || null;
   } catch (error) {
@@ -89,6 +91,7 @@ export default function DriverProducts() {
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [categoriesError, setCategoriesError] = useState("");
   const [currentCategoryPage, setCurrentCategoryPage] = useState(1);
+  // 4 columns by 4 rows per page
   const CATEGORIES_PER_PAGE = 16;
 
   // Product modal state
@@ -114,6 +117,7 @@ export default function DriverProducts() {
       setCategoriesError("");
 
       try {
+        // (!) Core logic changes are here - JL(!)
         // Step 1: Get DriverID from UserID
         const driverID = await getDriverIdForUser(user.UserID);
         if (!driverID) {
