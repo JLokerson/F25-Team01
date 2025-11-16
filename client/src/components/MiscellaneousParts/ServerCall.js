@@ -167,13 +167,6 @@ export const getAllDrivers = () => apiCall("GET", "/driverAPI/getAllDrivers");
 export const addDriver = (driverData) =>
   apiCall("POST", "/driverAPI/addDriver", driverData);
 
-/**
- * Get the driver record associated with a given UserID
- * @param {number} userId - The ID of the user.
- */
-export const getDriverForUser = (userId) =>
-  apiCall("GET", "/driverAPI/getDriverForUser", { UserID: userId });
-
 // --- Sponsor API Calls ---
 
 /**

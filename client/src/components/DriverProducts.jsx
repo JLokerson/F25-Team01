@@ -32,18 +32,6 @@ const readStoredUser = () => {
   }
 };
 
-const readStoredDriver = () => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-  try {
-    const cached = localStorage.getItem("driver");
-    return cached ? JSON.parse(cached) : null;
-  } catch {
-    return null;
-  }
-};
-
 async function parseError(response, fallback = "Request failed.") {
   const text = await response.text();
   if (!text) {
@@ -58,16 +46,52 @@ async function parseError(response, fallback = "Request failed.") {
   }
 }
 
+/**
+ * Get DriverID from UserID by querying DRIVER table
+ */
+async function getDriverIdForUser(userID) {
+  try {
+    const url = withApiBase(`/driverAPI/getSpecificDriver?UserID=${userID}`);
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    
+    const data = await res.json();
+    // getSpecificDriver returns array of drivers, get first one
+    return data && data.length > 0 ? data[0].DriverID : null;
+  } catch (error) {
+    console.error("Error getting DriverID:", error);
+    return null;
+  }
+}
+
+/**
+ * Get SponsorID from DriverID by querying DRIVER_SPONSOR_MAPPINGS table
+ */
+async function getSponsorIdForDriver(driverID) {
+  try {
+    // We need an endpoint that gets sponsor info for a driver
+    // For now, we'll fetch all mappings and find the matching one
+    // Ideally this would be a dedicated endpoint
+    const url = withApiBase(`/driverSponsorAPI/getSponsorForDriver?DriverID=${driverID}`);
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    
+    const data = await res.json();
+    return data?.SponsorID || null;
+  } catch (error) {
+    console.error("Error getting SponsorID:", error);
+    return null;
+  }
+}
+
 export default function DriverProducts() {
   const [user] = useState(readStoredUser);
-  const [driver, setDriver] = useState(readStoredDriver);
 
   // Category state
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [categoriesError, setCategoriesError] = useState("");
   const [currentCategoryPage, setCurrentCategoryPage] = useState(1);
-  // 4 columns by 4 rows per page
   const CATEGORIES_PER_PAGE = 16;
 
   // Product modal state
@@ -83,8 +107,8 @@ export default function DriverProducts() {
 
   // Load categories on mount
   useEffect(() => {
-    if (!driver) {
-      setCategoriesError("Driver information not found. Please log in again.");
+    if (!user || !user.UserID) {
+      setCategoriesError("User information not found. Please log in again.");
       return;
     }
 
@@ -93,9 +117,22 @@ export default function DriverProducts() {
       setCategoriesError("");
 
       try {
+        // Step 1: Get DriverID from UserID
+        const driverID = await getDriverIdForUser(user.UserID);
+        if (!driverID) {
+          throw new Error("No driver record found for this user.");
+        }
+
+        // Step 2: Get SponsorID from DriverID via DRIVER_SPONSOR_MAPPINGS
+        const sponsorID = await getSponsorIdForDriver(driverID);
+        if (!sponsorID) {
+          throw new Error("No sponsor information found for this driver.");
+        }
+
+        // Step 3: Get categories for this sponsor via CATALOG table
         const url = withApiBase(
           `/catalogAPI/getAllCategories?SponsorID=${encodeURIComponent(
-            driver.SponsorID
+            sponsorID
           )}`
         );
 
@@ -108,7 +145,7 @@ export default function DriverProducts() {
         const data = await res.json();
         let items = Array.isArray(data?.categories) ? data.categories : [];
 
-        // Filter to fetch only active categories, inactive categories are hidden except from sponsor users
+        // Filter to show only active categories
         items = items.filter((cat) => cat.active === true);
 
         setCategories(items);
@@ -121,7 +158,7 @@ export default function DriverProducts() {
     };
 
     loadCategories();
-  }, [driver]);
+  }, [user]);
 
   // Load products for a category
   const loadProducts = useCallback(
