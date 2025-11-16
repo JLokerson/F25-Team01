@@ -800,7 +800,19 @@ async function getDriverSponsorMappings(userID) {
         const query = "CALL GetDriverInfoSpecific(?)";
         const mappings = await db.executeQuery(query, [userID]);
         
-        console.log(`Found ${mappings.length} driver-sponsor mappings for UserID ${userID}:`, mappings);
+        console.log(`Raw stored procedure result:`, JSON.stringify(mappings, null, 2));
+        console.log(`Found ${mappings.length} result sets from stored procedure for UserID ${userID}`);
+        
+        // Log the structure of the first mapping to verify MappingID is included
+        if (mappings.length > 0) {
+            console.log('First result set structure:', Array.isArray(mappings[0]) ? 'Array' : 'Object');
+            if (Array.isArray(mappings[0]) && mappings[0].length > 0) {
+                console.log('First mapping keys:', Object.keys(mappings[0][0]));
+                console.log('First mapping MappingID:', mappings[0][0].MappingID);
+                console.log('First mapping full object:', JSON.stringify(mappings[0][0], null, 2));
+            }
+        }
+        
         return mappings;
     } catch (error) {
         console.error(`Failed to get driver-sponsor mappings for UserID ${userID}:`, error);

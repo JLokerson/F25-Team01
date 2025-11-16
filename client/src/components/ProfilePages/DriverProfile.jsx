@@ -76,25 +76,25 @@ export default function DriverProfile() {
                 
                 if (response && response.ok) {
                     const mappingsData = await response.json();
-                    console.log('DriverProfile - GetDriverInfoSpecific response:', mappingsData);
+                    console.log('DriverProfile - GetDriverInfoSpecific raw response:', mappingsData);
                     
-                    // Handle the response structure - could be from stored procedure or fallback
-                    let allMappings = mappingsData;
+                    // Handle the stored procedure response structure: [[actualData], metadata]
+                    let allMappings = [];
                     
-                    // The stored procedure returns results in a nested array format
-                    // But the fallback returns a flat array directly
                     if (Array.isArray(mappingsData) && mappingsData.length > 0) {
-                        // Check if the first element is an array (nested structure from stored procedure)
+                        // Check if first element is an array (stored procedure result structure)
                         if (Array.isArray(mappingsData[0])) {
+                            // Extract the actual data from the first element
                             allMappings = mappingsData[0];
-                        }
-                        // If it's already a flat array of objects, use it as-is (fallback case)
-                        else if (typeof mappingsData[0] === 'object' && mappingsData[0].hasOwnProperty('DriverID')) {
+                            console.log('DriverProfile - Extracted mappings from nested array:', allMappings);
+                        } else {
+                            // Fallback: treat the whole response as the data
                             allMappings = mappingsData;
+                            console.log('DriverProfile - Using direct response as mappings:', allMappings);
                         }
                     }
                     
-                    console.log('DriverProfile - Processed mappings:', allMappings);
+                    console.log('DriverProfile - Final processed mappings:', allMappings);
                     console.log('DriverProfile - Number of mappings found:', allMappings.length);
                     
                     if (Array.isArray(allMappings) && allMappings.length > 0) {
@@ -109,9 +109,17 @@ export default function DriverProfile() {
                         });
                         
                         // Transform ALL mappings to match expected structure
-                        // Each mapping represents a different sponsor relationship
                         const transformedMappings = allMappings.map((mapping, index) => {
                             console.log(`DriverProfile - Processing mapping ${index + 1}:`, mapping);
+                            
+                            // MappingID should be directly available from the stored procedure
+                            const mappingID = mapping.MappingID;
+                            console.log(`DriverProfile - Extracted MappingID: ${mappingID} for UserID ${mapping.UserID}, SponsorID ${mapping.SponsorID}`);
+                            
+                            if (mappingID === undefined || mappingID === null) {
+                                console.error(`DriverProfile - MappingID is missing for mapping:`, mapping);
+                            }
+                            
                             return {
                                 DriverID: mapping.DriverID,
                                 SponsorID: mapping.SponsorID,
@@ -120,49 +128,47 @@ export default function DriverProfile() {
                                 FirstName: mapping.FirstName,
                                 LastName: mapping.LastName,
                                 Email: mapping.Email,
-                                // Handle sponsor name from either stored procedure response or need to fetch separately
                                 SponsorName: mapping.Name || null,
                                 PointRatio: mapping.PointRatio || '0.01',
-                                // Add MappingID for points history lookup
-                                MappingID: mapping.MappingID,
-                                // Add a unique key to help with dropdown rendering
-                                mappingKey: `${mapping.UserID}-${mapping.SponsorID}`
+                                ApplicationAccepted: 1,
+                                MappingID: mappingID, // This should now be properly extracted
+                                mappingKey: `${mapping.UserID}-${mapping.SponsorID}-${mappingID || index}`
                             };
                         });
                         
-                        console.log('DriverProfile - Transformed mappings:', transformedMappings);
-                        console.log('DriverProfile - Setting', transformedMappings.length, 'mappings in state');
-                        setAllDriverMappings(transformedMappings);
+                        console.log('DriverProfile - Transformed mappings with MappingIDs:', transformedMappings);
                         
-                        // Fetch points history for the first (default) mapping
-                        if (transformedMappings.length > 0 && transformedMappings[0].MappingID) {
-                            fetchPointsHistory(transformedMappings[0].MappingID);
-                        }
-
-                        // Create sponsor name mapping from the response data or fetch sponsor names
-                        const sponsorNameMap = {};
-                        const sponsorIdsToFetch = [];
-                        
-                        allMappings.forEach(mapping => {
-                            if (mapping.Name) {
-                                // If sponsor name is already in the response (from stored procedure)
-                                sponsorNameMap[mapping.SponsorID] = mapping.Name;
-                                console.log(`DriverProfile - Added sponsor mapping from response: ${mapping.SponsorID} -> ${mapping.Name}`);
-                            } else {
-                                // If sponsor name is not in response, we need to fetch it
-                                sponsorIdsToFetch.push(mapping.SponsorID);
+                        // Verify MappingIDs are present
+                        transformedMappings.forEach((mapping, index) => {
+                            console.log(`DriverProfile - Final Mapping ${index}: UserID=${mapping.UserID}, SponsorID=${mapping.SponsorID}, MappingID=${mapping.MappingID}`);
+                            if (!mapping.MappingID && mapping.MappingID !== 0) {
+                                console.error(`DriverProfile - Missing MappingID in transformed mapping ${index}:`, mapping);
                             }
                         });
                         
-                        setSponsorNames(sponsorNameMap);
+                        setAllDriverMappings(transformedMappings);
                         
-                        // If we need to fetch sponsor names separately (fallback case)
-                        if (sponsorIdsToFetch.length > 0) {
-                            console.log('DriverProfile - Fetching sponsor names for IDs:', sponsorIdsToFetch);
-                            await fetchSponsorNames(sponsorIdsToFetch);
-                        } else {
-                            console.log('DriverProfile - All sponsor names already available from response');
+                        // Fetch points history for the first (default) mapping
+                        if (transformedMappings.length > 0) {
+                            const firstMappingID = transformedMappings[0].MappingID;
+                            console.log(`DriverProfile - Attempting to fetch points history for first mapping with MappingID: ${firstMappingID}`);
+                            
+                            if (firstMappingID !== undefined && firstMappingID !== null) {
+                                fetchPointsHistory(firstMappingID);
+                            } else {
+                                console.error('DriverProfile - No valid MappingID found for first mapping, cannot fetch points history');
+                                setPointsHistory([]);
+                            }
                         }
+
+                        // Create sponsor name mapping from the response data
+                        const sponsorNameMap = {};
+                        allMappings.forEach(mapping => {
+                            if (mapping.Name) {
+                                sponsorNameMap[mapping.SponsorID] = mapping.Name;
+                            }
+                        });
+                        setSponsorNames(sponsorNameMap);
                         
                     } else {
                         console.log('DriverProfile - No driver-sponsor mappings found, falling back');
@@ -309,11 +315,19 @@ export default function DriverProfile() {
     };
 
     const handleSponsorChange = (index) => {
+        console.log(`DriverProfile - Sponsor selection changed to index: ${index}`);
         setSelectedMappingIndex(index);
+        
         // Fetch points history for the newly selected mapping
         const selectedMapping = allDriverMappings[index];
-        if (selectedMapping && selectedMapping.MappingID) {
+        console.log(`DriverProfile - Selected mapping:`, selectedMapping);
+        
+        if (selectedMapping && selectedMapping.MappingID !== undefined && selectedMapping.MappingID !== null) {
+            console.log(`DriverProfile - Fetching points history for MappingID: ${selectedMapping.MappingID}`);
             fetchPointsHistory(selectedMapping.MappingID);
+        } else {
+            console.error('DriverProfile - No valid MappingID found for selected mapping:', selectedMapping);
+            setPointsHistory([]);
         }
     };
 
@@ -593,22 +607,34 @@ export default function DriverProfile() {
                                         </div>
                                         <div className="card-body p-0">
                                             <div className="table-responsive">
-                                                <table className="table table-hover mb-0">
-                                                    <thead className="table-light">
+                                                <table className="table table-striped table-hover mb-0">
+                                                    <thead className="thead-dark">
                                                         <tr>
-                                                            <th>Date & Time</th>
-                                                            <th>Points Change</th>
-                                                            <th>Description</th>
+                                                            <th scope="col" className="text-center">#</th>
+                                                            <th scope="col">Date & Time</th>
+                                                            <th scope="col" className="text-center">Points Change</th>
+                                                            <th scope="col">Description</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {pointsHistory.map((record, index) => (
                                                             <tr key={record.PointChangeID || index}>
-                                                                <td>{formatDateTime(record.EventTime)}</td>
-                                                                <td className={getPointChangeClass(record.PointChange)}>
-                                                                    <strong>{formatPointChange(record.PointChange)}</strong>
+                                                                <td className="text-center text-muted">
+                                                                    <small>{index + 1}</small>
                                                                 </td>
-                                                                <td>{generatePointsDescription(record.PointChange, record.EventTime)}</td>
+                                                                <td>
+                                                                    <span className="fw-normal">
+                                                                        {formatDateTime(record.EventTime)}
+                                                                    </span>
+                                                                </td>
+                                                                <td className={`text-center fw-bold ${getPointChangeClass(record.PointChange)}`}>
+                                                                    {formatPointChange(record.PointChange)}
+                                                                </td>
+                                                                <td>
+                                                                    <span className="text-muted">
+                                                                        {generatePointsDescription(record.PointChange, record.EventTime)}
+                                                                    </span>
+                                                                </td>
                                                             </tr>
                                                         ))}
                                                     </tbody>
