@@ -19,3 +19,41 @@ const withApiBase = (path) => {
   if (!path) return API_BASE;
   return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 };
+
+const readStoredUser = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  try {
+    const cached = localStorage.getItem("user");
+    return cached ? JSON.parse(cached) : null;
+  } catch {
+    return null;
+  }
+};
+
+const readStoredDriver = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  try {
+    const cached = localStorage.getItem("driver");
+    return cached ? JSON.parse(cached) : null;
+  } catch {
+    return null;
+  }
+};
+
+async function parseError(response, fallback = "Request failed.") {
+  const text = await response.text();
+  if (!text) {
+    return fallback;
+  }
+
+  try {
+    const payload = JSON.parse(text);
+    return payload?.message || fallback;
+  } catch {
+    return text;
+  }
+}
