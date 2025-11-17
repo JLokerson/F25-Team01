@@ -13,11 +13,11 @@ export default function Recover() {
   async function ResetPass(){
     // Because obviously we can't send an actual email we just do the reset.
     let IDForReset = await getUserFromEmail(email);
-    IDForReset = IDForReset.json();
+    IDForReset = await IDForReset.json();
     IDForReset = IDForReset[0]["UserID"];
 
     let salt = GenerateSalt();
-    let hashedPassword = (email+salt);
+    let hashedPassword = await HashPassword(email,salt);
     await updatePassword(IDForReset, hashedPassword, salt);
     alert("Email confirmed, password reset to your email. Please use password change in profile upon next login.");
   }
@@ -26,6 +26,7 @@ export default function Recover() {
 
     e.preventDefault();
     // Implement backend logic here to send recovery email (will we do this? mock for now)
+    // We don't.
     setSubmitted(true);
 
     ResetPass();
