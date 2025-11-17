@@ -49,7 +49,7 @@ async function getUser(data) {
     );
     sql =
       "SELECT * FROM USER WHERE Email = ?";
-    values = [data.FirstName, data.LastName, data.Email];
+    values = [data.Email];
   }
   // If neither set of criteria is met, we cannot perform a lookup.
   else {

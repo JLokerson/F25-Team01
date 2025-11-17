@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
-import { getUser, updatePassword } from './MiscellaneousParts/ServerCall';
+import { getUser, getUserFromEmail, updatePassword } from './MiscellaneousParts/ServerCall';
 import { HashPassword, GenerateSalt } from './MiscellaneousParts/HashPass';
 
 export default function Recover() {
@@ -12,7 +12,7 @@ export default function Recover() {
 
   async function ResetPass(){
     // Because obviously we can't send an actual email we just do the reset.
-    let IDForReset = await getUser();
+    let IDForReset = await getUserFromEmail(email);
     IDForReset = IDForReset.json();
     IDForReset = IDForReset[0]["UserID"];
 
