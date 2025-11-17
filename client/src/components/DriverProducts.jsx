@@ -310,9 +310,7 @@ export default function DriverProducts() {
                     />
                   </div>
                   <div className="driver-products__card-content">
-                    <h3>
-                      {category.name || `Category ${category.categoryId}`}
-                    </h3>
+                    <h3>{category.name}</h3>
                   </div>
                 </div>
               ))}
