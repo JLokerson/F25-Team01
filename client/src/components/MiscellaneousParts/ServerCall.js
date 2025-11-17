@@ -65,7 +65,7 @@ export const getUser = (userId) =>
 
 // Retrieve salt from email (login purposes)
 export const getSaltForUser = (Email) =>
-  apiCall("GET", "/getSaltForUser", {Email: Email});
+  apiCall("GET", "/userAPI/getSaltForUser", {Email: Email});
 
 
 /**

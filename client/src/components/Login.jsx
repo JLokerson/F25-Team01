@@ -27,11 +27,14 @@ export default function Login() {
       let LoginSalt = "";
       try{
         // Use email to retrieve it.
-        LoginSalt = await getSaltForUser(username);
+        let LoginSaltReturn = await getSaltForUser(username);
+        LoginSalt = await LoginSaltReturn.json()
+        LoginSalt = LoginSalt[0]["PasswordSalt"];
       }catch(errorno){
         alert("Could not retrieve salt, please try again later.");
       }
-      const truepassword = HashPassword(password, LoginSalt);
+      let truepassword = await HashPassword(password, LoginSalt);
+
       const response = await login({ Email: username, Password: truepassword });
 
       // Debug: Log the response status and text
