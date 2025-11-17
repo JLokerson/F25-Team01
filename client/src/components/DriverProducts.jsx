@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import "./DriverProducts.css";
 
-
 const CATEGORY_PLACEHOLDER =
   "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Best_Buy_Logo.svg/640px-Best_Buy_Logo.svg.png";
 
+// Frontend API Client (Step 3)
 const API_BASE = (() => {
   if (process.env.REACT_APP_SERVER_URL) {
     return process.env.REACT_APP_SERVER_URL.replace(/\/$/, "");
@@ -84,13 +84,21 @@ async function getSponsorIdForDriver(driverID) {
   }
 }
 
+// React state management (Step 4)
 export default function DriverProducts() {
   const [user] = useState(readStoredUser);
 
   // Category state
+
+  // Variables that track the categories list
+  // categories = current list of categories
+  // setCategories = function to update the categories list
   const [categories, setCategories] = useState([]);
+  //categoriesLoading = boolean flag: true while fetching , false when done
   const [categoriesLoading, setCategoriesLoading] = useState(false);
+  // categoriesError = string that stores any error message
   const [categoriesError, setCategoriesError] = useState("");
+  // currentCategoryPage = which page (1, 2, 3...) of categories we're viewing
   const [currentCategoryPage, setCurrentCategoryPage] = useState(1);
   // 4 columns by 4 rows per page
   const CATEGORIES_PER_PAGE = 16;
@@ -106,6 +114,7 @@ export default function DriverProducts() {
   // Cache for products by categoryId
   const [productCache, setProductCache] = useState({});
 
+  // useEffect (Automatic Data loading) (Step 5)
   // Load categories on mount
   useEffect(() => {
     if (!user || !user.UserID) {
@@ -250,7 +259,8 @@ export default function DriverProducts() {
         <h1>Product Catalog</h1>
         {user && (
           <p className="text-muted">
-            Welcome, <strong>{user.FirstName}</strong>! Browse products from your sponsor.
+            Welcome, <strong>{user.FirstName}</strong>! Browse products from
+            your sponsor.
           </p>
         )}
       </div>
