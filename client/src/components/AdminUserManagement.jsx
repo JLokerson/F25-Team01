@@ -38,97 +38,88 @@ export default function AdminUserManagement() {
     const [search, setSearch] = useState("");
     const [userTypeFilter, setUserTypeFilter] = useState("all");
     const [sponsorOrgSearch, setSponsorOrgSearch] = useState(""); // Add search for sponsor orgs
-    const [isFixingDrivers, setIsFixingDrivers] = useState(false);
 
-    const fetchAllDrivers = async () => {
+    const fetchAllUsers = async () => {
         try {
-            console.log('=== FETCHING DRIVERS ===');
-            const response = await fetch(`http://localhost:4000/driverAPI/getAllDrivers`);
-            console.log('Driver API response status:', response.status);
-            console.log('Driver API response headers:', Object.fromEntries(response.headers.entries()));
+            console.log('=== FETCHING ALL USERS ===');
+            const response = await fetch(`http://localhost:4000/userAPI/getAllUsers`);
+            console.log('Users API response status:', response.status);
             
             if (response.ok) {
                 const responseText = await response.text();
-                console.log('Raw driver response text:', responseText);
+                console.log('Raw users response text:', responseText);
                 
-                let allDrivers;
+                let allUsersData;
                 try {
-                    const parsedResponse = JSON.parse(responseText);
-                    console.log('Parsed driver response:', parsedResponse);
-                    
-                    // Check if the response is in the format [[{driver data}], {metadata}]
-                    if (Array.isArray(parsedResponse) && parsedResponse.length > 0 && Array.isArray(parsedResponse[0])) {
-                        // Extract the actual driver data from the first element
-                        allDrivers = parsedResponse[0];
-                        console.log('Extracted driver data from nested array:', allDrivers);
-                    } else if (Array.isArray(parsedResponse)) {
-                        // If it's already a flat array, use it directly
-                        allDrivers = parsedResponse;
-                        console.log('Using direct array data:', allDrivers);
-                    } else {
-                        console.error('Unexpected driver response format:', parsedResponse);
-                        setDrivers([]);
-                        return;
-                    }
-                    
-                    console.log('Driver data type:', typeof allDrivers);
-                    console.log('Driver data length:', Array.isArray(allDrivers) ? allDrivers.length : 'Not an array');
-                    
-                    if (Array.isArray(allDrivers) && allDrivers.length > 0) {
-                        console.log('First driver object:', allDrivers[0]);
-                        console.log('First driver keys:', Object.keys(allDrivers[0]));
-                    }
+                    allUsersData = JSON.parse(responseText);
+                    console.log('Parsed users data:', allUsersData);
                 } catch (parseError) {
-                    console.error('Failed to parse driver JSON:', parseError);
-                    console.log('Setting drivers to empty array due to parse error');
-                    setDrivers([]);
+                    console.error('Failed to parse users JSON:', parseError);
+                    setAllUsers([]);
                     return;
                 }
                 
-                if (!Array.isArray(allDrivers)) {
-                    console.error('Driver data is not an array:', allDrivers);
-                    setDrivers([]);
+                if (!Array.isArray(allUsersData)) {
+                    console.error('Users data is not an array:', allUsersData);
+                    setAllUsers([]);
                     return;
                 }
                 
-                // Process the driver data to ensure all fields are properly mapped
-                const processedDrivers = allDrivers.map((driver, index) => {
-                    console.log(`Processing driver ${index}:`, driver);
+                // Process and categorize users by UserType
+                const processedUsers = allUsersData.map((user, index) => {
+                    console.log(`Processing user ${index}:`, user);
                     
                     const processed = {
-                        ...driver,
-                        // Handle different possible field name cases
-                        DriverID: driver.DriverID || driver.driverID || driver.driver_id,
-                        UserID: driver.UserID || driver.userID || driver.user_id,
-                        FirstName: driver.FirstName || driver.firstName || driver.first_name || '',
-                        LastName: driver.LastName || driver.lastName || driver.last_name || '',
-                        Email: driver.Email || driver.email || '',
-                        SponsorID: driver.SponsorID || driver.sponsorID || driver.sponsor_id,
-                        ActiveAccount: driver.ActiveAccount !== undefined ? driver.ActiveAccount : 
-                                     driver.activeAccount !== undefined ? driver.activeAccount :
-                                     driver.active_account !== undefined ? driver.active_account : 1,
-                        Password: driver.Password || driver.password || '',
-                        PasswordSalt: driver.PasswordSalt || driver.passwordSalt || driver.password_salt || '',
-                        UserType: driver.UserType || driver.userType || driver.user_type || 1,
-                        LastLogin: driver.LastLogin || driver.lastLogin || driver.last_login,
-                        Points: driver.Points || driver.points || 0
+                        ...user,
+                        // Normalize field names
+                        UserID: user.UserID || user.userID || user.user_id,
+                        FirstName: user.FirstName || user.firstName || user.first_name || '',
+                        LastName: user.LastName || user.lastName || user.last_name || '',
+                        Email: user.Email || user.email || '',
+                        ActiveAccount: user.ActiveAccount !== undefined ? user.ActiveAccount : 
+                                     user.activeAccount !== undefined ? user.activeAccount :
+                                     user.active_account !== undefined ? user.active_account : 1,
+                        UserType: user.UserType || user.userType || user.user_type || 1,
+                        LastLogin: user.LastLogin || user.lastLogin || user.last_login,
+                        // Determine user type and display properties
+                        userType: user.UserType === 1 ? 'Driver' : 
+                                 user.UserType === 2 ? 'Sponsor' : 
+                                 user.UserType === 3 ? 'Admin' : 'Unknown',
+                        displayId: user.UserID, // Use UserID as display ID for all users
+                        sponsorName: 'N/A', // Will be updated for drivers if needed
+                        uniqueKey: `User-${user.UserID}`
                     };
                     
-                    console.log(`Processed driver ${index}:`, processed);
+                    console.log(`Processed user ${index}:`, processed);
                     return processed;
                 });
                 
-                console.log('Final processed drivers:', processedDrivers);
-                setDrivers(processedDrivers);
+                // Sort by UserID for consistent display
+                const sortedUsers = processedUsers.sort((a, b) => a.UserID - b.UserID);
+                
+                console.log('Final processed users:', sortedUsers);
+                
+                // Set individual arrays for compatibility with existing code
+                setDrivers(sortedUsers.filter(u => u.UserType === 1));
+                setSponsorUsers(sortedUsers.filter(u => u.UserType === 2));
+                setAdmins(sortedUsers.filter(u => u.UserType === 3));
+                setAllUsers(sortedUsers);
+                
             } else {
-                console.error('Failed to fetch drivers - HTTP status:', response.status);
+                console.error('Failed to fetch users - HTTP status:', response.status);
                 const errorText = await response.text();
                 console.error('Error response body:', errorText);
+                setAllUsers([]);
                 setDrivers([]);
+                setSponsorUsers([]);
+                setAdmins([]);
             }
         } catch (error) {
-            console.error('Network error fetching drivers:', error);
+            console.error('Network error fetching users:', error);
+            setAllUsers([]);
             setDrivers([]);
+            setSponsorUsers([]);
+            setAdmins([]);
         }
     };
 
@@ -342,34 +333,68 @@ export default function AdminUserManagement() {
         console.log('Current sponsorUsers:', sponsorUsers);
         console.log('Current admins:', admins);
         
-        const combinedUsers = [
-            ...drivers.map(driver => ({
-                ...driver,
-                userType: 'Driver',
-                displayId: driver.DriverID,
-                sponsorName: getSponsorName(driver.SponsorID),
-                uniqueKey: `Driver-${driver.DriverID}-${driver.UserID}`,
-                ActiveAccount: driver.ActiveAccount !== undefined ? driver.ActiveAccount : 1
-            })),
-            ...sponsorUsers.map(sponsor => ({
-                ...sponsor,
-                userType: 'Sponsor',
-                displayId: sponsor.SponsorUserID,
-                sponsorName: 'N/A',
-                uniqueKey: `Sponsor-${sponsor.SponsorUserID}-${sponsor.UserID}`,
-                ActiveAccount: sponsor.ActiveAccount !== undefined ? sponsor.ActiveAccount : 1
-            })),
-            ...admins.map(admin => ({
-                ...admin,
-                userType: 'Admin',
-                displayId: admin.AdminID,
-                sponsorName: 'N/A',
-                uniqueKey: `Admin-${admin.AdminID}-${admin.UserID}`,
-                ActiveAccount: admin.ActiveAccount !== undefined ? admin.ActiveAccount : 1
-            }))
-        ];
+        // Create a map to track unique users by UserID
+        const userMap = new Map();
         
-        console.log('Combined users result:', combinedUsers);
+        // Add drivers first (they take priority for display)
+        drivers.forEach(driver => {
+            const key = driver.UserID;
+            if (!userMap.has(key)) {
+                userMap.set(key, {
+                    ...driver,
+                    userType: 'Driver',
+                    displayId: driver.DriverID,
+                    sponsorName: getSponsorName(driver.SponsorID),
+                    uniqueKey: `Driver-${driver.DriverID}-${driver.UserID}`,
+                    ActiveAccount: driver.ActiveAccount !== undefined ? driver.ActiveAccount : 1,
+                    priority: 1 // Highest priority
+                });
+            }
+        });
+        
+        // Add sponsor users only if they don't already exist as drivers
+        sponsorUsers.forEach(sponsor => {
+            const key = sponsor.UserID;
+            if (!userMap.has(key)) {
+                userMap.set(key, {
+                    ...sponsor,
+                    userType: 'Sponsor',
+                    displayId: sponsor.SponsorUserID,
+                    sponsorName: 'N/A',
+                    uniqueKey: `Sponsor-${sponsor.SponsorUserID}-${sponsor.UserID}`,
+                    ActiveAccount: sponsor.ActiveAccount !== undefined ? sponsor.ActiveAccount : 1,
+                    priority: 2
+                });
+            } else {
+                // Log duplicate detection
+                console.log(`Skipping duplicate user: UserID ${key} already exists as ${userMap.get(key).userType}`);
+            }
+        });
+        
+        // Add admins only if they don't already exist
+        admins.forEach(admin => {
+            const key = admin.UserID;
+            if (!userMap.has(key)) {
+                userMap.set(key, {
+                    ...admin,
+                    userType: 'Admin',
+                    displayId: admin.AdminID,
+                    sponsorName: 'N/A',
+                    uniqueKey: `Admin-${admin.AdminID}-${admin.UserID}`,
+                    ActiveAccount: admin.ActiveAccount !== undefined ? admin.ActiveAccount : 1,
+                    priority: 3
+                });
+            } else {
+                // Log duplicate detection
+                console.log(`Skipping duplicate user: UserID ${key} already exists as ${userMap.get(key).userType}`);
+            }
+        });
+        
+        // Convert map to array and sort by UserID for consistent display
+        const combinedUsers = Array.from(userMap.values()).sort((a, b) => a.UserID - b.UserID);
+        
+        console.log('Combined users result (deduplicated):', combinedUsers);
+        console.log('Total unique users:', combinedUsers.length);
         setAllUsers(combinedUsers);
     };
 
@@ -775,7 +800,7 @@ export default function AdminUserManagement() {
         const fetchData = async () => {
             console.log('Starting data fetch...');
             setLoading(true);
-            await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllSponsorUsers(), fetchAllAdmins(), fetchSponsorOrgs()]);
+            await Promise.all([fetchAllUsers(), fetchAllSponsors(), fetchSponsorOrgs()]);
             console.log('Data fetch completed');
             setLoading(false);
         };
@@ -786,42 +811,6 @@ export default function AdminUserManagement() {
     useEffect(() => {
         combineAllUsers();
     }, [drivers, sponsors, sponsorUsers, admins]);
-
-    const handleFixMissingDriverRecords = async () => {
-        if (!window.confirm('This will create DRIVER records for users who have SPONSOR_USER relationships but no DRIVER records. Continue?')) {
-            return;
-        }
-
-        setIsFixingDrivers(true);
-        try {
-            console.log('Attempting to fix missing DRIVER records...');
-            const response = await fetch(`http://localhost:4000/driverAPI/createMissingDriverRecords`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log('Fix result:', result);
-                
-                alert(`Fix completed!\n\nFound: ${result.found} users missing DRIVER records\nCreated: ${result.created.length} new DRIVER records\n\nRefreshing data...`);
-                
-                // Refresh all data to show the updates
-                await Promise.all([fetchAllDrivers(), fetchAllSponsorUsers(), fetchAllAdmins()]);
-            } else {
-                const errorText = await response.text();
-                console.error('Fix failed:', errorText);
-                alert(`Failed to fix missing DRIVER records: ${errorText}`);
-            }
-        } catch (error) {
-            console.error('Error fixing missing DRIVER records:', error);
-            alert(`Error fixing missing DRIVER records: ${error.message}`);
-        } finally {
-            setIsFixingDrivers(false);
-        }
-    };
 
     const handleAddSponsorOrg = async (e) => {
         e.preventDefault();
@@ -955,25 +944,6 @@ export default function AdminUserManagement() {
             <div className="container mt-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2>User Management</h2>
-                    <div>
-                        <button 
-                            className="btn btn-warning me-2"
-                            onClick={handleFixMissingDriverRecords}
-                            disabled={isFixingDrivers}
-                        >
-                            {isFixingDrivers ? (
-                                <>
-                                    <div className="spinner-border spinner-border-sm me-2" role="status"></div>
-                                    Fixing...
-                                </>
-                            ) : (
-                                <>
-                                    <i className="fas fa-wrench me-2"></i>
-                                    Fix Missing Driver Records
-                                </>
-                            )}
-                        </button>
-                    </div>
                 </div>
 
                 {/* Tab Navigation */}
@@ -1027,42 +997,27 @@ export default function AdminUserManagement() {
 
                         <div className="card mb-3">
                             <div className="card-body">
-                                <h5 className="card-title">System Overview & Debug Info</h5>
+                                <h5 className="card-title">System Overview</h5>
                                 <div className="row">
                                     <div className="col-md-3">
                                         <p className="card-text">
-                                            <strong>Total Drivers:</strong> {drivers.length}
+                                            <strong>Total Drivers:</strong> {allUsers.filter(u => u.UserType === 1).length}
                                         </p>
                                     </div>
                                     <div className="col-md-3">
                                         <p className="card-text">
-                                            <strong>Total Sponsor Users:</strong> {sponsorUsers.length}
+                                            <strong>Total Sponsors:</strong> {allUsers.filter(u => u.UserType === 2).length}
                                         </p>
                                     </div>
                                     <div className="col-md-3">
                                         <p className="card-text">
-                                            <strong>Total Admins:</strong> {admins.length}
+                                            <strong>Total Admins:</strong> {allUsers.filter(u => u.UserType === 3).length}
                                         </p>
                                     </div>
                                     <div className="col-md-3">
                                         <p className="card-text">
                                             <strong>Total Users:</strong> {allUsers.length}
                                         </p>
-                                    </div>
-                                </div>
-                                <div className="row mt-2">
-                                    <div className="col-12">
-                                        <small className="text-muted">
-                                            Debug: Check browser console for detailed API response information.
-                                            {drivers.length === 0 && " | No drivers found - check API endpoint."}
-                                            {sponsorUsers.length === 0 && " | No sponsor users found - check API endpoint."}
-                                            {admins.length === 0 && " | No admins found - check API endpoint."}
-                                        </small>
-                                        <br />
-                                        <small className="text-warning">
-                                            <i className="fas fa-info-circle me-1"></i>
-                                            If approved applications don't show up for sponsors, use "Fix Missing Driver Records" button above.
-                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -1086,7 +1041,6 @@ export default function AdminUserManagement() {
                                             <th>User Type</th>
                                             <th>Name</th>
                                             <th>Email</th>
-                                            <th>Sponsor</th>
                                             <th>User ID</th>
                                             <th>Actions</th>
                                         </tr>
@@ -1108,12 +1062,6 @@ export default function AdminUserManagement() {
                                                 </td>
                                                 <td>{user.FirstName} {user.LastName}</td>
                                                 <td>{user.Email}</td>
-                                                <td>
-                                                    {user.userType === 'Driver' 
-                                                        ? `${user.sponsorName} (ID: ${user.SponsorID})`
-                                                        : user.sponsorName
-                                                    }
-                                                </td>
                                                 <td>{user.UserID}</td>
                                                 <td>
                                                     {user.userType === 'Driver' && (
