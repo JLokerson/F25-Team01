@@ -43,6 +43,14 @@ async function getUser(data) {
       "SELECT * FROM USER WHERE FirstName = ? AND LastName = ? AND Email = ?";
     values = [data.FirstName, data.LastName, data.Email];
   }
+  else if (data.Email) {
+    console.log(
+      `Querying user by email: ${data.Email}`
+    );
+    sql =
+      "SELECT * FROM USER WHERE Email = ?";
+    values = [data.FirstName, data.LastName, data.Email];
+  }
   // If neither set of criteria is met, we cannot perform a lookup.
   else {
     console.log("Bad data to get a user.");
