@@ -27,7 +27,7 @@ export default function Login() {
       let LoginSalt = "";
       try{
         // Use email to retrieve it.
-        LoginSalt = getSaltForUser(username);
+        LoginSalt = await getSaltForUser(username);
       }catch(errorno){
         alert("Could not retrieve salt, please try again later.");
       }
