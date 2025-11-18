@@ -58,7 +58,7 @@ async function getAllCategoriesForSponsor(sponsorID) {
   try {
     const API_KEY = process.env.API_KEY || "3AsycyCu2CRRwvvnLtHYuBMV";
     const BB_BASE = "https://api.bestbuy.com/v1";
-    
+
     // Step 1: Fetch all category metadata (names)
     const params = {
       show: "id,name",
@@ -83,7 +83,7 @@ async function getAllCategoriesForSponsor(sponsorID) {
     const MAX_IMAGES = 5; // Only fetch images for first 5 to avoid rate limits
     for (let i = 0; i < Math.min(catalogRows.length, MAX_IMAGES); i++) {
       const categoryId = catalogRows[i].CategoryID;
-      
+
       if (!categoryMap[categoryId]) continue;
 
       try {
@@ -98,13 +98,16 @@ async function getAllCategoriesForSponsor(sponsorID) {
         const prodResponse = await http.get(`${BB_BASE}/products`, {
           params: { ...productParams, search: filter },
         });
-        
+
         const products = prodResponse.data?.products || [];
         if (products.length > 0) {
-          const imgUrl = products[0].largeImage || products[0].image || products[0].thumbnailImage;
+          const imgUrl =
+            products[0].largeImage ||
+            products[0].image ||
+            products[0].thumbnailImage;
           categoryMap[categoryId].image = imgUrl;
         }
-        
+
         // Add delay to avoid rate limiting
         await new Promise((resolve) => setTimeout(resolve, 300));
       } catch (imgError) {
@@ -127,7 +130,6 @@ async function getAllCategoriesForSponsor(sponsorID) {
   return catalogRows.map((row) => ({
     ...row,
     name: categoryMap[row.CategoryID]?.name || null,
-    img: categoryMap[row.CategoryID]?.image || null,
   }));
 }
 
@@ -201,7 +203,6 @@ router.get("/getAllCategories", async (req, res) => {
       categoryId: row.CategoryID,
       active: Boolean(row.Active),
       name: row.name,
-      img: row.img,
     }));
     res.json({ sponsorID, categories: normalized });
   } catch (err) {

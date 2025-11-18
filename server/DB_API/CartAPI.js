@@ -95,6 +95,61 @@ async function getCartsFromItems(data){
     }
 }
 
+// ===== NEW LAYER 1 FUNCTIONS =====
+// Remove a single product from a driver's cart by MappingID
+async function removeProductFromCart(mappingID, driverID) {
+    try {
+        console.log(`Removing item ${mappingID} from cart for DriverID: ${driverID}`);
+
+        // Validate inputs
+        if (!Number.isFinite(mappingID) || mappingID <= 0) {
+            const err = new Error("MappingID must be a positive number");
+            err.status = 400;
+            throw err;
+        }
+
+        if (!Number.isFinite(driverID) || driverID <= 0) {
+            const err = new Error("DriverID must be a positive number");
+            err.status = 400;
+            throw err;
+        }
+
+        // Verify the item belongs to this driver before deleting
+        const verifyQuery = `
+            SELECT MappingID FROM CART_MAPPINGS
+            WHERE MappingID = ? AND DriverID = ?
+            LIMIT 1
+        `;
+
+        const verification = await db.executeQuery(verifyQuery, [mappingID, driverID]);
+
+        if (verification.length === 0) {
+            const err = new Error("Cart item not found or does not belong to this driver");
+            err.status = 404;
+            throw err;
+        }
+
+        // Delete from CART_MAPPINGS
+        const deleteQuery = `
+            DELETE FROM CART_MAPPINGS
+            WHERE MappingID = ? AND DriverID = ?
+        `;
+
+        const result = await db.executeQuery(deleteQuery, [mappingID, driverID]);
+
+        console.log(`Successfully removed item ${mappingID} from cart`);
+
+        return {
+            success: true,
+            mappingID,
+            message: "Product removed from cart successfully",
+        };
+    } catch (error) {
+        console.error("Failed to remove product from cart:", error);
+        throw error;
+    }
+}
+
 
 var express = require("express");
 var router=express.Router();
@@ -142,5 +197,49 @@ router.get("/getItemMappings", async function(req, res, next) {
     }
 });
 
+// ===== NEW LAYER 2 ROUTES =====
+// DELETE /cartAPI/deleteCartItems - alias for removeCartItems (expected by frontend)
+router.delete("/deleteCartItems", async (req, res, next) => {
+    try {
+        await removeAllCartItems(req.query);
+        res.status(200).json({ message: 'Cart items removed successfully!'});
+    } catch(error) {
+        res.status(500).send('Unknown error in deletion process.');
+    }
+});
+
+// DELETE /cartAPI/removeFromCart - remove single item by MappingID
+router.delete("/removeFromCart", async (req, res, next) => {
+    const data = req.body || {};
+    const mappingID = Number(data.MappingID || data.mappingID);
+    const driverID = Number(data.DriverID || data.driverID);
+
+    console.log("Received DELETE /removeFromCart request:", { mappingID, driverID });
+
+    // Validate inputs
+    if (!Number.isFinite(mappingID) || mappingID <= 0) {
+        console.error("Invalid MappingID provided:", mappingID);
+        return res.status(400).json({
+            message: "MappingID is required and must be a positive number",
+        });
+    }
+
+    if (!Number.isFinite(driverID) || driverID <= 0) {
+        console.error("Invalid DriverID provided:", driverID);
+        return res.status(400).json({
+            message: "DriverID is required and must be a positive number",
+        });
+    }
+
+    try {
+        const result = await removeProductFromCart(mappingID, driverID);
+        res.json(result);
+    } catch (error) {
+        console.error("Error removing product from cart:", error);
+        res.status(error.status || 500).json({
+            message: error.message || "Failed to remove product from cart",
+        });
+    }
+});
 
 module.exports={router};
