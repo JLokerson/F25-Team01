@@ -278,23 +278,19 @@ export default function DriverProfile() {
                 console.log('ServerCall helper error:', serverCallError.message);
             }
 
-            /* no idea what these are, julia said okay to remove.
             setTestResults({
                 success: testResults.some(r => r.success),
                 testResults: testResults,
                 timestamp: new Date().toISOString()
             });
-            */
 
         } catch (error) {
             console.error('Test error:', error);
-            /*
             setTestResults({
                 success: false,
                 error: error.message,
                 timestamp: new Date().toISOString()
             });
-            */
         }
     };
 
