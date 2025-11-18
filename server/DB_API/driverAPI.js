@@ -44,16 +44,25 @@ async function getAllDrivers() {
 
 async function getSpecificDriverSponsors(data) {
   try {
-    console.log("Reading info for chosen driver");
+    console.log("Reading info for chosen driver with data:", data);
 
+    // Filter by UserID if provided
+    if (data.UserID) {
+      const query =
+        "SELECT DRIVER.DriverID, DRIVER.SponsorID, DRIVER.UserID, USER.FirstName, USER.LastName, USER.Email FROM DRIVER INNER JOIN USER ON DRIVER.USERID = USER.USERID WHERE DRIVER.UserID = ?";
+      const result = await db.executeQuery(query, [data.UserID]);
+      console.log("Returning driver(s) for UserID:", data.UserID, "Count:", result.length);
+      return result;
+    }
+
+    // If no filter, return all drivers
     const query =
-      "SELECT DRIVER.DriverID, DRIVER.SponsorID, DRIVER.UserID, USER.FirstName, USER.LastName, USER.Email FROM DRIVER \
-                        INNER JOIN USER ON DRIVER.USERID = USER.USERID;";
+      "SELECT DRIVER.DriverID, DRIVER.SponsorID, DRIVER.UserID, USER.FirstName, USER.LastName, USER.Email FROM DRIVER INNER JOIN USER ON DRIVER.USERID = USER.USERID";
     const allDrivers = await db.executeQuery(query);
-    console.log("Returning %s Drivers", allDrivers.length);
+    console.log("Returning all %s Drivers", allDrivers.length);
     return allDrivers;
   } catch (error) {
-    console.error("Failed to get all drivers: ", error);
+    console.error("Failed to get drivers: ", error);
     throw error;
   }
 }

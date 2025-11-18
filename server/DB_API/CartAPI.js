@@ -188,7 +188,7 @@ router.get("/getCartItems", async (req, res, next) => {
 });
 
 router.post("/addCartItem", async (req, res, next) => {
-  const data = req.query;
+  const data = req.body;
   console.log("Received POST data for new cart item: ", data);
   try {
     const result = await addToCart(data);

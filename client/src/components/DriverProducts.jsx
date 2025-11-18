@@ -244,12 +244,27 @@ export default function DriverProducts() {
    */
   const addToCart = async (product) => {
     try {
-      // Get DriverID for this user
-      const driverID = await getDriverIdForUser(user.UserID);
+      if (!user) {
+        alert("Please log in to add items to your cart.");
+        return;
+      }
+
+      // Get DriverID for this user (handle both UserID and ID properties)
+      const userID = user.UserID || user.ID || user.id;
+      if (!userID) {
+        alert("Unable to find your user ID. Please log in again.");
+        return;
+      }
+
+      const driverID = await getDriverIdForUser(userID);
       if (!driverID) {
         alert("Unable to find your driver record. Please log in again.");
         return;
       }
+
+      console.log(
+        `Adding product ${product.sku} to cart for driver ${driverID}`
+      );
 
       // Call the backend endpoint to add to cart
       const url = withApiBase("/cartAPI/addCartItem");

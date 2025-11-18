@@ -53,7 +53,7 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/recover" element={<Recover />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/products" element={<DriverCatalogCart />} />
+        <Route path="/products" element={<DriverProducts />} />
         <Route path="/driver-catalog-cart" element={<DriverCatalogCart />} />
         <Route path="/testing" element={<Testing />} />
         {/* <Route path="/OrderConfirmation" element={<OrderConfirmation/>}/> */}
