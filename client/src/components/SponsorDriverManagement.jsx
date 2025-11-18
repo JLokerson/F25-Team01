@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import SponsorNavbar from './SponsorNavbar';
 import { GenerateSalt } from './MiscellaneousParts/HashPass'; // <-- Import GenerateSalt
+import { updateDriverPoints } from "./MiscellaneousParts/ServerCall";
+//missing: getAllSponsorUsers, getAllDrivers, getAllSponsorUsers, addDriver, updateDriver, toggleDriverActivity/${driverID}, debugAllUsers
 
 export default function SponsorDriverManagement() {
     const [drivers, setDrivers] = useState([]);
@@ -10,6 +12,10 @@ export default function SponsorDriverManagement() {
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingDriver, setEditingDriver] = useState(null);
+    const [showManagePointsModal, setShowManagePointsModal] = useState(false);
+    const [managingDriver, setManagingDriver] = useState(null);
+    const [pointsAdjustment, setPointsAdjustment] = useState(0);
+    
     const [newDriver, setNewDriver] = useState({
         FirstName: '',
         LastName: '',
@@ -258,6 +264,46 @@ export default function SponsorDriverManagement() {
         }
     };
 
+    // Function for points management
+    const handleManagePointsClick = (driver) => {
+        setManagingDriver(driver);
+        console.log(driver);
+        setPointsAdjustment(0); // Reset the input field
+        setShowManagePointsModal(true);
+    };
+
+    // Function to update points 
+    const handleUpdatePoints = async (e) => {
+        e.preventDefault();
+        if (!managingDriver || pointsAdjustment === 0) {
+             alert('Please enter a non-zero number of points to adjust.');
+             return;
+        }
+
+        try {
+            console.log('Sending point adjustment:', [managingDriver.DriverID, pointsAdjustment, managingDriver.SponsorID]);
+
+            const response = await updateDriverPoints(managingDriver.DriverID, pointsAdjustment, managingDriver.SponsorID);
+
+            if (response.ok) {
+                alert(`Points adjusted successfully! (${pointsAdjustment})`);
+                fetchDriversForSponsor(sponsorInfo.SponsorID); 
+            } else {
+                alert('Error adjusting points');
+            }
+
+            setShowManagePointsModal(false);
+            setManagingDriver(null);
+            setPointsAdjustment(0);
+            fetchDriversForSponsor(sponsorInfo.SponsorID); 
+            
+        } catch (error) {
+            console.error('Error adjusting points:', error);
+            alert('Error adjusting points');
+        }
+    };
+
+
     const handleRemoveDriver = async (driverID, driverName, isActive) => {
         const action = isActive ? 'deactivate' : 'reactivate';
         if (!window.confirm(`Are you sure you want to ${action} ${driverName} from the program? This will ${isActive ? 'disable' : 'enable'} their access.`)) {
@@ -407,6 +453,7 @@ export default function SponsorDriverManagement() {
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>User ID</th>
+                                    <th>Points</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -421,6 +468,7 @@ export default function SponsorDriverManagement() {
                                         </td>
                                         <td>{driver.Email}</td>
                                         <td>{driver.UserID}</td>
+                                        <td>{driver.Points}</td>
                                         <td>
                                             <button 
                                                 className="btn btn-sm btn-outline-primary me-2"
@@ -428,6 +476,13 @@ export default function SponsorDriverManagement() {
                                             >
                                                 <i className="fas fa-edit me-1"></i>
                                                 Edit
+                                            </button>
+                                            <button 
+                                                className="btn btn-sm btn-outline-info me-2" // Changed to a distinct color
+                                                onClick={() => handleManagePointsClick(driver)}
+                                            >
+                                                <i className="fas fa-coins me-1"></i>
+                                                Points
                                             </button>
                                             {driver.DriverID && (
                                                 <button 
@@ -572,6 +627,48 @@ export default function SponsorDriverManagement() {
                                         </button>
                                         <button type="submit" className="btn btn-primary">
                                             Update Driver
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Manage Points Modal */}
+                {showManagePointsModal && managingDriver && (
+                    <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Manage Points for {managingDriver.FirstName} {managingDriver.LastName}</h5>
+                                    <button type="button" className="btn-close" onClick={() => setShowManagePointsModal(false)}></button>
+                                </div>
+                                <form onSubmit={handleUpdatePoints}>
+                                    <div className="modal-body">
+                                        <div className="alert alert-info">
+                                            Current Points: <strong>{managingDriver.Points || 0}</strong>
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-label">Points Adjustment (+/-)</label>
+                                            <input 
+                                                type="number" 
+                                                className="form-control"
+                                                placeholder="e.g., 50 to award, -20 to deduct"
+                                                value={pointsAdjustment}
+                                                onChange={(e) => setPointsAdjustment(parseInt(e.target.value) || 0)}
+                                                required
+                                            />
+                                            <small className="form-text text-muted">Enter a positive number to add points, or a negative number to deduct points.</small>
+                                        </div>
+                                    </div>
+                                    <div className="modal-footer">
+                                        <button type="button" className="btn btn-secondary" onClick={() => setShowManagePointsModal(false)}>
+                                            Cancel
+                                        </button>
+                                        <button type="submit" className="btn btn-info">
+                                            <i className="fas fa-arrow-up me-1"></i>
+                                            Adjust Points
                                         </button>
                                     </div>
                                 </form>
