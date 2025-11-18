@@ -237,6 +237,7 @@ export const getItemMappings = (productId) =>
 export const deleteUserCartItems = (driverId) =>
   apiCall("DELETE", "/cartAPI/deleteCartItems", { DriverID: driverId });
 
+// I made this server call to remove a single item from the cart based on MappingID - Jason
 /**
  * Removes a single item from a driver's cart by MappingID.
  * @param {number} mappingId - The ID of the CART_MAPPINGS entry to remove.
