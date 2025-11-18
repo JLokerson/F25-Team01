@@ -238,6 +238,50 @@ export default function DriverProducts() {
     setProductsError("");
   };
 
+  /**
+   * Add a product to the driver's cart via the backend API
+   * @param {Object} product - The product object with sku property from Best Buy API
+   */
+  const addToCart = async (product) => {
+    try {
+      // Get DriverID for this user
+      const driverID = await getDriverIdForUser(user.UserID);
+      if (!driverID) {
+        alert("Unable to find your driver record. Please log in again.");
+        return;
+      }
+
+      // Call the backend endpoint to add to cart
+      const url = withApiBase("/cartAPI/addCartItem");
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          DriverID: driverID,
+          ProductID: product.sku, // Best Buy API uses string SKUs
+        }),
+      });
+
+      if (!response.ok) {
+        const errorMsg = await parseError(
+          response,
+          "Failed to add item to cart."
+        );
+        alert(errorMsg);
+        return;
+      }
+
+      const result = await response.json();
+      console.log("Item added to cart:", result);
+      alert(`"${product.name}" added to cart!`);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Error adding item to cart. Please try again.");
+    }
+  };
+
   // Pagination calculations for categories
   const totalCategoryPages = Math.ceil(categories.length / CATEGORIES_PER_PAGE);
   const categoryStartIdx = (currentCategoryPage - 1) * CATEGORIES_PER_PAGE;
@@ -310,7 +354,9 @@ export default function DriverProducts() {
                     />
                   </div>
                   <div className="driver-products__card-content">
-                    <h3>{category.name}</h3>
+                    <h3>
+                      {category.name || `Category ${category.categoryId}`}
+                    </h3>
                   </div>
                 </div>
               ))}
@@ -410,7 +456,10 @@ export default function DriverProducts() {
                           <div className="driver-products__product-price">
                             ${(product.salePrice || 0).toFixed(2)}
                           </div>
-                          <button className="btn btn-sm btn-primary driver-products__cart-btn">
+                          <button
+                            className="btn btn-sm btn-primary driver-products__cart-btn"
+                            onClick={() => addToCart(product)}
+                          >
                             Add to Cart
                           </button>
                         </div>
