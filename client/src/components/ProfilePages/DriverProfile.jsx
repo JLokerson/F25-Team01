@@ -441,10 +441,16 @@ export default function DriverProfile() {
                     </li>
                     <li className="nav-item">
                         <button
-                            className={`nav-link ${activeTab === 'points' ? 'active' : ''}`}
+                            className={`nav-link ${activeTab === 'points' ? 'active' : ''} position-relative`}
                             onClick={() => setActiveTab('points')}
                         >
                             Points History
+                            {pointsHistory.length > 0 && (
+                                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {pointsHistory.length}
+                                    <span className="visually-hidden">points history records</span>
+                                </span>
+                            )}
                         </button>
                     </li>
                     <li className="nav-item">
