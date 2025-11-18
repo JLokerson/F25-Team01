@@ -1,7 +1,11 @@
-//This file is for admin related database api calls.
+//This file is for order related database api calls.
 const db = require('./db'); //shared database connection pool
 const user = require('./userAPI');
+const express = require('express');
+const router = express.Router();
 
+// Ensure JSON payloads are parsed for all routes mounted here
+router.use(express.json());
 
 // Add order
 async function AddOrder(data){
@@ -28,7 +32,7 @@ async function AddOrder(data){
 
 
 // Update order state
-async function UpdateOrderState(){
+async function UpdateOrderState(data){
     if (!data.OrderID || !data.NewStatus) {
         throw new Error("Order Update Input Params Missing");
     }
@@ -111,3 +115,5 @@ router.post("/updateOrderStatus", async (req, res, next) => {
         res.status(500).send('Error updating order.');
     }
 });
+
+module.exports = {router};
