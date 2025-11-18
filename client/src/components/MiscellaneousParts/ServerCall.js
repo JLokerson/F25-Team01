@@ -1,6 +1,6 @@
 // The base URL for your API endpoint.
-const API_BASE_URL = "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws";
-const LOCALHOST_BASE_URL = "http://localhost:3001"; // backup localhost URL
+const API_BASE_URL =
+  "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws";
 //const API_BASE_URL = "http://localhost:4000"; // swap for localhost testing
 
 /**
@@ -119,17 +119,20 @@ export const getAllAdmins = () => apiCall("GET", "/adminAPI/getAllAdmins");
  * Note: Corrected path from '/userAPI/addUser' to '/adminAPI/addAdmin' based on API structure.
  * @param {Object} adminData - The admin user data.
  */
-export const addAdmin = (adminData) => apiCall('POST', '/adminAPI/addAdmin', adminData);
+export const addAdmin = (adminData) =>
+  apiCall("POST", "/adminAPI/addAdmin", adminData);
 
 /**
  * Fetches all driver applications from all sponsor organizations.
  */
-export const getAllApplications = () => apiCall('GET', '/adminAPI/getAllApplications');
+export const getAllApplications = () =>
+  apiCall("GET", "/adminAPI/getAllApplications");
 
 /**
  * Fetches all audit records.
  */
-export const getAllAuditRecords = () => apiCall('GET', '/adminAPI/getAuditRecords');
+export const getAllAuditRecords = () =>
+  apiCall("GET", "/adminAPI/getAuditRecords");
 
 /**
  * Updates an application status (approve/deny).
@@ -139,8 +142,8 @@ export const getAllAuditRecords = () => apiCall('GET', '/adminAPI/getAuditRecord
  * @param {string} applicationData.processedBy - The admin who processed the application.
  * @param {string} [applicationData.denialReason] - The reason for denial (if denied).
  */
-export const updateApplicationStatus = (applicationData) => apiCall('POST', '/adminAPI/updateApplicationStatus', applicationData);
-
+export const updateApplicationStatus = (applicationData) =>
+  apiCall("POST", "/adminAPI/updateApplicationStatus", applicationData);
 
 // --- Driver API Calls ---
 
@@ -352,33 +355,37 @@ export const getItemMappings = (productId) =>
  * Deletes all cart items for a specific user/driver.
  * @param {string|number} driverId - The ID of the driver whose cart should be cleared.
  */
-export const deleteUserCartItems = (driverId) => apiCall('DELETE', '/cartAPI/deleteCartItems', { DriverID: driverId });
+export const deleteUserCartItems = (driverId) =>
+  apiCall("DELETE", "/cartAPI/deleteCartItems", { DriverID: driverId });
 
 // --- Application API Calls ---
 
 /**
  * Fetches all applications.
  */
-export const fetchAllApplicationsData = () => apiCall('GET', '/applicationAPI/getAllApplications');
+export const fetchAllApplicationsData = () =>
+  apiCall("GET", "/applicationAPI/getAllApplications");
 
 /**
  * Fetches applications for a specific sponsor.
  * @param {string|number} sponsorId - The ID of the sponsor.
  */
-export const fetchApplicationsBySponsorData = (sponsorId) => apiCall('GET', `/applicationAPI/getApplicationsBySponsor/${sponsorId}`);
+export const fetchApplicationsBySponsorData = (sponsorId) =>
+  apiCall("GET", `/applicationAPI/getApplicationsBySponsor/${sponsorId}`);
 
 /**
  * Updates an application status.
  * @param {Object} applicationData - The application update data.
  */
-export const updateApplicationStatusData = (applicationData) => apiCall('POST', '/applicationAPI/updateApplicationStatus', applicationData);
+export const updateApplicationStatusData = (applicationData) =>
+  apiCall("POST", "/applicationAPI/updateApplicationStatus", applicationData);
 
 /**
  * Creates a new application.
  * @param {Object} applicationData - The application data.
  */
-export const createApplicationData = (applicationData) => apiCall('POST', '/applicationAPI/createApplication', applicationData);
-
+export const createApplicationData = (applicationData) =>
+  apiCall("POST", "/applicationAPI/createApplication", applicationData);
 
 // --- Catalog API Calls ---
 
@@ -400,7 +407,7 @@ export const addCategory = (sponsorID, categoryID) =>
     CategoryID: categoryID,
   });
 
-  /**
+/**
  * Updates category to active/inactive.
  * @param {int} SponsorID - ID for catalogs sponsors.
  * @param {string} CategoryID - Key for Best Buy API category type.

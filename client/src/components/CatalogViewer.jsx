@@ -1,3 +1,6 @@
+// I don't think we need this file anymore since we have server-side catalog management now.
+
+/*
 import React, { useState, useEffect } from 'react';
 import sponsor1Static from '../content/json-assets/sponsor1_catalog.json';
 import sponsor2Static from '../content/json-assets/sponsor2_catalog.json';
@@ -113,3 +116,4 @@ export default function CatalogViewer(){
         </div>
     );
 }
+*/
