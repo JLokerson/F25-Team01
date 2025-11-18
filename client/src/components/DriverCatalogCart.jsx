@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import DriverNavbar from './DriverNavbar';
-import DriverProducts from './DriverProducts';
-import DriverCart from './DriverCart';
+import React, { useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import DriverNavbar from "./DriverNavbar";
+import DriverProducts from "./DriverProducts";
+import DriverCart from "./DriverCart";
 
 /**
- * Two-tab interface combining DriverProducts (Catalog) and DriverCart
+ * Two-tab interface combining DriverProducts.jsx (Catalog) and DriverCart.jsx (Cart)
  * Tab 1: Browse catalog and add items
  * Tab 2: View cart and manage items
  */
 export default function DriverCatalogCart() {
-  const [activeTab, setActiveTab] = useState('catalog'); // 'catalog' or 'cart'
+  const [activeTab, setActiveTab] = useState("catalog"); // 'catalog' or 'cart'
 
   return (
     <div>
@@ -20,26 +20,26 @@ export default function DriverCatalogCart() {
         <ul className="nav nav-tabs mb-4" role="tablist">
           <li className="nav-item" role="presentation">
             <button
-              className={`nav-link ${activeTab === 'catalog' ? 'active' : ''}`}
+              className={`nav-link ${activeTab === "catalog" ? "active" : ""}`}
               id="catalog-tab"
-              onClick={() => setActiveTab('catalog')}
+              onClick={() => setActiveTab("catalog")}
               type="button"
               role="tab"
               aria-controls="catalog-content"
-              aria-selected={activeTab === 'catalog'}
+              aria-selected={activeTab === "catalog"}
             >
               📦 Catalog
             </button>
           </li>
           <li className="nav-item" role="presentation">
             <button
-              className={`nav-link ${activeTab === 'cart' ? 'active' : ''}`}
+              className={`nav-link ${activeTab === "cart" ? "active" : ""}`}
               id="cart-tab"
-              onClick={() => setActiveTab('cart')}
+              onClick={() => setActiveTab("cart")}
               type="button"
               role="tab"
               aria-controls="cart-content"
-              aria-selected={activeTab === 'cart'}
+              aria-selected={activeTab === "cart"}
             >
               🛒 Cart
             </button>
@@ -50,7 +50,9 @@ export default function DriverCatalogCart() {
         <div className="tab-content">
           {/* Catalog Tab */}
           <div
-            className={`tab-pane fade ${activeTab === 'catalog' ? 'show active' : ''}`}
+            className={`tab-pane fade ${
+              activeTab === "catalog" ? "show active" : ""
+            }`}
             id="catalog-content"
             role="tabpanel"
             aria-labelledby="catalog-tab"
@@ -60,7 +62,9 @@ export default function DriverCatalogCart() {
 
           {/* Cart Tab */}
           <div
-            className={`tab-pane fade ${activeTab === 'cart' ? 'show active' : ''}`}
+            className={`tab-pane fade ${
+              activeTab === "cart" ? "show active" : ""
+            }`}
             id="cart-content"
             role="tabpanel"
             aria-labelledby="cart-tab"
