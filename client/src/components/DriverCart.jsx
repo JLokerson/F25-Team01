@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import DriverNavbar from './DriverNavbar';
 import driversSeed from '../content/json-assets/driver_sample.json';
 import { CookiesProvider, useCookies } from 'react-cookie';
+import { getCartItems, removeCartItem, deleteUserCartItems } from './MiscellaneousParts/ServerCall';
 
 export default function DriverCart() {
     let navigate = useNavigate();
@@ -22,61 +23,47 @@ export default function DriverCart() {
     const impostorType = localStorage.getItem('impostorType');
     const isAdminImpostorAsDriver = impostorMode && impostorType === 'driver';
 
-    // Cart is stored as an array of ITEM_IDs
+    // Cart is now stored as an array of objects with { MappingID, DriverID, ProductID }
     const [cart, setCart] = useState([]);
     const [productsMap, setProductsMap] = useState({});
 
-    // Not sure how to tie this into the existing setup, try this for now though:
-    async function GetCartFromDB(){
+    // Fetch cart items from backend
+    async function GetCartFromDB() {
         try {
-        const response = await fetch(`http://localhost:4000/userAPI/updatePassword?DriverID=${cookies.MyDriverID}`, {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
+            const driverId = user?.DriverID || cookies.MyDriverID;
+            if (!driverId) {
+                setMessage("No driver ID found. Please log in as a driver.");
+                setMessageType("error");
+                return;
             }
-        });
 
-        console.log('Request URL:', `http://localhost:4000/userAPI/updatePassword?DriverID=${cookies.MyDriverID}`);
+            const response = await getCartItems(driverId);
+            const data = await response.json();
 
-        // Debug: Log the response status and text
-        console.log('Response status:', response.status);
-        const responseText = await response.text();
-        console.log('Response text:', responseText);
+            if (!response.ok) {
+                setMessage(data.message || "Failed to fetch cart from server.");
+                setMessageType("error");
+                return;
+            }
 
-        // Try to parse as JSON only if we got a response
-        let data;
-        try {
-            data = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error('Failed to parse JSON:', parseError);
-            console.error('Raw response:', responseText);
-            setMessage("Server error. Check console for details.");
-            setMessageType("error");
-            return;
-        }
+            // Cart items from backend: { MappingID, DriverID, ProductID }
+            setCart(data.items || []);
+            setMessage("Cart loaded from server!");
+            setMessageType("success");
 
-        if (!response.ok) {
-            setMessage(data.message || "Cart fetch failed. Please check your credentials.");
-            setMessageType("error");
-            return;
-        }
-        
-        // Store user info TODO: MAKE THIS USE COOKIES
-        console.log('Cart fetch successful.');
-        setMessage("Cart fetched successfully!");
-        setMessageType("success");
-        
+            console.log('Cart loaded from backend:', data.items);
         } catch (error) {
-        console.error('Unknown error:', error);
-        setMessage("Network error. Please try again.");
-        setMessageType("error");
+            console.error('Error fetching cart from backend:', error);
+            setMessage("Network error. Please try again.");
+            setMessageType("error");
         }
     }
 
     useEffect(() => {
-        const raw = localStorage.getItem('cart') || '[]';
-        try { setCart(JSON.parse(raw)); } catch(e) { setCart([]); }
+        // Fetch cart from backend on component mount
+        GetCartFromDB();
 
+        // Also load products map from localStorage for display info
         const prodRaw = localStorage.getItem('products') || '[]';
         try {
             const prods = JSON.parse(prodRaw);
@@ -84,66 +71,74 @@ export default function DriverCart() {
             prods.forEach(p => map[p.ITEM_ID] = p);
             setProductsMap(map);
         } catch(e) { setProductsMap({}); }
-    }, []);
+    }, [cookies.MyDriverID]);
 
-    const remove = (itemId) => {
-        // call the global helper created in Products.jsx
-        if (window.__app_removeFromCart) {
-            window.__app_removeFromCart(itemId);
+    const remove = async (mappingId, productId) => {
+        try {
+            const driverId = user?.DriverID || cookies.MyDriverID;
+            if (!driverId) {
+                setMessage("No driver ID found.");
+                setMessageType("error");
+                return;
+            }
+
+            // Call backend to remove item
+            const result = await removeCartItem(mappingId, driverId);
+            
+            if (result.success) {
+                // Update local cart state by removing the item with this MappingID
+                setCart(prev => prev.filter(item => item.MappingID !== mappingId));
+                
+                // Update products map stock
+                setProductsMap(prev => {
+                    const updated = { ...prev };
+                    if (updated[productId]) {
+                        updated[productId] = {
+                            ...updated[productId],
+                            ITEM_STOCK: (updated[productId].ITEM_STOCK ?? 0) + 1
+                        };
+                    }
+                    return updated;
+                });
+
+                setMessage(`Item removed from cart`);
+                setMessageType("success");
+            }
+        } catch (error) {
+            console.error('Error removing item from cart:', error);
+            setMessage("Failed to remove item from cart.");
+            setMessageType("error");
         }
-        // update local cart view
-        setCart(prev => {
-            const next = [...prev];
-            const idx = next.indexOf(itemId);
-            if (idx !== -1) next.splice(idx, 1);
-            localStorage.setItem('cart', JSON.stringify(next));
-            return next;
-        });
-        // update local products map for UI
-        setProductsMap(prev => {
-            const p = prev[itemId];
-            if (!p) return prev;
-            const updated = { ...prev, [itemId]: { ...p, ITEM_STOCK: (p.ITEM_STOCK ?? 0) + 1 } };
-            return updated;
-        });
     };
 
-    async function RemoveAllCartItems(){
+    async function RemoveAllCartItems() {
         try {
-        const response = await fetch(`http://localhost:4000/userAPI/updatePassword?UserID=${user?.UserID}`, {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
+            const driverId = user?.DriverID || cookies.MyDriverID;
+            if (!driverId) {
+                setMessage("No driver ID found.");
+                setMessageType("error");
+                return;
             }
-        });
 
-        console.log('Request URL:', `http://localhost:4000/userAPI/updatePassword?UserID=${user?.UserID}`);
+            const response = await deleteUserCartItems(driverId);
+            const data = await response.json();
 
-        // Debug: Log the response status and text
-        console.log('Response status:', response.status);
-        const responseText = await response.text();
-        console.log('Response text:', responseText);
+            if (!response.ok) {
+                setMessage(data.message || "Failed to clear cart.");
+                setMessageType("error");
+                return;
+            }
 
-        // Try to parse as JSON only if we got a response
-        let data;
-        try {
-            data = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error('Failed to parse JSON:', parseError);
-            console.error('Raw response:', responseText);
-            return;
-        }
+            // Clear local cart state
+            setCart([]);
+            setMessage("Cart cleared successfully!");
+            setMessageType("success");
 
-        if (!response.ok) {
-            console.error('Cart item removal failed');
-            return;
-        }
-        
-        // Store user info TODO: MAKE THIS USE COOKIES
-        console.log('Password change successful.');
-
+            console.log('Cart cleared from backend');
         } catch (error) {
-        console.error('Unknown error:', error);
+            console.error('Error clearing cart:', error);
+            setMessage("Failed to clear cart. Please try again.");
+            setMessageType("error");
         }
     }
 
@@ -293,17 +288,20 @@ export default function DriverCart() {
                             <p>Your cart is empty.</p>
                         ) : (
                             <div className="list-group mb-3">
-                                {cart.map(id => productsMap[id]).filter(Boolean).map(item => (
-                                    <div key={item.ITEM_ID} className="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <div><strong>{item.ITEM_NAME}</strong></div>
-                                            <div className="text-muted small">Price: ${item.ITEM_PRICE} • Stock: {item.ITEM_STOCK}</div>
+                                {cart.map(cartItem => {
+                                    const product = productsMap[cartItem.ProductID];
+                                    return (
+                                        <div key={cartItem.MappingID} className="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div><strong>{product?.ITEM_NAME || 'Unknown Item'}</strong></div>
+                                                <div className="text-muted small">Price: ${product?.ITEM_PRICE || 'N/A'} • Stock: {product?.ITEM_STOCK ?? 0}</div>
+                                            </div>
+                                            <div>
+                                                <button className="btn btn-sm btn-danger me-2" onClick={() => remove(cartItem.MappingID, cartItem.ProductID)}>Remove</button>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <button className="btn btn-sm btn-danger me-2" onClick={() => remove(item.ITEM_ID)}>Remove</button>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                         <div className="d-flex">
