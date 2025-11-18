@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import "./DriverProducts.css";
-
+import DriverNavbar from "./DriverNavbar";
 
 const CATEGORY_PLACEHOLDER =
   "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Best_Buy_Logo.svg/640px-Best_Buy_Logo.svg.png";
@@ -245,205 +245,208 @@ export default function DriverProducts() {
   const paginatedProducts = products.slice(productStartIdx, productEndIdx);
 
   return (
-    <div className="driver-products">
-      <div className="driver-products__header">
-        <h1>Product Catalog</h1>
-        {user && (
-          <p className="text-muted">
-            Welcome, <strong>{user.FirstName}</strong>! Browse products from your sponsor.
-          </p>
-        )}
-      </div>
-
-      {/* Categories Grid */}
-      <section className="driver-products__categories">
-        <div className="driver-products__section-title">
-          <h2>Categories</h2>
-          {categoriesLoading && (
-            <span className="text-muted">Loading categories...</span>
+    <div>
+      <DriverNavbar />
+      <div className="driver-products">
+        <div className="driver-products__header">
+          <h1>Product Catalog</h1>
+          {user && (
+            <p className="text-muted">
+              Welcome, <strong>{user.FirstName}</strong>! Browse products from your sponsor.
+            </p>
           )}
         </div>
 
-        {categoriesError && (
-          <div className="alert alert-danger">
-            <strong>Error:</strong> {categoriesError}
-          </div>
-        )}
-
-        {!categoriesLoading && categories.length === 0 && (
-          <div className="alert alert-info">
-            No categories available. Your sponsor hasn't added any yet.
-          </div>
-        )}
-
-        {!categoriesLoading && categories.length > 0 && (
-          <>
-            <div className="driver-products__grid driver-products__grid--4col">
-              {paginatedCategories.map((category) => (
-                <div
-                  key={category.categoryId}
-                  className="driver-products__category-card"
-                  onClick={() => handleCategoryClick(category)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleCategoryClick(category);
-                  }}
-                >
-                  <div className="driver-products__card-image">
-                    <img
-                      src={category.image || CATEGORY_PLACEHOLDER}
-                      alt={category.name || category.categoryId}
-                      onError={(e) => {
-                        e.target.src = CATEGORY_PLACEHOLDER;
-                      }}
-                    />
-                  </div>
-                  <div className="driver-products__card-content">
-                    <h3>
-                      {category.name || `Category ${category.categoryId}`}
-                    </h3>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Category Pagination */}
-            {totalCategoryPages > 1 && (
-              <nav className="driver-products__pagination">
-                <button
-                  onClick={() =>
-                    setCurrentCategoryPage((p) => Math.max(1, p - 1))
-                  }
-                  disabled={currentCategoryPage === 1}
-                  className="btn btn-sm btn-outline-secondary"
-                >
-                  ← Previous
-                </button>
-                <span className="driver-products__pagination-info">
-                  Page {currentCategoryPage} of {totalCategoryPages}
-                </span>
-                <button
-                  onClick={() =>
-                    setCurrentCategoryPage((p) =>
-                      Math.min(totalCategoryPages, p + 1)
-                    )
-                  }
-                  disabled={currentCategoryPage === totalCategoryPages}
-                  className="btn btn-sm btn-outline-secondary"
-                >
-                  Next →
-                </button>
-              </nav>
+        {/* Categories Grid */}
+        <section className="driver-products__categories">
+          <div className="driver-products__section-title">
+            <h2>Categories</h2>
+            {categoriesLoading && (
+              <span className="text-muted">Loading categories...</span>
             )}
-          </>
-        )}
-      </section>
+          </div>
 
-      {/* Product Modal */}
-      {selectedCategory && (
-        <div className="driver-products__modal-overlay" onClick={closeModal}>
-          <div
-            className="driver-products__modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="driver-products__modal-header">
-              <h2>{selectedCategory.name || selectedCategory.categoryId}</h2>
-              <button
-                className="driver-products__modal-close"
-                onClick={closeModal}
-                aria-label="Close modal"
-              >
-                ✕
-              </button>
+          {categoriesError && (
+            <div className="alert alert-danger">
+              <strong>Error:</strong> {categoriesError}
             </div>
+          )}
 
-            <div className="driver-products__modal-content">
-              {productsLoading && (
-                <div className="alert alert-info">Loading products…</div>
+          {!categoriesLoading && categories.length === 0 && (
+            <div className="alert alert-info">
+              No categories available. Your sponsor hasn't added any yet.
+            </div>
+          )}
+
+          {!categoriesLoading && categories.length > 0 && (
+            <>
+              <div className="driver-products__grid driver-products__grid--4col">
+                {paginatedCategories.map((category) => (
+                  <div
+                    key={category.categoryId}
+                    className="driver-products__category-card"
+                    onClick={() => handleCategoryClick(category)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleCategoryClick(category);
+                    }}
+                  >
+                    <div className="driver-products__card-image">
+                      <img
+                        src={category.image || CATEGORY_PLACEHOLDER}
+                        alt={category.name || category.categoryId}
+                        onError={(e) => {
+                          e.target.src = CATEGORY_PLACEHOLDER;
+                        }}
+                      />
+                    </div>
+                    <div className="driver-products__card-content">
+                      <h3>
+                        {category.name || `Category ${category.categoryId}`}
+                      </h3>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Category Pagination */}
+              {totalCategoryPages > 1 && (
+                <nav className="driver-products__pagination">
+                  <button
+                    onClick={() =>
+                      setCurrentCategoryPage((p) => Math.max(1, p - 1))
+                    }
+                    disabled={currentCategoryPage === 1}
+                    className="btn btn-sm btn-outline-secondary"
+                  >
+                    ← Previous
+                  </button>
+                  <span className="driver-products__pagination-info">
+                    Page {currentCategoryPage} of {totalCategoryPages}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setCurrentCategoryPage((p) =>
+                        Math.min(totalCategoryPages, p + 1)
+                      )
+                    }
+                    disabled={currentCategoryPage === totalCategoryPages}
+                    className="btn btn-sm btn-outline-secondary"
+                  >
+                    Next →
+                  </button>
+                </nav>
               )}
+            </>
+          )}
+        </section>
 
-              {productsError && (
-                <div className="alert alert-warning">
-                  <strong>Warning:</strong> {productsError}
+        {/* Product Modal */}
+        {selectedCategory && (
+          <div className="driver-products__modal-overlay" onClick={closeModal}>
+            <div
+              className="driver-products__modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="driver-products__modal-header">
+                <h2>{selectedCategory.name || selectedCategory.categoryId}</h2>
+                <button
+                  className="driver-products__modal-close"
+                  onClick={closeModal}
+                  aria-label="Close modal"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="driver-products__modal-content">
+                {productsLoading && (
+                  <div className="alert alert-info">Loading products…</div>
+                )}
+
+                {productsError && (
+                  <div className="alert alert-warning">
+                    <strong>Warning:</strong> {productsError}
+                    <div className="driver-products__error-card">
+                      <div className="driver-products__error-icon">⚠️</div>
+                      <p>No products available for this category</p>
+                    </div>
+                  </div>
+                )}
+
+                {!productsLoading && products.length === 0 && !productsError && (
                   <div className="driver-products__error-card">
                     <div className="driver-products__error-icon">⚠️</div>
                     <p>No products available for this category</p>
                   </div>
-                </div>
-              )}
+                )}
 
-              {!productsLoading && products.length === 0 && !productsError && (
-                <div className="driver-products__error-card">
-                  <div className="driver-products__error-icon">⚠️</div>
-                  <p>No products available for this category</p>
-                </div>
-              )}
-
-              {!productsLoading && paginatedProducts.length > 0 && (
-                <>
-                  <div className="driver-products__grid driver-products__grid--4col">
-                    {paginatedProducts.map((product) => (
-                      <div
-                        key={product.sku}
-                        className="driver-products__product-card"
-                      >
-                        <div className="driver-products__product-image">
-                          <img
-                            src={product.image || CATEGORY_PLACEHOLDER}
-                            alt={product.name}
-                            onError={(e) => {
-                              e.target.src = CATEGORY_PLACEHOLDER;
-                            }}
-                          />
-                        </div>
-                        <div className="driver-products__product-content">
-                          <h4>{product.name}</h4>
-                          <div className="driver-products__product-price">
-                            ${(product.salePrice || 0).toFixed(2)}
+                {!productsLoading && paginatedProducts.length > 0 && (
+                  <>
+                    <div className="driver-products__grid driver-products__grid--4col">
+                      {paginatedProducts.map((product) => (
+                        <div
+                          key={product.sku}
+                          className="driver-products__product-card"
+                        >
+                          <div className="driver-products__product-image">
+                            <img
+                              src={product.image || CATEGORY_PLACEHOLDER}
+                              alt={product.name}
+                              onError={(e) => {
+                                e.target.src = CATEGORY_PLACEHOLDER;
+                              }}
+                            />
                           </div>
-                          <button className="btn btn-sm btn-primary driver-products__cart-btn">
-                            Add to Cart
-                          </button>
+                          <div className="driver-products__product-content">
+                            <h4>{product.name}</h4>
+                            <div className="driver-products__product-price">
+                              ${(product.salePrice || 0).toFixed(2)}
+                            </div>
+                            <button className="btn btn-sm btn-primary driver-products__cart-btn">
+                              Add to Cart
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
 
-                  {/* Product Pagination */}
-                  {totalProductPages > 1 && (
-                    <nav className="driver-products__pagination">
-                      <button
-                        onClick={() =>
-                          setCurrentProductPage((p) => Math.max(1, p - 1))
-                        }
-                        disabled={currentProductPage === 1}
-                        className="btn btn-sm btn-outline-secondary"
-                      >
-                        ← Previous
-                      </button>
-                      <span className="driver-products__pagination-info">
-                        Page {currentProductPage} of {totalProductPages}
-                      </span>
-                      <button
-                        onClick={() =>
-                          setCurrentProductPage((p) =>
-                            Math.min(totalProductPages, p + 1)
-                          )
-                        }
-                        disabled={currentProductPage === totalProductPages}
-                        className="btn btn-sm btn-outline-secondary"
-                      >
-                        Next →
-                      </button>
-                    </nav>
-                  )}
-                </>
-              )}
+                    {/* Product Pagination */}
+                    {totalProductPages > 1 && (
+                      <nav className="driver-products__pagination">
+                        <button
+                          onClick={() =>
+                            setCurrentProductPage((p) => Math.max(1, p - 1))
+                          }
+                          disabled={currentProductPage === 1}
+                          className="btn btn-sm btn-outline-secondary"
+                        >
+                          ← Previous
+                        </button>
+                        <span className="driver-products__pagination-info">
+                          Page {currentProductPage} of {totalProductPages}
+                        </span>
+                        <button
+                          onClick={() =>
+                            setCurrentProductPage((p) =>
+                              Math.min(totalProductPages, p + 1)
+                            )
+                          }
+                          disabled={currentProductPage === totalProductPages}
+                          className="btn btn-sm btn-outline-secondary"
+                        >
+                          Next →
+                        </button>
+                      </nav>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
