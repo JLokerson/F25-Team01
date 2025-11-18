@@ -453,4 +453,30 @@ async function toggleAccountActivity(userID) {
     }
 }
 
+router.post("/toggleAccountActivity/:userID", async (req, res, next) => {
+    console.log("--- /toggleAccountActivity route hit ---");
+    console.log("UserID from params:", req.params.userID);
+
+    const userID = req.params.userID;
+
+    if (!userID) {
+        return res.status(400).json({ message: "UserID is required" });
+    }
+
+    try {
+        const result = await toggleAccountActivity(userID);
+        if (result.affectedRows > 0) {
+            res.status(200).json({ 
+                message: "Account activity toggled successfully!",
+                affectedRows: result.affectedRows 
+            });
+        } else {
+            res.status(404).json({ message: "User not found or no changes made." });
+        }
+    } catch (error) {
+        console.error("Toggle account activity error:", error);
+        res.status(500).json({ message: "Error toggling account activity.", error: error.message });
+    }
+});
+
 module.exports={router, addNewUser, toggleAccountActivity};
