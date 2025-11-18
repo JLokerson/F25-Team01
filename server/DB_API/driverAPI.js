@@ -952,6 +952,118 @@ router.get("/getSponsorForDriver", async (req, res, next) => {
   }
 });
 
+/**
+ * Retrieves driver-sponsor mappings for a specific UserID using stored procedure
+ * @param {number} userID - The UserID to get driver-sponsor mappings for
+ * @returns {Promise<Array<Object>>} A promise that resolves with driver-sponsor mapping data
+ */
+async function getDriverSponsorMappings(userID) {
+    try {
+        console.log(`Getting driver-sponsor mappings for UserID: ${userID}`);
+        
+        const query = "CALL GetDriverInfoSpecific(?)";
+        const mappings = await db.executeQuery(query, [userID]);
+        
+        console.log(`Raw stored procedure result:`, JSON.stringify(mappings, null, 2));
+        console.log(`Found ${mappings.length} result sets from stored procedure for UserID ${userID}`);
+        
+        // Log the structure of the first mapping to verify MappingID is included
+        if (mappings.length > 0) {
+            console.log('First result set structure:', Array.isArray(mappings[0]) ? 'Array' : 'Object');
+            if (Array.isArray(mappings[0]) && mappings[0].length > 0) {
+                console.log('First mapping keys:', Object.keys(mappings[0][0]));
+                console.log('First mapping MappingID:', mappings[0][0].MappingID);
+                console.log('First mapping full object:', JSON.stringify(mappings[0][0], null, 2));
+            }
+        }
+        
+        return mappings;
+    } catch (error) {
+        console.error(`Failed to get driver-sponsor mappings for UserID ${userID}:`, error);
+        throw error;
+    }
+}
+
+router.get("/getDriverSponsorMappings/:userID", async (req, res, next) => {
+    const userID = req.params.userID;
+    console.log('Received request for driver-sponsor mappings for UserID:', userID);
+    
+    // Validate userID
+    if (isNaN(userID) || userID <= 0) {
+        console.error('Invalid UserID provided:', userID);
+        return res.status(400).json({ 
+            message: 'Invalid UserID provided',
+            received: userID
+        });
+    }
+    
+    try {
+        const result = await getDriverSponsorMappings(parseInt(userID));
+        res.json(result);
+    } catch (error) {
+        console.error('Error fetching driver-sponsor mappings:', error);
+        res.status(500).json({ 
+            message: 'Database error.',
+            error: error.message 
+        });
+    }
+});
+
+/**
+ * Retrieves points change history for a specific driver-sponsor mapping
+ * @param {number} mappingID - The DriverSponsorMappingID to get history for
+ * @returns {Promise<Array<Object>>} A promise that resolves with points change history
+ */
+async function getPointsHistory(mappingID) {
+    try {
+        console.log(`Getting points history for MappingID: ${mappingID}`);
+        
+        const query = `
+            SELECT 
+                pcl.PointChangeID,
+                pcl.DriverSponsorMappingID,
+                pcl.PointChange,
+                pcl.EventTime
+            FROM POINTCHANGELOG pcl
+            WHERE pcl.DriverSponsorMappingID = ?
+            ORDER BY pcl.EventTime DESC, pcl.PointChangeID DESC
+        `;
+        
+        const pointsHistory = await db.executeQuery(query, [mappingID]);
+        console.log(`Found ${pointsHistory.length} points history records for MappingID ${mappingID}`);
+        
+        return pointsHistory;
+    } catch (error) {
+        console.error(`Failed to get points history for MappingID ${mappingID}:`, error);
+        throw error;
+    }
+}
+
+router.get("/getPointsHistory/:mappingID", async (req, res, next) => {
+    const mappingID = req.params.mappingID;
+    console.log('Received request for points history for MappingID:', mappingID);
+    
+    // Validate mappingID
+    if (isNaN(mappingID) || mappingID <= 0) {
+        console.error('Invalid MappingID provided:', mappingID);
+        return res.status(400).json({ 
+            message: 'Invalid MappingID provided',
+            received: mappingID
+        });
+    }
+    
+    try {
+        const result = await getPointsHistory(parseInt(mappingID));
+        res.json(result);
+    } catch (error) {
+        console.error('Error fetching points history:', error);
+        res.status(500).json({ 
+            message: 'Database error.',
+            error: error.message 
+        });
+    }
+});
+
 // Test route to verify routing is working
 router.get("/testRoute", (req, res) => {
   res.json({
