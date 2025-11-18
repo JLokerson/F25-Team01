@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { GenerateSalt } from './MiscellaneousParts/HashPass';
 import { addUser, login, checkEmailExist } from './MiscellaneousParts/ServerCall';
+import { HashPassword } from './MiscellaneousParts/HashPass';
 
 //TO DO: how do we want to handle user types? Right now it defaults to Driver (1) for all new registrations
 // Do we want driver to make an account w a sponsor or is that something they can do after making account? 
@@ -72,13 +73,16 @@ export default function Register() {
 
     setError('');
 
+    let userSalt = GenerateSalt();
+    let TruePass = await HashPassword(password,userSalt);
+
     // Create user object
     const user = {
       FirstName: firstName.trim(),
       LastName: lastName.trim(),
       Email: email.trim(),
-      Password: password,
-      PasswordSalt: GenerateSalt(),
+      Password: TruePass,
+      PasswordSalt: userSalt,
       UserType: 1 // Default to Driver for public registration
     };
 
@@ -91,7 +95,7 @@ export default function Register() {
         alert("Registered successfully!");
         
         // Automatically log the user in
-        const loggedInUser = await loginUser(email, password);
+        const loggedInUser = await loginUser(email, TruePass);
         if (loggedInUser) {
           // Navigate based on user type (Driver = 1, so goes to DriverHome)
           const userType = loggedInUser.UserType;

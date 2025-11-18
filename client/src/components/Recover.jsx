@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
+import { getUser, getUserFromEmail, updatePassword } from './MiscellaneousParts/ServerCall';
+import { HashPassword, GenerateSalt } from './MiscellaneousParts/HashPass';
 
 export default function Recover() {
   console.log("Recover component rendered");
@@ -8,16 +10,26 @@ export default function Recover() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
+  async function ResetPass(){
+    // Because obviously we can't send an actual email we just do the reset.
+    let IDForReset = await getUserFromEmail(email);
+    IDForReset = await IDForReset.json();
+    IDForReset = IDForReset[0]["UserID"];
+
+    let salt = GenerateSalt();
+    let hashedPassword = await HashPassword(email,salt);
+    await updatePassword(IDForReset, hashedPassword, salt);
+    alert("Email confirmed, password reset to your email. Please use password change in profile upon next login.");
+  }
+
   const handleSubmit = async (e) => {
+
     e.preventDefault();
     // Implement backend logic here to send recovery email (will we do this? mock for now)
+    // We don't.
     setSubmitted(true);
-    // Example:
-    // await fetch("http://localhost:4000/testAPI/recover", {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ email })
-    // });
+
+    ResetPass();
   };
 
   return (

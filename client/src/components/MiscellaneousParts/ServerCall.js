@@ -64,6 +64,14 @@ export const getAllUsers = () => apiCall("GET", "/userAPI/getAllUsers");
 export const getUser = (userId) =>
   apiCall("GET", "/userAPI/getUser", { UserID: userId });
 
+export const getUserFromEmail = (Email) =>
+  apiCall("GET", "/userAPI/getUser", { Email: Email });
+
+// Retrieve salt from email (login purposes)
+export const getSaltForUser = (Email) =>
+  apiCall("GET", "/userAPI/getSaltForUser", {Email: Email});
+
+
 /**
  * Adds a new user.
  * @param {Object} userData - The user data.
