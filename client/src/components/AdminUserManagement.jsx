@@ -123,6 +123,98 @@ export default function AdminUserManagement() {
         }
     };
 
+    const fetchAllDrivers = async () => {
+        try {
+            console.log('=== FETCHING DRIVERS ===');
+            const response = await fetch(`http://localhost:4000/driverAPI/getAllDrivers`);
+            console.log('Driver API response status:', response.status);
+            console.log('Driver API response headers:', Object.fromEntries(response.headers.entries()));
+            
+            if (response.ok) {
+                const responseText = await response.text();
+                console.log('Raw driver response text:', responseText);
+                
+                let allDrivers;
+                try {
+                    const parsedResponse = JSON.parse(responseText);
+                    console.log('Parsed driver response:', parsedResponse);
+                    
+                    // Check if the response is in the format [[{driver data}], {metadata}]
+                    if (Array.isArray(parsedResponse) && parsedResponse.length > 0 && Array.isArray(parsedResponse[0])) {
+                        // Extract the actual driver data from the first element
+                        allDrivers = parsedResponse[0];
+                        console.log('Extracted driver data from nested array:', allDrivers);
+                    } else if (Array.isArray(parsedResponse)) {
+                        // If it's already a flat array, use it directly
+                        allDrivers = parsedResponse;
+                        console.log('Using direct array data:', allDrivers);
+                    } else {
+                        console.error('Unexpected driver response format:', parsedResponse);
+                        setDrivers([]);
+                        return;
+                    }
+                    
+                    console.log('Driver data type:', typeof allDrivers);
+                    console.log('Driver data length:', Array.isArray(allDrivers) ? allDrivers.length : 'Not an array');
+                    
+                    if (Array.isArray(allDrivers) && allDrivers.length > 0) {
+                        console.log('First driver object:', allDrivers[0]);
+                        console.log('First driver keys:', Object.keys(allDrivers[0]));
+                    }
+                } catch (parseError) {
+                    console.error('Failed to parse driver JSON:', parseError);
+                    console.log('Setting drivers to empty array due to parse error');
+                    setDrivers([]);
+                    return;
+                }
+                
+                if (!Array.isArray(allDrivers)) {
+                    console.error('Driver data is not an array:', allDrivers);
+                    setDrivers([]);
+                    return;
+                }
+                
+                // Process the driver data to ensure all fields are properly mapped
+                const processedDrivers = allDrivers.map((driver, index) => {
+                    console.log(`Processing driver ${index}:`, driver);
+                    
+                    const processed = {
+                        ...driver,
+                        // Handle different possible field name cases
+                        DriverID: driver.DriverID || driver.driverID || driver.driver_id,
+                        UserID: driver.UserID || driver.userID || driver.user_id,
+                        FirstName: driver.FirstName || driver.firstName || driver.first_name || '',
+                        LastName: driver.LastName || driver.lastName || driver.last_name || '',
+                        Email: driver.Email || driver.email || '',
+                        SponsorID: driver.SponsorID || driver.sponsorID || driver.sponsor_id,
+                        ActiveAccount: driver.ActiveAccount !== undefined ? driver.ActiveAccount : 
+                                     driver.activeAccount !== undefined ? driver.activeAccount :
+                                     driver.active_account !== undefined ? driver.active_account : 1,
+                        Password: driver.Password || driver.password || '',
+                        PasswordSalt: driver.PasswordSalt || driver.passwordSalt || driver.password_salt || '',
+                        UserType: driver.UserType || driver.userType || driver.user_type || 1,
+                        LastLogin: driver.LastLogin || driver.lastLogin || driver.last_login,
+                        Points: driver.Points || driver.points || 0
+                    };
+                    
+                    console.log(`Processed driver ${index}:`, processed);
+                    return processed;
+                });
+                
+                console.log('Final processed drivers:', processedDrivers);
+                setDrivers(processedDrivers);
+            } else {
+                console.error('Failed to fetch drivers - HTTP status:', response.status);
+                const errorText = await response.text();
+                console.error('Error response body:', errorText);
+                setDrivers([]);
+            }
+        } catch (error) {
+            console.error('Network error fetching drivers:', error);
+            setDrivers([]);
+        }
+    };
+
     const fetchAllSponsors = async () => {
         try {
             console.log('=== FETCHING SPONSORS ===');

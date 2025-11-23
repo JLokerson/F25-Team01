@@ -88,6 +88,8 @@ export default function Login() {
         "suggestPasswordChange",
         shouldSuggestPasswordChange.toString()
       );
+      localStorage.setItem("Salt",LoginSalt);
+      localStorage.setItem("CurPass",truepassword)
       console.log("User stored in localStorage:", data.user);
       console.log("Password change suggestion:", shouldSuggestPasswordChange);
 

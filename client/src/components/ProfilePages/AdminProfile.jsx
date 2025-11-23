@@ -9,6 +9,7 @@ export default function AdminProfile() {
     console.log('AdminProfile rendered');
     const [cookies, setCookie] = useCookies(['username', 'password']);
     const [showPasswordChangeButton, setShowPasswordChangeButton] = useState(false);
+    const [userID, setUserID] = useState([]);
     
     // Ensure this is actually a sponsor user.
     // TO-DO: verify the login returned success and not fail, rn only checks if error.
@@ -80,6 +81,7 @@ export default function AdminProfile() {
     }, []);
 
     const userInfo = getUserInfo();
+    setUserID(userInfo.UserID);
 
     const getUserTypeString = (userType) => {
         switch (userType) {
@@ -135,7 +137,7 @@ export default function AdminProfile() {
                 </div>
             )}
 
-            {HelperPasswordChange()}
+            <HelperPasswordChange UserID={userID ?? 4} />
             <p>Hey this is where you will one day see your profile, assuming you have one.</p>
         </div>
     );

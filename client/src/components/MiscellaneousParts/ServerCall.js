@@ -1,7 +1,8 @@
 // The base URL for your API endpoint.
-const API_BASE_URL =
-  "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws";
-//const API_BASE_URL = "http://localhost:4000"; // swap for localhost testing
+//const API_BASE_URL = "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws";
+const API_BASE_URL = "http://localhost:4000"; // swap for localhost testing
+
+const LOCALHOST_BASE_URL = "http://localhost:4000";
 
 /**
  * A generic helper function to handle all API calls.
