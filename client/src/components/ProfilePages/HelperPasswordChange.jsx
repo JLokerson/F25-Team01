@@ -70,16 +70,16 @@ export default function HelperPasswordChange(UserID = 4) {
         }
     }
 
-    function ChangePassword(e){
+    async function ChangePassword(e){
         e.preventDefault();
         setMessage(''); // Clear previous messages
         
         if(newpass1 === newpass2){
             // ATTEMPT TO UPDATE PASSWORD IF OLDPASS CORRECT
             let OldSalt = localStorage.getItem("Salt");
-            let passcheck = HashPassword(oldpass,OldSalt);
+            let passcheck = await HashPassword(oldpass,OldSalt);
             let OrigPass = localStorage.getItem("CurPass");
-            if(OrigPass == passcheck){
+            if(OrigPass === passcheck){
                 AttemptUpdate(newpass1);
                 return;
             }
