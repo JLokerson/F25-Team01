@@ -79,7 +79,7 @@ export default function HelperPasswordChange(UserID = 4) {
             let OldSalt = localStorage.getItem("Salt");
             let passcheck = HashPassword(oldpass,OldSalt);
             let OrigPass = localStorage.getItem("CurPass");
-            if(oldpass){
+            if(OrigPass == passcheck){
                 AttemptUpdate(newpass1);
                 return;
             }
