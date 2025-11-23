@@ -5,7 +5,7 @@ import { HashPassword, GenerateSalt } from '../MiscellaneousParts/HashPass';
 import { CookiesProvider, useCookies } from 'react-cookie';
 import { updatePassword } from '../MiscellaneousParts/ServerCall';
 
-export default function HelperPasswordChange(UserID = 4) {
+export default function HelperPasswordChange(UserID) {
     const [newpass1, setnewpass1] = useState('');
     const [newpass2, setnewpass2] = useState('');
     const [oldpass, setoldpass] = useState('');
@@ -25,7 +25,7 @@ export default function HelperPasswordChange(UserID = 4) {
         setMessageType("info");
             
         try {
-        const response = await updatePassword(UserID, hashedPassword, salt);
+        const response = await updatePassword(UserID.UserID, hashedPassword, salt);
 
         // Debug: Log the response status and text
         console.log('Response status:', response.status);
@@ -51,6 +51,9 @@ export default function HelperPasswordChange(UserID = 4) {
         }
         
         // Store user info TODO: MAKE THIS USE COOKIES
+        localStorage.setItem("Salt",salt);
+        localStorage.setItem("CurPass",hashedPassword);
+
         console.log('Password change successful.');
         setMessage("Password changed successfully!");
         setMessageType("success");
