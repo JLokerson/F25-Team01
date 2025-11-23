@@ -20,7 +20,7 @@ export default function HelperPasswordChange(UserID = 4) {
 
     async function AttemptUpdate(newpass){
         let salt = GenerateSalt();
-        let hashedPassword = await HashPassword(newpass+salt);
+        let hashedPassword = await HashPassword(newpass,salt);
         setMessage("Processing password change...");
         setMessageType("info");
             
@@ -76,6 +76,9 @@ export default function HelperPasswordChange(UserID = 4) {
         
         if(newpass1 === newpass2){
             // ATTEMPT TO UPDATE PASSWORD IF OLDPASS CORRECT
+            let OldSalt = localStorage.getItem("Salt");
+            let passcheck = HashPassword(oldpass,OldSalt);
+            let OrigPass = localStorage.getItem("CurPass");
             if(oldpass){
                 AttemptUpdate(newpass1);
                 return;
