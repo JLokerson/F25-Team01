@@ -14,12 +14,14 @@ export default function DriverProfile() {
     const [driverInfoLoading, setDriverInfoLoading] = useState(true);
     const [pointsHistory, setPointsHistory] = useState([]);
     const [pointsHistoryLoading, setPointsHistoryLoading] = useState(false);
+    const [userID, setUserID] = useState([]);
 
     const checkLastLogin = () => {
         const userString = localStorage.getItem('user');
         if (userString) {
             try {
                 const user = JSON.parse(userString);
+                setUserID(user.UserID);
                 const lastLoginDate = user.LastLogin ? new Date(user.LastLogin) : null;
                 
                 if (lastLoginDate) {
@@ -661,7 +663,7 @@ export default function DriverProfile() {
                         <h5>Change Password</h5>
                         <div className="row">
                             <div className="col-md-6">
-                                <HelperPasswordChange UserID={userInfo?.UserID ?? 4} />
+                                <HelperPasswordChange UserID={userID ?? 4} />
                             </div>
                         </div>
                     </div>
