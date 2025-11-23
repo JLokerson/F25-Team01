@@ -12,8 +12,6 @@ export default function SponsorProfile() {
     const [showPasswordChangeButton, setShowPasswordChangeButton] = useState(false);
     const [sponsorInfo, setSponsorInfo] = useState(null);
     const [sponsorName, setSponsorName] = useState(null);
-    const [userID, setUserID] = useState([]);
-    
     
     // Ensure this is actually a sponsor user.
     // TO-DO: verify the login returned success and not fail, rn only checks if error on retrieval.
@@ -102,7 +100,6 @@ export default function SponsorProfile() {
 
     const fetchSponsorInfo = async () => {
         const userInfo = getUserInfo();
-        setUserID(userInfo.UserID);
         console.log('SponsorProfile - UserInfo:', userInfo); // Debug log
         if (userInfo && userInfo.UserID) {
             try {
@@ -247,7 +244,7 @@ export default function SponsorProfile() {
                     </div>
                 )}
 
-                {HelperPasswordChange(userID)}
+                {HelperPasswordChange(sponsor.userid)}
             </div>
         );
     }else{
