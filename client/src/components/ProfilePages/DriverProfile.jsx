@@ -236,6 +236,7 @@ export default function DriverProfile() {
         }
     };
 
+    /* Commented out broken test code.
     const testGetDriverInfoSpecific = async () => {
         const userInfo = getUserInfo();
         if (!userInfo || !userInfo.UserID) {
@@ -293,6 +294,7 @@ export default function DriverProfile() {
             });
         }
     };
+    */
 
     const fetchSponsorNames = async (sponsorIds) => {
         try {
