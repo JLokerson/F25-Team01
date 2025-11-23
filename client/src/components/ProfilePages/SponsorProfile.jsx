@@ -244,7 +244,7 @@ export default function SponsorProfile() {
                     </div>
                 )}
 
-                {HelperPasswordChange(sponsor.userid)}
+                {HelperPasswordChange(userInfo)}
             </div>
         );
     }else{

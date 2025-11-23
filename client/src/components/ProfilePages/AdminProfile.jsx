@@ -135,7 +135,7 @@ export default function AdminProfile() {
                 </div>
             )}
 
-            {HelperPasswordChange()}
+            {HelperPasswordChange(userInfo)}
             <p>Hey this is where you will one day see your profile, assuming you have one.</p>
         </div>
     );
