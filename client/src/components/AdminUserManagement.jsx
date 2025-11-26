@@ -38,6 +38,10 @@ export default function AdminUserManagement() {
     const [search, setSearch] = useState("");
     const [userTypeFilter, setUserTypeFilter] = useState("all");
     const [sponsorOrgSearch, setSponsorOrgSearch] = useState(""); // Add search for sponsor orgs
+    const [bulkUploadFile, setBulkUploadFile] = useState(null);
+    const [bulkUploadResults, setBulkUploadResults] = useState(null);
+    const [bulkUploadLoading, setBulkUploadLoading] = useState(false);
+    const [isDragOver, setIsDragOver] = useState(false);
 
     const fetchAllUsers = async () => {
         try {
@@ -1015,6 +1019,303 @@ export default function AdminUserManagement() {
         }
     };
 
+    const handleBulkUpload = async (e) => {
+        e.preventDefault();
+        if (!bulkUploadFile) {
+            alert('Please select a file to upload.');
+            return;
+        }
+
+        setBulkUploadLoading(true);
+        setBulkUploadResults(null);
+
+        try {
+            const fileContent = await readFileContent(bulkUploadFile);
+            const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line);
+            
+            const results = {
+                totalLines: lines.length,
+                processed: 0,
+                errors: [],
+                success: {
+                    organizations: 0,
+                    drivers: 0,
+                    sponsors: 0
+                },
+                organizationCache: new Set() // Track organizations we've created in this session
+            };
+
+            // Load existing organizations into cache
+            sponsors.forEach(sponsor => {
+                results.organizationCache.add(sponsor.Name.toLowerCase());
+            });
+
+            for (let i = 0; i < lines.length; i++) {
+                const lineNumber = i + 1;
+                const line = lines[i];
+                
+                try {
+                    const result = await processUploadLine(line, lineNumber, results.organizationCache);
+                    
+                    if (result.success) {
+                        results.success[result.type]++;
+                        if (result.type === 'organizations') {
+                            results.organizationCache.add(result.organizationName.toLowerCase());
+                        }
+                    } else {
+                        results.errors.push({
+                            line: lineNumber,
+                            content: line,
+                            error: result.error
+                        });
+                    }
+                } catch (error) {
+                    results.errors.push({
+                        line: lineNumber,
+                        content: line,
+                        error: `Unexpected error: ${error.message}`
+                    });
+                }
+                
+                results.processed++;
+            }
+
+            setBulkUploadResults(results);
+            
+            // Refresh all data after bulk upload
+            await Promise.all([fetchAllUsers(), fetchAllSponsors(), fetchSponsorOrgs()]);
+            
+        } catch (error) {
+            console.error('Error processing bulk upload:', error);
+            alert(`Error processing file: ${error.message}`);
+        } finally {
+            setBulkUploadLoading(false);
+        }
+    };
+
+    const processUploadLine = async (line, lineNumber, organizationCache) => {
+        const parts = line.split('|');
+        
+        if (parts.length < 2) {
+            return { success: false, error: 'Invalid format: Not enough fields (minimum 2 required)' };
+        }
+
+        const type = parts[0].trim().toUpperCase();
+        
+        switch (type) {
+            case 'O':
+                return await processOrganizationRecord(parts, organizationCache);
+            case 'D':
+                return await processDriverRecord(parts, organizationCache);
+            case 'S':
+                return await processSponsorRecord(parts, organizationCache);
+            default:
+                return { success: false, error: `Invalid type '${type}'. Must be O, D, or S.` };
+        }
+    };
+
+    const processOrganizationRecord = async (parts, organizationCache) => {
+        if (parts.length !== 2) {
+            return { success: false, error: 'Organization record must have exactly 2 fields: O|organization name' };
+        }
+
+        const organizationName = parts[1].trim();
+        
+        if (!organizationName) {
+            return { success: false, error: 'Organization name cannot be empty' };
+        }
+
+        // Check if organization already exists (case insensitive)
+        if (organizationCache.has(organizationName.toLowerCase())) {
+            return { success: false, error: `Organization '${organizationName}' already exists` };
+        }
+
+        try {
+            const orgData = {
+                Name: organizationName,
+                PointRatio: 0.01,
+                EnabledSponsor: 1
+            };
+
+            const response = await fetch(`http://localhost:4000/sponsorAPI/addSponsor`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(orgData)
+            });
+
+            if (response.ok) {
+                return { 
+                    success: true, 
+                    type: 'organizations',
+                    organizationName: organizationName
+                };
+            } else {
+                const errorText = await response.text();
+                return { success: false, error: `Failed to create organization: ${errorText}` };
+            }
+        } catch (error) {
+            return { success: false, error: `Network error creating organization: ${error.message}` };
+        }
+    };
+
+    const processDriverRecord = async (parts, organizationCache) => {
+        if (parts.length !== 5) {
+            return { success: false, error: 'Driver record must have exactly 5 fields: D|organization|first name|last name|email' };
+        }
+
+        const [, organizationName, firstName, lastName, email] = parts.map(p => p.trim());
+        
+        if (!organizationName || !firstName || !lastName || !email) {
+            return { success: false, error: 'All driver fields are required and cannot be empty' };
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return { success: false, error: 'Invalid email format' };
+        }
+
+        // Check if organization exists
+        const sponsor = sponsors.find(s => s.Name.toLowerCase() === organizationName.toLowerCase());
+        if (!sponsor && !organizationCache.has(organizationName.toLowerCase())) {
+            return { success: false, error: `Organization '${organizationName}' does not exist. Create it first with an 'O' record.` };
+        }
+
+        try {
+            const salt = GenerateSalt();
+            const driverData = {
+                FirstName: firstName,
+                LastName: lastName,
+                Email: email,
+                Password: 'DefaultPassword123!', // Default password - user should change on first login
+                SponsorID: sponsor ? sponsor.SponsorID : 0, // Will need to be resolved if organization was just created
+                UserType: 1,
+                PasswordSalt: salt
+            };
+
+            // If organization was just created, we need to find its ID
+            if (!sponsor) {
+                // For now, we'll skip this record and suggest processing organizations first
+                return { success: false, error: `Organization '${organizationName}' was created in this batch but ID not yet available. Please process organizations first, then drivers.` };
+            }
+
+            const queryString = new URLSearchParams(driverData).toString();
+            const response = await fetch(`http://localhost:4000/driverAPI/addDriver?${queryString}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                return { success: true, type: 'drivers' };
+            } else {
+                const errorText = await response.text();
+                return { success: false, error: `Failed to create driver: ${errorText}` };
+            }
+        } catch (error) {
+            return { success: false, error: `Network error creating driver: ${error.message}` };
+        }
+    };
+
+    const processSponsorRecord = async (parts, organizationCache) => {
+        if (parts.length !== 5) {
+            return { success: false, error: 'Sponsor record must have exactly 5 fields: S|organization|first name|last name|email' };
+        }
+
+        const [, organizationName, firstName, lastName, email] = parts.map(p => p.trim());
+        
+        if (!organizationName || !firstName || !lastName || !email) {
+            return { success: false, error: 'All sponsor fields are required and cannot be empty' };
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return { success: false, error: 'Invalid email format' };
+        }
+
+        // Check if organization exists
+        const sponsor = sponsors.find(s => s.Name.toLowerCase() === organizationName.toLowerCase());
+        if (!sponsor && !organizationCache.has(organizationName.toLowerCase())) {
+            return { success: false, error: `Organization '${organizationName}' does not exist. Create it first with an 'O' record.` };
+        }
+
+        try {
+            const salt = GenerateSalt();
+            const sponsorData = {
+                FirstName: firstName,
+                LastName: lastName,
+                Email: email,
+                Password: 'DefaultPassword123!', // Default password - user should change on first login
+                SponsorID: sponsor ? sponsor.SponsorID : 0,
+                UserType: 2,
+                PasswordSalt: salt
+            };
+
+            // If organization was just created, we need to find its ID
+            if (!sponsor) {
+                return { success: false, error: `Organization '${organizationName}' was created in this batch but ID not yet available. Please process organizations first, then sponsors.` };
+            }
+
+            const response = await fetch(`http://localhost:4000/sponsorAPI/addSponsorUser`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(sponsorData)
+            });
+
+            if (response.ok) {
+                return { success: true, type: 'sponsors' };
+            } else {
+                const errorText = await response.text();
+                return { success: false, error: `Failed to create sponsor: ${errorText}` };
+            }
+        } catch (error) {
+            return { success: false, error: `Network error creating sponsor: ${error.message}` };
+        }
+    };
+
+    const readFileContent = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(new Error('Failed to read file'));
+            reader.readAsText(file);
+        });
+    };
+
+    const handleFileSelect = (file) => {
+        if (file && (file.type === 'text/plain' || file.name.endsWith('.txt'))) {
+            setBulkUploadFile(file);
+            setBulkUploadResults(null);
+        } else {
+            alert('Please select a valid text file (.txt)');
+        }
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDragOver(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setIsDragOver(false);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragOver(false);
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) {
+            handleFileSelect(files[0]);
+        }
+    };
+
     if (loading) {
         return (
             <div>
@@ -1056,6 +1357,15 @@ export default function AdminUserManagement() {
                         >
                             <i className="fas fa-building me-2"></i>
                             Sponsor Organizations
+                        </button>
+                    </li>
+                    <li className="nav-item">
+                        <button 
+                            className={`nav-link ${activeTab === 'bulk' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('bulk')}
+                        >
+                            <i className="fas fa-upload me-2"></i>
+                            Bulk Load
                         </button>
                     </li>
                 </ul>
@@ -1324,6 +1634,256 @@ export default function AdminUserManagement() {
                                 </table>
                             </div>
                         )}
+                    </>
+                )}
+
+                {/* Bulk Load Tab */}
+                {activeTab === 'bulk' && (
+                    <>
+                        <div className="row">
+                            <div className="col-md-8">
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h5 className="card-title">
+                                            <i className="fas fa-upload me-2"></i>
+                                            Bulk Load Users and Organizations
+                                        </h5>
+                                        <p className="card-text">
+                                            Upload a pipe-delimited text file to create multiple organizations, drivers, and sponsors at once.
+                                        </p>
+
+                                        <form onSubmit={handleBulkUpload}>
+                                            <div 
+                                                className={`border rounded p-4 mb-3 text-center ${isDragOver ? 'border-primary bg-light' : 'border-dashed'}`}
+                                                onDragOver={handleDragOver}
+                                                onDragLeave={handleDragLeave}
+                                                onDrop={handleDrop}
+                                                style={{ 
+                                                    borderStyle: isDragOver ? 'solid' : 'dashed',
+                                                    minHeight: '120px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    flexDirection: 'column'
+                                                }}
+                                            >
+                                                {bulkUploadFile ? (
+                                                    <div>
+                                                        <i className="fas fa-file-alt fa-2x text-success mb-2"></i>
+                                                        <p className="mb-0">
+                                                            <strong>{bulkUploadFile.name}</strong>
+                                                        </p>
+                                                        <small className="text-muted">
+                                                            {(bulkUploadFile.size / 1024).toFixed(2)} KB
+                                                        </small>
+                                                    </div>
+                                                ) : (
+                                                    <div>
+                                                        <i className="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                                        <p className="mb-2">
+                                                            Drag and drop your text file here, or click to browse
+                                                        </p>
+                                                        <input
+                                                            type="file"
+                                                            className="form-control"
+                                                            accept=".txt,text/plain"
+                                                            onChange={(e) => handleFileSelect(e.target.files[0])}
+                                                            style={{ maxWidth: '300px', margin: '0 auto' }}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="d-flex justify-content-between">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline-secondary"
+                                                    onClick={() => {
+                                                        setBulkUploadFile(null);
+                                                        setBulkUploadResults(null);
+                                                    }}
+                                                    disabled={!bulkUploadFile}
+                                                >
+                                                    Clear File
+                                                </button>
+                                                <button
+                                                    type="submit"
+                                                    className="btn btn-primary"
+                                                    disabled={!bulkUploadFile || bulkUploadLoading}
+                                                >
+                                                    {bulkUploadLoading ? (
+                                                        <>
+                                                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                            Processing...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <i className="fas fa-upload me-2"></i>
+                                                            Upload and Process
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                        {/* Results Display */}
+                                        {bulkUploadResults && (
+                                            <div className="mt-4">
+                                                <hr />
+                                                <h6>Upload Results</h6>
+                                                <div className="row mb-3">
+                                                    <div className="col-md-3">
+                                                        <div className="card bg-primary text-white">
+                                                            <div className="card-body text-center">
+                                                                <h5>{bulkUploadResults.totalLines}</h5>
+                                                                <small>Total Lines</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-3">
+                                                        <div className="card bg-success text-white">
+                                                            <div className="card-body text-center">
+                                                                <h5>
+                                                                    {bulkUploadResults.success.organizations + 
+                                                                     bulkUploadResults.success.drivers + 
+                                                                     bulkUploadResults.success.sponsors}
+                                                                </h5>
+                                                                <small>Successful</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-3">
+                                                        <div className="card bg-danger text-white">
+                                                            <div className="card-body text-center">
+                                                                <h5>{bulkUploadResults.errors.length}</h5>
+                                                                <small>Errors</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-3">
+                                                        <div className="card bg-info text-white">
+                                                            <div className="card-body text-center">
+                                                                <h5>{bulkUploadResults.processed}</h5>
+                                                                <small>Processed</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="row mb-3">
+                                                    <div className="col-md-4">
+                                                        <div className="text-center">
+                                                            <i className="fas fa-building text-warning fa-2x"></i>
+                                                            <h6 className="mt-2">Organizations</h6>
+                                                            <span className="badge bg-warning">{bulkUploadResults.success.organizations}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <div className="text-center">
+                                                            <i className="fas fa-car text-primary fa-2x"></i>
+                                                            <h6 className="mt-2">Drivers</h6>
+                                                            <span className="badge bg-primary">{bulkUploadResults.success.drivers}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <div className="text-center">
+                                                            <i className="fas fa-handshake text-success fa-2x"></i>
+                                                            <h6 className="mt-2">Sponsors</h6>
+                                                            <span className="badge bg-success">{bulkUploadResults.success.sponsors}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Error Details */}
+                                                {bulkUploadResults.errors.length > 0 && (
+                                                    <div className="mt-3">
+                                                        <h6 className="text-danger">
+                                                            <i className="fas fa-exclamation-triangle me-2"></i>
+                                                            Errors ({bulkUploadResults.errors.length})
+                                                        </h6>
+                                                        <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                                            <table className="table table-sm table-striped">
+                                                                <thead className="table-dark">
+                                                                    <tr>
+                                                                        <th>Line</th>
+                                                                        <th>Content</th>
+                                                                        <th>Error</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {bulkUploadResults.errors.map((error, index) => (
+                                                                        <tr key={index}>
+                                                                            <td>{error.line}</td>
+                                                                            <td>
+                                                                                <code style={{ fontSize: '0.8em' }}>
+                                                                                    {error.content.length > 50 
+                                                                                        ? error.content.substring(0, 50) + '...' 
+                                                                                        : error.content}
+                                                                                </code>
+                                                                            </td>
+                                                                            <td className="text-danger" style={{ fontSize: '0.9em' }}>
+                                                                                {error.error}
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="col-md-4">
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h6 className="card-title">
+                                            <i className="fas fa-info-circle me-2"></i>
+                                            File Format Instructions
+                                        </h6>
+                                        <div className="mb-3">
+                                            <h6>Record Types:</h6>
+                                            <ul className="list-unstyled">
+                                                <li><code>O</code> - Organization</li>
+                                                <li><code>D</code> - Driver</li>
+                                                <li><code>S</code> - Sponsor User</li>
+                                            </ul>
+                                        </div>
+
+                                        <div className="mb-3">
+                                            <h6>Format Examples:</h6>
+                                            <div className="bg-light p-2 rounded">
+                                                <code style={{ fontSize: '0.8em' }}>
+                                                    O|New Organization<br />
+                                                    D|New Organization|Joe|Driver|joe@email.com<br />
+                                                    S|New Organization|Jill|Sponsor|jill@mail.com
+                                                </code>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-3">
+                                            <h6>Rules:</h6>
+                                            <ul style={{ fontSize: '0.9em' }}>
+                                                <li>Organizations must exist or be created first</li>
+                                                <li>Use pipe (|) as delimiter</li>
+                                                <li>No pipes allowed in field data</li>
+                                                <li>Email addresses must be valid format</li>
+                                                <li>Default password: "DefaultPassword123!"</li>
+                                                <li>Errors are skipped, processing continues</li>
+                                            </ul>
+                                        </div>
+
+                                        <div className="alert alert-warning" style={{ fontSize: '0.8em' }}>
+                                            <strong>Note:</strong> For best results, process organizations first, then users. 
+                                            Organizations created in the same batch may not be immediately available for user creation.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </>
                 )}
 
