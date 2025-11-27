@@ -46,7 +46,7 @@ export default function AdminUserManagement() {
     const fetchAllUsers = async () => {
         try {
             console.log('=== FETCHING ALL USERS ===');
-            const response = await fetch(`http://localhost:4000/userAPI/getAllUsers`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/userAPI/getAllUsers`);
             console.log('Users API response status:', response.status);
             
             if (response.ok) {
@@ -130,7 +130,7 @@ export default function AdminUserManagement() {
     const fetchAllDrivers = async () => {
         try {
             console.log('=== FETCHING DRIVERS ===');
-            const response = await fetch(`http://localhost:4000/driverAPI/getAllDrivers`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/getAllDrivers`);
             console.log('Driver API response status:', response.status);
             console.log('Driver API response headers:', Object.fromEntries(response.headers.entries()));
             
@@ -223,7 +223,7 @@ export default function AdminUserManagement() {
         try {
             console.log('=== FETCHING SPONSORS ===');
             // Get sponsor companies for driver dropdown
-            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsors`);
             console.log('Sponsor API response status:', response.status);
             
             if (response.ok) {
@@ -272,7 +272,7 @@ export default function AdminUserManagement() {
         try {
             console.log('=== FETCHING SPONSOR USERS ===');
             // Get sponsor users for user management
-            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsorUsers`);
             console.log('Sponsor users API response status:', response.status);
             
             if (response.ok) {
@@ -324,7 +324,7 @@ export default function AdminUserManagement() {
     const fetchAllAdmins = async () => {
         try {
             console.log('=== FETCHING ADMINS ===');
-            const response = await fetch(`http://localhost:4000/adminAPI/getAllAdmins`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/adminAPI/getAllAdmins`);
             console.log('Admin API response status:', response.status);
             
             if (response.ok) {
@@ -375,7 +375,7 @@ export default function AdminUserManagement() {
     const fetchSponsorOrgs = async () => {
         try {
             console.log('=== FETCHING SPONSOR ORGANIZATIONS ===');
-            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsors`);
             console.log('Sponsor orgs API response status:', response.status);
             
             if (response.ok) {
@@ -508,7 +508,7 @@ export default function AdminUserManagement() {
             console.log('Creating driver with DRIVER table relationship:', driverData);
             
             const queryString = new URLSearchParams(driverData).toString();
-            const response = await fetch(`http://localhost:4000/driverAPI/addDriver?${queryString}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/addDriver?${queryString}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -573,7 +573,7 @@ export default function AdminUserManagement() {
             console.log('Sponsor changed:', sponsorChanged);
 
             // Use a new endpoint that handles both DRIVER and SPONSOR_USER updates
-            const response = await fetch(`http://localhost:4000/driverAPI/updateDriverWithSponsor`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/updateDriverWithSponsor`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -622,7 +622,7 @@ export default function AdminUserManagement() {
         try {
             // Use userAPI instead of driverAPI for consistency with other user types
             console.log(`Toggling driver UserID: ${driver.UserID}, Action: ${action}`);
-            const response = await fetch(`http://localhost:4000/userAPI/toggleAccountActivity/${driver.UserID}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/userAPI/toggleAccountActivity/${driver.UserID}`, {
                 method: 'POST'
             });
 
@@ -674,7 +674,7 @@ export default function AdminUserManagement() {
             // Test if we can reach the getAllSponsorUsers endpoint (which we know works)
             console.log('Testing getAllSponsorUsers endpoint...');
             try {
-                const testGetUsers = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+                const testGetUsers = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsorUsers`);
                 console.log('getAllSponsorUsers test status:', testGetUsers.status);
                 if (testGetUsers.ok) {
                     const userData = await testGetUsers.json();
@@ -689,7 +689,7 @@ export default function AdminUserManagement() {
             // Test the debug route
             console.log('Testing debug route...');
             try {
-                const debugTest = await fetch(`http://localhost:4000/sponsorAPI/debug`);
+                const debugTest = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/debug`);
                 console.log('Debug test status:', debugTest.status);
                 if (debugTest.ok) {
                     const debugData = await debugTest.json();
@@ -703,7 +703,7 @@ export default function AdminUserManagement() {
 
             // Now try the update
             console.log('Attempting sponsor update...');
-            const response = await fetch(`http://localhost:4000/sponsorAPI/updateSponsorUser`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/updateSponsorUser`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -739,7 +739,7 @@ export default function AdminUserManagement() {
 
         try {
             console.log(`Toggling sponsor UserID: ${sponsorUserID}, Action: ${action}`);
-            const response = await fetch(`http://localhost:4000/userAPI/toggleAccountActivity/${sponsorUserID}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/userAPI/toggleAccountActivity/${sponsorUserID}`, {
                 method: 'POST'
             });
 
@@ -787,7 +787,7 @@ export default function AdminUserManagement() {
 
             console.log('Sending admin update data:', updateData);
 
-            const response = await fetch(`http://localhost:4000/adminAPI/updateAdminUser`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/adminAPI/updateAdminUser`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -831,7 +831,7 @@ export default function AdminUserManagement() {
 
         try {
             console.log(`Toggling admin UserID: ${adminUserID}, Action: ${action}`);
-            const response = await fetch(`http://localhost:4000/userAPI/toggleAccountActivity/${adminUserID}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/userAPI/toggleAccountActivity/${adminUserID}`, {
                 method: 'POST'
             });
 
@@ -920,7 +920,7 @@ export default function AdminUserManagement() {
 
             console.log('Creating sponsor organization:', orgData);
             
-            const response = await fetch(`http://localhost:4000/sponsorAPI/addSponsor`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/addSponsor`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -969,7 +969,7 @@ export default function AdminUserManagement() {
             console.log('Sending sponsor org update data:', updateData);
 
             // Note: Update endpoint may not exist yet, using placeholder
-            const response = await fetch(`http://localhost:4000/sponsorAPI/updateSponsor`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/updateSponsor`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1001,7 +1001,7 @@ export default function AdminUserManagement() {
 
         try {
             console.log(`Toggling sponsor org ID: ${sponsorID}, Action: ${action}`);
-            const response = await fetch(`http://localhost:4000/sponsorAPI/toggleSponsorActivity/${sponsorID}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/toggleSponsorActivity/${sponsorID}`, {
                 method: 'POST'
             });
 
@@ -1137,7 +1137,7 @@ export default function AdminUserManagement() {
                 EnabledSponsor: 1
             };
 
-            const response = await fetch(`http://localhost:4000/sponsorAPI/addSponsor`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/addSponsor`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1202,7 +1202,7 @@ export default function AdminUserManagement() {
             }
 
             const queryString = new URLSearchParams(driverData).toString();
-            const response = await fetch(`http://localhost:4000/driverAPI/addDriver?${queryString}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/addDriver?${queryString}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1260,7 +1260,7 @@ export default function AdminUserManagement() {
                 return { success: false, error: `Organization '${organizationName}' was created in this batch but ID not yet available. Please process organizations first, then sponsors.` };
             }
 
-            const response = await fetch(`http://localhost:4000/sponsorAPI/addSponsorUser`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/addSponsorUser`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
