@@ -7,56 +7,37 @@ export default function SponsorBulkLoading() {
     const [isDragOver, setIsDragOver] = useState(false);
     const [sponsors, setSponsors] = useState([]);
 
-    // Needed for some logic. Taken from AdminUserManagement.jsx
-    const fetchAllSponsors = async () => {
-        try {
-            console.log('=== FETCHING SPONSORS ===');
-            // Get sponsor companies for driver dropdown
-            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
-            console.log('Sponsor API response status:', response.status);
-            
-            if (response.ok) {
-                const responseText = await response.text();
-                console.log('Raw sponsor response text:', responseText);
-                
-                let allSponsors;
-                try {
-                    allSponsors = JSON.parse(responseText);
-                    console.log('Parsed sponsor data:', allSponsors);
-                } catch (parseError) {
-                    console.error('Failed to parse sponsor JSON:', parseError);
-                    setSponsors([]);
-                    return;
-                }
-                
-                if (!Array.isArray(allSponsors)) {
-                    console.error('Sponsor data is not an array:', allSponsors);
-                    setSponsors([]);
-                    return;
-                }
-                
-                // Process sponsor data with fallbacks
-                const processedSponsors = allSponsors.map(sponsor => ({
-                    ...sponsor,
-                    SponsorID: sponsor.SponsorID || sponsor.sponsorID || sponsor.sponsor_id,
-                    Name: sponsor.Name || sponsor.name || 
-                            `${sponsor.FirstName || sponsor.firstName || sponsor.first_name || ''} ${sponsor.LastName || sponsor.lastName || sponsor.last_name || ''}`.trim(),
-                    FirstName: sponsor.FirstName || sponsor.firstName || sponsor.first_name || '',
-                    LastName: sponsor.LastName || sponsor.lastName || sponsor.last_name || ''
-                }));
-                
-                console.log('Processed sponsor data:', processedSponsors);
-                setSponsors(processedSponsors);
-            } else {
-                console.error('Failed to fetch sponsors - HTTP status:', response.status);
-                setSponsors([]);
+    const getUserInfo = () => {
+        const userString = localStorage.getItem('user');
+        if (userString) {
+            try {
+                return JSON.parse(userString);
+            } catch (e) {
+                return null;
             }
-        } catch (error) {
-            console.error('Network error fetching sponsors:', error);
-            setSponsors([]);
         }
+        return null;
     };
 
+    const fetchSponsorInfo = async () => {
+        const userInfo = getUserInfo();
+        if (userInfo && userInfo.UserID) {
+            try {
+                const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsorUsers`);
+                if (response.ok) {
+                    const allSponsorUsers = await response.json();
+                    const currentSponsorInfo = allSponsorUsers.find(s => s.UserID === userInfo.UserID);
+                    setSponsorInfo(currentSponsorInfo);
+                    if (currentSponsorInfo) {
+                        fetchDriversForSponsor(currentSponsorInfo.SponsorID);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching sponsor info:', error);
+            }
+        }
+        setLoading(false);
+    };
 
     // Base template for this was taken from Julia's adminbulkupload branch off which
     // the sponsorbulkupload branch was based. This is gonna be messy, seeing as I
@@ -103,8 +84,10 @@ export default function SponsorBulkLoading() {
                     
                     if (result.success) {
                         results.success[result.type]++;
+
+                        // Should never occur.
                         if (result.type === 'organizations') {
-                            results.organizationCache.add(result.organizationName.toLowerCase());
+                            alert("Sponsor users may not create organizations!");
                         }
                     } else {
                         results.errors.push({
