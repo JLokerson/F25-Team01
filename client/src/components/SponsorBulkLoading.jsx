@@ -288,13 +288,12 @@ export default function SponsorBulkLoading() {
                 PasswordSalt: salt
             };
 
-
-            const response = await fetch(`http://localhost:4000/sponsorAPI/addSponsorUser`, {
+            const queryString = new URLSearchParams(sponsorData).toString();
+            const response = await fetch(`http://localhost:4000/sponsorAPI/addSponsorUser?${queryString}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(sponsorData)
             });
 
             if (response.ok) {
