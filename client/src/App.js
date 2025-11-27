@@ -31,6 +31,7 @@ import Testing from "./components/Testing.jsx";
 import { CookiesProvider, useCookies } from "react-cookie";
 import AdminAuditView from "./components/AdminAuditView";
 import SponsorAuditView from "./components/SponsorAuditView";
+import SponsorBulkLoading from "./components/SponsorBulkLoading.jsx";
 
 function AppContent() {
   const location = useLocation();
@@ -79,6 +80,7 @@ function AppContent() {
         <Route path="/pending-applications" element={<PendingApplications />} />
         <Route path="/sponsorcatalog" element={<SponsorCatalog />} />
         <Route path="/sponsorauditview" element={<SponsorAuditView />} />
+        <Route path="/sponsorbulkupload" element={<SponsorBulkLoading />} />
 
         {/* Driver routes */}
         <Route path="/driverhome" element={<DriverHome />} />
