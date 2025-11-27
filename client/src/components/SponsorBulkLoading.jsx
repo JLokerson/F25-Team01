@@ -87,6 +87,8 @@ export default function SponsorBulkLoading() {
 
                         // Should never occur.
                         if (result.type === 'organizations') {
+
+                            // Alert user and don't log it.
                             alert("Sponsor users may not create organizations!");
                         }
                     } else {
@@ -133,59 +135,13 @@ export default function SponsorBulkLoading() {
         
         switch (type) {
             case 'O':
-                return await processOrganizationRecord(parts, organizationCache);
+                return await { success: false, error: `Invalid type '${type}' cannot be O for sponsors.` };
             case 'D':
                 return await processDriverRecord(parts, organizationCache);
             case 'S':
                 return await processSponsorRecord(parts, organizationCache);
             default:
                 return { success: false, error: `Invalid type '${type}'. Must be O, D, or S.` };
-        }
-    };
-
-    const processOrganizationRecord = async (parts, organizationCache) => {
-        if (parts.length !== 2) {
-            return { success: false, error: 'Organization record must have exactly 2 fields: O|organization name' };
-        }
-
-        const organizationName = parts[1].trim();
-        
-        if (!organizationName) {
-            return { success: false, error: 'Organization name cannot be empty' };
-        }
-
-        // Check if organization already exists (case insensitive)
-        if (organizationCache.has(organizationName.toLowerCase())) {
-            return { success: false, error: `Organization '${organizationName}' already exists` };
-        }
-
-        try {
-            const orgData = {
-                Name: organizationName,
-                PointRatio: 0.01,
-                EnabledSponsor: 1
-            };
-
-            const response = await fetch(`http://localhost:4000/sponsorAPI/addSponsor`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(orgData)
-            });
-
-            if (response.ok) {
-                return { 
-                    success: true, 
-                    type: 'organizations',
-                    organizationName: organizationName
-                };
-            } else {
-                const errorText = await response.text();
-                return { success: false, error: `Failed to create organization: ${errorText}` };
-            }
-        } catch (error) {
-            return { success: false, error: `Network error creating organization: ${error.message}` };
         }
     };
 
