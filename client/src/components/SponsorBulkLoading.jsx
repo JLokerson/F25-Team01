@@ -6,6 +6,7 @@ export default function SponsorBulkLoading() {
     const [bulkUploadLoading, setBulkUploadLoading] = useState(false);
     const [isDragOver, setIsDragOver] = useState(false);
     const [sponsors, setSponsors] = useState([]);
+    const [sponsorInfo, setSponsorInfo] = useState([]);
 
     const getUserInfo = () => {
         const userString = localStorage.getItem('user');
@@ -36,7 +37,56 @@ export default function SponsorBulkLoading() {
                 console.error('Error fetching sponsor info:', error);
             }
         }
-        setLoading(false);
+    };
+
+    // Use this to load all the sponsor orgs.
+    const fetchAllSponsors = async () => {
+        try {
+            console.log('=== FETCHING SPONSORS ===');
+            // Get sponsor companies for driver dropdown
+            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+            console.log('Sponsor API response status:', response.status);
+            
+            if (response.ok) {
+                const responseText = await response.text();
+                console.log('Raw sponsor response text:', responseText);
+                
+                let allSponsors;
+                try {
+                    allSponsors = JSON.parse(responseText);
+                    console.log('Parsed sponsor data:', allSponsors);
+                } catch (parseError) {
+                    console.error('Failed to parse sponsor JSON:', parseError);
+                    setSponsors([]);
+                    return;
+                }
+                
+                if (!Array.isArray(allSponsors)) {
+                    console.error('Sponsor data is not an array:', allSponsors);
+                    setSponsors([]);
+                    return;
+                }
+                
+                // Process sponsor data with fallbacks
+                const processedSponsors = allSponsors.map(sponsor => ({
+                    ...sponsor,
+                    SponsorID: sponsor.SponsorID || sponsor.sponsorID || sponsor.sponsor_id,
+                    Name: sponsor.Name || sponsor.name || 
+                          `${sponsor.FirstName || sponsor.firstName || sponsor.first_name || ''} ${sponsor.LastName || sponsor.lastName || sponsor.last_name || ''}`.trim(),
+                    FirstName: sponsor.FirstName || sponsor.firstName || sponsor.first_name || '',
+                    LastName: sponsor.LastName || sponsor.lastName || sponsor.last_name || ''
+                }));
+                
+                console.log('Processed sponsor data:', processedSponsors);
+                setSponsors(processedSponsors);
+            } else {
+                console.error('Failed to fetch sponsors - HTTP status:', response.status);
+                setSponsors([]);
+            }
+        } catch (error) {
+            console.error('Network error fetching sponsors:', error);
+            setSponsors([]);
+        }
     };
 
     // Base template for this was taken from Julia's adminbulkupload branch off which
@@ -162,12 +212,6 @@ export default function SponsorBulkLoading() {
             return { success: false, error: 'Invalid email format' };
         }
 
-        // Check if organization exists
-        const sponsor = sponsors.find(s => s.Name.toLowerCase() === organizationName.toLowerCase());
-        if (!sponsor && !organizationCache.has(organizationName.toLowerCase())) {
-            return { success: false, error: `Organization '${organizationName}' does not exist. Ask an admin to create it first.` };
-        }
-
         try {
             const salt = GenerateSalt();
             const driverData = {
@@ -175,16 +219,10 @@ export default function SponsorBulkLoading() {
                 LastName: lastName,
                 Email: email,
                 Password: 'DefaultPassword123!', // Default password - user should change on first login
-                SponsorID: sponsor ? sponsor.SponsorID : 0, // Will need to be resolved if organization was just created
+                SponsorID: sponsorInfo.sponsorID,
                 UserType: 1,
                 PasswordSalt: salt
             };
-
-            // If organization was just created, we need to find its ID
-            if (!sponsor) {
-                // For now, we'll skip this record and suggest processing organizations first
-                return { success: false, error: `Organization '${organizationName}' was created in this batch but ID not yet available. Please process organizations first, then drivers.` };
-            }
 
             const queryString = new URLSearchParams(driverData).toString();
             const response = await fetch(`http://localhost:4000/driverAPI/addDriver?${queryString}`, {
@@ -207,7 +245,7 @@ export default function SponsorBulkLoading() {
 
     const processSponsorRecord = async (parts, organizationCache) => {
         if (parts.length !== 5) {
-            return { success: false, error: 'Sponsor record must have exactly 5 fields: S|organization|first name|last name|email' };
+            return { success: false, error: 'Sponsor record must have exactly 4 fields: S|first name|last name|email' };
         }
 
         const [, organizationName, firstName, lastName, email] = parts.map(p => p.trim());
@@ -222,12 +260,6 @@ export default function SponsorBulkLoading() {
             return { success: false, error: 'Invalid email format' };
         }
 
-        // Check if organization exists
-        const sponsor = sponsors.find(s => s.Name.toLowerCase() === organizationName.toLowerCase());
-        if (!sponsor && !organizationCache.has(organizationName.toLowerCase())) {
-            return { success: false, error: `Organization '${organizationName}' does not exist. Create it first with an 'O' record.` };
-        }
-
         try {
             const salt = GenerateSalt();
             const sponsorData = {
@@ -235,15 +267,11 @@ export default function SponsorBulkLoading() {
                 LastName: lastName,
                 Email: email,
                 Password: 'DefaultPassword123!', // Default password - user should change on first login
-                SponsorID: sponsor ? sponsor.SponsorID : 0,
+                SponsorID: sponsorInfo.sponsorID,
                 UserType: 2,
                 PasswordSalt: salt
             };
 
-            // If organization was just created, we need to find its ID
-            if (!sponsor) {
-                return { success: false, error: `Organization '${organizationName}' was created in this batch but ID not yet available. Please process organizations first, then sponsors.` };
-            }
 
             const response = await fetch(`http://localhost:4000/sponsorAPI/addSponsorUser`, {
                 method: 'POST',
@@ -300,5 +328,13 @@ export default function SponsorBulkLoading() {
             handleFileSelect(files[0]);
         }
     };
+
+
+    // Actual code for doing things the page needs.
+    fetchAllSponsors();
+    fetchSponsorInfo();
+
+
+    // Returned view.
     
 }
