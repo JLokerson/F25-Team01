@@ -1,4 +1,7 @@
-
+import React, { useState, useEffect } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import AdminNavbar from './AdminNavbar';
+import { GenerateSalt } from './MiscellaneousParts/HashPass';
 
 export default function SponsorBulkLoading() {
     const [bulkUploadFile, setBulkUploadFile] = useState(null);
@@ -7,6 +10,7 @@ export default function SponsorBulkLoading() {
     const [isDragOver, setIsDragOver] = useState(false);
     const [sponsors, setSponsors] = useState([]);
     const [sponsorInfo, setSponsorInfo] = useState([]);
+    const [loading, setLoading] = useState([true]);
 
     const getUserInfo = () => {
         const userString = localStorage.getItem('user');
@@ -29,9 +33,12 @@ export default function SponsorBulkLoading() {
                     const allSponsorUsers = await response.json();
                     const currentSponsorInfo = allSponsorUsers.find(s => s.UserID === userInfo.UserID);
                     setSponsorInfo(currentSponsorInfo);
+
+                    /* Unnecessary here.
                     if (currentSponsorInfo) {
                         fetchDriversForSponsor(currentSponsorInfo.SponsorID);
                     }
+                    */
                 }
             } catch (error) {
                 console.error('Error fetching sponsor info:', error);
@@ -196,14 +203,19 @@ export default function SponsorBulkLoading() {
     };
 
     const processDriverRecord = async (parts, organizationCache) => {
-        if (parts.length !== 4) {
-            return { success: false, error: 'Driver record must have exactly 4 fields: D|first name|last name|email' };
+        if (parts.length !== 5) {
+            return { success: false, error: 'Driver record must have exactly 4 fields: D||first name|last name|email' };
         }
 
         const [, organizationName, firstName, lastName, email] = parts.map(p => p.trim());
         
-        if (!organizationName || !firstName || !lastName || !email) {
+        if (!firstName || !lastName || !email) {
             return { success: false, error: 'All driver fields are required and cannot be empty' };
+        }
+
+        
+        if(organizationName){
+            return { success: false, error: 'Organization name cannot be provided by sponsor users.'}
         }
 
         // Validate email format
@@ -245,13 +257,17 @@ export default function SponsorBulkLoading() {
 
     const processSponsorRecord = async (parts, organizationCache) => {
         if (parts.length !== 5) {
-            return { success: false, error: 'Sponsor record must have exactly 4 fields: S|first name|last name|email' };
+            return { success: false, error: 'Sponsor record must have exactly 4 fields: S||first name|last name|email' };
         }
 
         const [, organizationName, firstName, lastName, email] = parts.map(p => p.trim());
         
-        if (!organizationName || !firstName || !lastName || !email) {
+        if (!firstName || !lastName || !email) {
             return { success: false, error: 'All sponsor fields are required and cannot be empty' };
+        }
+
+        if(organizationName){
+            return { success: false, error: 'Organization name cannot be provided by sponsor users.'}
         }
 
         // Validate email format
@@ -331,8 +347,16 @@ export default function SponsorBulkLoading() {
 
 
     // Actual code for doing things the page needs.
-    fetchAllSponsors();
-    fetchSponsorInfo();
+    useEffect(() => {
+            const fetchData = async () => {
+                console.log('Starting data fetch...');
+                setLoading(true);
+                await Promise.all([fetchAllSponsors(),fetchSponsorInfo()]);
+                console.log('Data fetch completed');
+                setLoading(false);
+            };
+            fetchData();
+        }, []);
 
 
     // Returned view. Uses same code as in adminusermanagement because 
