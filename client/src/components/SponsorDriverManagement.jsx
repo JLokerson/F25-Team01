@@ -73,10 +73,12 @@ export default function SponsorDriverManagement() {
                 organizationCache: new Set() // Track organizations we've created in this session
             };
 
+            /* Disallowed for sponsor users.
             // Load existing organizations into cache
             sponsors.forEach(sponsor => {
                 results.organizationCache.add(sponsor.Name.toLowerCase());
             });
+            */
 
             for (let i = 0; i < lines.length; i++) {
                 const lineNumber = i + 1;
@@ -208,7 +210,7 @@ export default function SponsorDriverManagement() {
         // Check if organization exists
         const sponsor = sponsors.find(s => s.Name.toLowerCase() === organizationName.toLowerCase());
         if (!sponsor && !organizationCache.has(organizationName.toLowerCase())) {
-            return { success: false, error: `Organization '${organizationName}' does not exist. Create it first with an 'O' record.` };
+            return { success: false, error: `Organization '${organizationName}' does not exist. Ask an admin to create it first.` };
         }
 
         try {
