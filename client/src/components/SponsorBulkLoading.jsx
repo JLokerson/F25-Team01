@@ -335,6 +335,256 @@ export default function SponsorBulkLoading() {
     fetchSponsorInfo();
 
 
-    // Returned view.
-    
+    // Returned view. Uses same code as in adminusermanagement because 
+    // frankly I already disabled the organization loading so it
+    // shouldn't be an issue. Who knows, maybe some hypothetical RC3
+    // might want that decision reverted and as such being able to
+    // revert it might be advantageous in a hypothetical business
+    // environment that does not actually exist regardless.
+    return(
+        <div className="row">
+                            <div className="col-md-8">
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h5 className="card-title">
+                                            <i className="fas fa-upload me-2"></i>
+                                            Bulk Load Users and Organizations
+                                        </h5>
+                                        <p className="card-text">
+                                            Upload a pipe-delimited text file to create multiple organizations, drivers, and sponsors at once.
+                                        </p>
+
+                                        <form onSubmit={handleBulkUpload}>
+                                            <div 
+                                                className={`border rounded p-4 mb-3 text-center ${isDragOver ? 'border-primary bg-light' : 'border-dashed'}`}
+                                                onDragOver={handleDragOver}
+                                                onDragLeave={handleDragLeave}
+                                                onDrop={handleDrop}
+                                                style={{ 
+                                                    borderStyle: isDragOver ? 'solid' : 'dashed',
+                                                    minHeight: '120px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    flexDirection: 'column'
+                                                }}
+                                            >
+                                                {bulkUploadFile ? (
+                                                    <div>
+                                                        <i className="fas fa-file-alt fa-2x text-success mb-2"></i>
+                                                        <p className="mb-0">
+                                                            <strong>{bulkUploadFile.name}</strong>
+                                                        </p>
+                                                        <small className="text-muted">
+                                                            {(bulkUploadFile.size / 1024).toFixed(2)} KB
+                                                        </small>
+                                                    </div>
+                                                ) : (
+                                                    <div>
+                                                        <i className="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                                        <p className="mb-2">
+                                                            Drag and drop your text file here, or click to browse
+                                                        </p>
+                                                        <input
+                                                            type="file"
+                                                            className="form-control"
+                                                            accept=".txt,text/plain"
+                                                            onChange={(e) => handleFileSelect(e.target.files[0])}
+                                                            style={{ maxWidth: '300px', margin: '0 auto' }}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="d-flex justify-content-between">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline-secondary"
+                                                    onClick={() => {
+                                                        setBulkUploadFile(null);
+                                                        setBulkUploadResults(null);
+                                                    }}
+                                                    disabled={!bulkUploadFile}
+                                                >
+                                                    Clear File
+                                                </button>
+                                                <button
+                                                    type="submit"
+                                                    className="btn btn-primary"
+                                                    disabled={!bulkUploadFile || bulkUploadLoading}
+                                                >
+                                                    {bulkUploadLoading ? (
+                                                        <>
+                                                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                            Processing...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <i className="fas fa-upload me-2"></i>
+                                                            Upload and Process
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                        {/* Results Display */}
+                                        {bulkUploadResults && (
+                                            <div className="mt-4">
+                                                <hr />
+                                                <h6>Upload Results</h6>
+                                                <div className="row mb-3">
+                                                    <div className="col-md-3">
+                                                        <div className="card bg-primary text-white">
+                                                            <div className="card-body text-center">
+                                                                <h5>{bulkUploadResults.totalLines}</h5>
+                                                                <small>Total Lines</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-3">
+                                                        <div className="card bg-success text-white">
+                                                            <div className="card-body text-center">
+                                                                <h5>
+                                                                    {bulkUploadResults.success.organizations + 
+                                                                     bulkUploadResults.success.drivers + 
+                                                                     bulkUploadResults.success.sponsors}
+                                                                </h5>
+                                                                <small>Successful</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-3">
+                                                        <div className="card bg-danger text-white">
+                                                            <div className="card-body text-center">
+                                                                <h5>{bulkUploadResults.errors.length}</h5>
+                                                                <small>Errors</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-3">
+                                                        <div className="card bg-info text-white">
+                                                            <div className="card-body text-center">
+                                                                <h5>{bulkUploadResults.processed}</h5>
+                                                                <small>Processed</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="row mb-3">
+                                                    <div className="col-md-4">
+                                                        <div className="text-center">
+                                                            <i className="fas fa-building text-warning fa-2x"></i>
+                                                            <h6 className="mt-2">Organizations</h6>
+                                                            <span className="badge bg-warning">{bulkUploadResults.success.organizations}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <div className="text-center">
+                                                            <i className="fas fa-car text-primary fa-2x"></i>
+                                                            <h6 className="mt-2">Drivers</h6>
+                                                            <span className="badge bg-primary">{bulkUploadResults.success.drivers}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <div className="text-center">
+                                                            <i className="fas fa-handshake text-success fa-2x"></i>
+                                                            <h6 className="mt-2">Sponsors</h6>
+                                                            <span className="badge bg-success">{bulkUploadResults.success.sponsors}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Error Details */}
+                                                {bulkUploadResults.errors.length > 0 && (
+                                                    <div className="mt-3">
+                                                        <h6 className="text-danger">
+                                                            <i className="fas fa-exclamation-triangle me-2"></i>
+                                                            Errors ({bulkUploadResults.errors.length})
+                                                        </h6>
+                                                        <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                                            <table className="table table-sm table-striped">
+                                                                <thead className="table-dark">
+                                                                    <tr>
+                                                                        <th>Line</th>
+                                                                        <th>Content</th>
+                                                                        <th>Error</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {bulkUploadResults.errors.map((error, index) => (
+                                                                        <tr key={index}>
+                                                                            <td>{error.line}</td>
+                                                                            <td>
+                                                                                <code style={{ fontSize: '0.8em' }}>
+                                                                                    {error.content.length > 50 
+                                                                                        ? error.content.substring(0, 50) + '...' 
+                                                                                        : error.content}
+                                                                                </code>
+                                                                            </td>
+                                                                            <td className="text-danger" style={{ fontSize: '0.9em' }}>
+                                                                                {error.error}
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="col-md-4">
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h6 className="card-title">
+                                            <i className="fas fa-info-circle me-2"></i>
+                                            File Format Instructions
+                                        </h6>
+                                        <div className="mb-3">
+                                            <h6>Record Types:</h6>
+                                            <ul className="list-unstyled">
+                                                <li><code>O</code> - Organization</li>
+                                                <li><code>D</code> - Driver</li>
+                                                <li><code>S</code> - Sponsor User</li>
+                                            </ul>
+                                        </div>
+
+                                        <div className="mb-3">
+                                            <h6>Format Examples:</h6>
+                                            <div className="bg-light p-2 rounded">
+                                                <code style={{ fontSize: '0.8em' }}>
+                                                    O|New Organization<br />
+                                                    D|New Organization|Joe|Driver|joe@email.com<br />
+                                                    S|New Organization|Jill|Sponsor|jill@mail.com
+                                                </code>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-3">
+                                            <h6>Rules:</h6>
+                                            <ul style={{ fontSize: '0.9em' }}>
+                                                <li>Organizations must exist or be created first</li>
+                                                <li>Use pipe (|) as delimiter</li>
+                                                <li>No pipes allowed in field data</li>
+                                                <li>Email addresses must be valid format</li>
+                                                <li>Default password: "DefaultPassword123!"</li>
+                                                <li>Errors are skipped, processing continues</li>
+                                            </ul>
+                                        </div>
+
+                                        <div className="alert alert-warning" style={{ fontSize: '0.8em' }}>
+                                            <strong>Note:</strong> For best results, process organizations first, then users. 
+                                            Organizations created in the same batch may not be immediately available for user creation.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    );
 }
