@@ -51,7 +51,7 @@ export default function SponsorBulkLoading() {
         try {
             console.log('=== FETCHING SPONSORS ===');
             // Get sponsor companies for driver dropdown
-            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsors`);
             console.log('Sponsor API response status:', response.status);
             
             if (response.ok) {
@@ -237,7 +237,7 @@ export default function SponsorBulkLoading() {
             };
 
             const queryString = new URLSearchParams(driverData).toString();
-            const response = await fetch(`http://localhost:4000/driverAPI/addDriver?${queryString}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/addDriver?${queryString}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -289,7 +289,7 @@ export default function SponsorBulkLoading() {
             };
 
             const queryString = new URLSearchParams(sponsorData).toString();
-            const response = await fetch(`http://localhost:4000/sponsorAPI/addSponsorUser?${queryString}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/addSponsorUser?${queryString}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
