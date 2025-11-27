@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import AdminNavbar from './AdminNavbar';
+import SponsorNavbar from './SponsorNavbar';
 import { GenerateSalt } from './MiscellaneousParts/HashPass';
 
 export default function SponsorBulkLoading() {
@@ -365,6 +365,8 @@ export default function SponsorBulkLoading() {
     // revert it might be advantageous in a hypothetical business
     // environment that does not actually exist regardless.
     return(
+        <div>
+        <SponsorNavbar/>
         <div className="row">
                             <div className="col-md-8">
                                 <div className="card">
@@ -572,7 +574,6 @@ export default function SponsorBulkLoading() {
                                         <div className="mb-3">
                                             <h6>Record Types:</h6>
                                             <ul className="list-unstyled">
-                                                <li><code>O</code> - Organization</li>
                                                 <li><code>D</code> - Driver</li>
                                                 <li><code>S</code> - Sponsor User</li>
                                             </ul>
@@ -582,9 +583,8 @@ export default function SponsorBulkLoading() {
                                             <h6>Format Examples:</h6>
                                             <div className="bg-light p-2 rounded">
                                                 <code style={{ fontSize: '0.8em' }}>
-                                                    O|New Organization<br />
-                                                    D|New Organization|Joe|Driver|joe@email.com<br />
-                                                    S|New Organization|Jill|Sponsor|jill@mail.com
+                                                    D||Joe|Driver|joe@email.com<br />
+                                                    S||Jill|Sponsor|jill@mail.com
                                                 </code>
                                             </div>
                                         </div>
@@ -602,12 +602,13 @@ export default function SponsorBulkLoading() {
                                         </div>
 
                                         <div className="alert alert-warning" style={{ fontSize: '0.8em' }}>
-                                            <strong>Note:</strong> For best results, process organizations first, then users. 
-                                            Organizations created in the same batch may not be immediately available for user creation.
+                                            <strong>Note:</strong> While admins can create organizations in a bulk upload, this feature is not available to sponsors.
+                                            If you need to create an additional organization for some reason, please contact an admin.
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+    </div>
     );
 }
