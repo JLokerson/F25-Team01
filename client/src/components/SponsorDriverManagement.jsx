@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import SponsorNavbar from './SponsorNavbar';
-import { GenerateSalt } from './MiscellaneousParts/HashPass'; // <-- Import GenerateSalt
+import { GenerateSalt } from './MiscellaneousParts/HashPass'; 
 import { updateDriverPoints } from "./MiscellaneousParts/ServerCall";
 //missing: getAllSponsorUsers, getAllDrivers, getAllSponsorUsers, addDriver, updateDriver, toggleDriverActivity/${driverID}, debugAllUsers
 
@@ -21,9 +21,9 @@ export default function SponsorDriverManagement() {
         LastName: '',
         Email: '',
         Password: '',
-        PasswordSalt: '' // <-- Remove default, will generate on submit
+        PasswordSalt: '' 
     });
-    const [search, setSearch] = useState(""); // <-- Add search state
+    const [search, setSearch] = useState(""); 
     const [showDebugModal, setShowDebugModal] = useState(false);
     const [debugData, setDebugData] = useState(null);
 
@@ -478,21 +478,19 @@ export default function SponsorDriverManagement() {
                                                 Edit
                                             </button>
                                             <button 
-                                                className="btn btn-sm btn-outline-info me-2" // Changed to a distinct color
+                                                className="btn btn-sm btn-outline-info me-2"
                                                 onClick={() => handleManagePointsClick(driver)}
                                             >
                                                 <i className="fas fa-coins me-1"></i>
                                                 Points
                                             </button>
-                                            {driver.DriverID && (
-                                                <button 
-                                                    className={`btn btn-sm ${driver.ActiveAccount === 1 ? 'btn-outline-warning' : 'btn-outline-success'}`}
-                                                    onClick={() => handleRemoveDriver(driver.DriverID, `${driver.FirstName} ${driver.LastName}`, driver.ActiveAccount === 1)}
-                                                >
-                                                    <i className={`fas ${driver.ActiveAccount === 1 ? 'fa-ban' : 'fa-check'} me-1`}></i>
-                                                    {driver.ActiveAccount === 1 ? 'Deactivate' : 'Reactivate'}
-                                                </button>
-                                            )}
+                                            <button 
+                                                className={`btn btn-sm ${driver.ActiveAccount === 1 ? 'btn-outline-warning' : 'btn-outline-success'}`}
+                                                onClick={() => handleRemoveDriver(driver.DriverID || driver.UserID, `${driver.FirstName} ${driver.LastName}`, driver.ActiveAccount === 1)}
+                                            >
+                                                <i className={`fas ${driver.ActiveAccount === 1 ? 'fa-ban' : 'fa-check'} me-1`}></i>
+                                                {driver.ActiveAccount === 1 ? 'Deactivate' : 'Reactivate'}
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
