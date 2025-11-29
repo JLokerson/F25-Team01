@@ -26,6 +26,22 @@
   font-size: 1rem;
 }
 
+/* Sponsor info alert styling */
+.driver-products__header .alert {
+  margin-top: 1rem;
+  margin-bottom: 0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.driver-products__header .alert i {
+  color: #0c5460;
+}
+
+.driver-products__header .alert small {
+  font-size: 0.8rem;
+}
+
 .driver-products__section-title {
   display: flex;
   align-items: center;

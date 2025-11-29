@@ -84,6 +84,71 @@ async function getSponsorIdForDriver(driverID) {
   }
 }
 
+/**
+ * Get saved sponsor selection from localStorage
+ */
+function getSavedSponsorSelection() {
+  try {
+    const saved = localStorage.getItem('selectedSponsorMapping');
+    return saved ? JSON.parse(saved) : null;
+  } catch (error) {
+    console.error('Error reading saved sponsor selection:', error);
+    return null;
+  }
+}
+
+/**
+ * Get sponsor information by SponsorID
+ */
+async function getSponsorInfo(sponsorID) {
+  try {
+    const sponsorUrl = withApiBase(`/sponsorAPI/getSponsor?SponsorID=${encodeURIComponent(sponsorID)}`);
+    console.log('Fetching sponsor info from:', sponsorUrl);
+    const sponsorRes = await fetch(sponsorUrl);
+    if (sponsorRes.ok) {
+      const sponsorData = await sponsorRes.json();
+      console.log('Sponsor data received:', sponsorData);
+      return sponsorData;
+    }
+    return null;
+  } catch (error) {
+    console.log("Could not fetch sponsor details:", error);
+    return null;
+  }
+}
+
+/**
+ * Get SponsorID from saved selection or fallback to driver lookup
+ */
+async function getSponsorIdForUser(userID) {
+  // First, check for saved sponsor selection
+  const savedSelection = getSavedSponsorSelection();
+  if (savedSelection && savedSelection.sponsorID) {
+    console.log('Using saved sponsor selection:', savedSelection);
+    return {
+      sponsorID: savedSelection.sponsorID,
+      sponsorName: savedSelection.sponsorName
+    };
+  }
+
+  // Fallback to original logic
+  console.log('No saved sponsor selection, using driver lookup');
+  
+  // Step 1: Get DriverID from UserID
+  const driverID = await getDriverIdForUser(userID);
+  if (!driverID) {
+    throw new Error("No driver record found for this user.");
+  }
+
+  // Step 2: Get SponsorID from DriverID via DRIVER_SPONSOR_MAPPINGS
+  const sponsorID = await getSponsorIdForDriver(driverID);
+  if (!sponsorID) {
+    throw new Error("No sponsor information found for this driver.");
+  }
+
+  return { sponsorID, sponsorName: null };
+}
+
 export default function DriverProducts() {
   const [user] = useState(readStoredUser);
 
@@ -94,6 +159,10 @@ export default function DriverProducts() {
   const [currentCategoryPage, setCurrentCategoryPage] = useState(1);
   // 4 columns by 4 rows per page
   const CATEGORIES_PER_PAGE = 16;
+
+  // Sponsor state
+  const [sponsorInfo, setSponsorInfo] = useState(null);
+  const [currentPoints, setCurrentPoints] = useState(0);
 
   // Product modal state
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -118,20 +187,81 @@ export default function DriverProducts() {
       setCategoriesError("");
 
       try {
-        // (!) Core logic changes are here - JL(!)
-        // Step 1: Get DriverID from UserID
-        const driverID = await getDriverIdForUser(user.UserID);
-        if (!driverID) {
-          throw new Error("No driver record found for this user.");
-        }
+        // Get SponsorID using saved selection or fallback
+        const sponsorResult = await getSponsorIdForUser(user.UserID);
+        const sponsorID = sponsorResult.sponsorID;
 
-        // Step 2: Get SponsorID from DriverID via DRIVER_SPONSOR_MAPPINGS
-        const sponsorID = await getSponsorIdForDriver(driverID);
-        if (!sponsorID) {
-          throw new Error("No sponsor information found for this driver.");
+        // Get sponsor details
+        let sponsorInfo = null;
+        if (sponsorResult.sponsorName) {
+          // Use name from saved selection
+          sponsorInfo = {
+            SponsorID: sponsorID,
+            CompanyName: sponsorResult.sponsorName,
+          };
+        } else {
+          // Fetch sponsor details from API
+          sponsorInfo = await getSponsorInfo(sponsorID);
+          if (!sponsorInfo) {
+            sponsorInfo = {
+              SponsorID: sponsorID,
+              CompanyName: `Sponsor ${sponsorID}`,
+            };
+          }
         }
+        setSponsorInfo(sponsorInfo);
 
-        // Step 3: Get categories for this sponsor via CATALOG table
+        // Get current points from saved selection first
+        const savedSelection = getSavedSponsorSelection();
+        let points = 0;
+        
+        // First try: Use points from saved selection if available
+        if (savedSelection && savedSelection.sponsorID === sponsorID && savedSelection.currentPoints !== undefined) {
+          points = savedSelection.currentPoints;
+          console.log('DriverProducts - Using saved points from localStorage:', points);
+        } else {
+          // Second try: Fetch from API if no saved points
+          try {
+            const mappingsUrl = `https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/getDriverSponsorMappings?UserID=${user.UserID}`;
+            const mappingsRes = await fetch(mappingsUrl);
+            if (mappingsRes.ok) {
+              const mappingsData = await mappingsRes.json();
+              console.log('DriverProducts - Fetched mappings for points:', mappingsData);
+              
+              // Handle nested array response (same as DriverProfile)
+              let mappings = mappingsData;
+              if (Array.isArray(mappingsData) && mappingsData.length > 0 && Array.isArray(mappingsData[0])) {
+                mappings = mappingsData[0];
+              }
+              
+              // Find matching sponsor mapping
+              if (Array.isArray(mappings)) {
+                const currentMapping = mappings.find(m => m.SponsorID == sponsorID);
+                if (currentMapping) {
+                  points = currentMapping.Points || 0;
+                  console.log('DriverProducts - Found current points for SponsorID', sponsorID, ':', points);
+                  
+                  // Update saved selection with fetched points
+                  if (savedSelection) {
+                    const updatedSelection = { ...savedSelection, currentPoints: points };
+                    localStorage.setItem('selectedSponsorMapping', JSON.stringify(updatedSelection));
+                  }
+                } else {
+                  console.log('DriverProducts - No mapping found for SponsorID:', sponsorID);
+                }
+              }
+            } else {
+              console.log('DriverProducts - Failed to fetch mappings:', mappingsRes.status);
+            }
+          } catch (error) {
+            console.log("DriverProducts - Could not fetch current points from mappings:", error);
+          }
+        }
+        
+        setCurrentPoints(points);
+        console.log('DriverProducts - Set current points to:', points);
+
+        // Get categories for this sponsor via CATALOG table
         const url = withApiBase(
           `/catalogAPI/getAllCategories?SponsorID=${encodeURIComponent(
             sponsorID
@@ -252,9 +382,34 @@ export default function DriverProducts() {
           <h1>Product Catalog</h1>
           {user && (
             <p className="text-muted">
-              Welcome, <strong>{user.FirstName}</strong>! Browse products from your sponsor.
+              Welcome, <strong>{user.FirstName}</strong>! Browse products from
+              your sponsor.
             </p>
           )}
+          {sponsorInfo && (
+            <div className="alert alert-info mb-3">
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  <i className="fas fa-building me-2"></i>
+                  <strong>Current Sponsor Catalog:</strong>{" "}
+                  {sponsorInfo.CompanyName || `Sponsor ID ${sponsorInfo.SponsorID}`}
+                  {sponsorInfo.SponsorID && (
+                    <small className="ms-2 text-muted">
+                      (ID: {sponsorInfo.SponsorID})
+                    </small>
+                  )}
+                </div>
+                <div className="text-end">
+                  <span className="badge bg-primary fs-6">
+                    <i className="fas fa-coins me-1"></i>
+                    {currentPoints} Points
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Debug - remove later */}
+          {console.log('Current points state:', currentPoints)}
         </div>
 
         {/* Categories Grid */}

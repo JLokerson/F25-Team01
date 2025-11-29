@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import SponsorNavbar from './SponsorNavbar';
-import { GenerateSalt } from './MiscellaneousParts/HashPass'; // <-- Import GenerateSalt
+import { GenerateSalt } from './MiscellaneousParts/HashPass'; 
 import { updateDriverPoints } from "./MiscellaneousParts/ServerCall";
 //missing: getAllSponsorUsers, getAllDrivers, getAllSponsorUsers, addDriver, updateDriver, toggleDriverActivity/${driverID}, debugAllUsers
 
@@ -21,9 +21,9 @@ export default function SponsorDriverManagement() {
         LastName: '',
         Email: '',
         Password: '',
-        PasswordSalt: '' // <-- Remove default, will generate on submit
+        PasswordSalt: '' 
     });
-    const [search, setSearch] = useState(""); // <-- Add search state
+    const [search, setSearch] = useState(""); 
     const [showDebugModal, setShowDebugModal] = useState(false);
     const [debugData, setDebugData] = useState(null);
 
@@ -43,7 +43,7 @@ export default function SponsorDriverManagement() {
         const userInfo = getUserInfo();
         if (userInfo && userInfo.UserID) {
             try {
-                const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+                const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsorUsers`);
                 if (response.ok) {
                     const allSponsorUsers = await response.json();
                     const currentSponsorInfo = allSponsorUsers.find(s => s.UserID === userInfo.UserID);
@@ -69,7 +69,7 @@ export default function SponsorDriverManagement() {
             console.log('Current user ID:', currentUserID);
             
             // Get all drivers (including inactive accounts)
-            const driversResponse = await fetch(`http://localhost:4000/driverAPI/getAllDrivers`);
+            const driversResponse = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/getAllDrivers`);
             let allDrivers = [];
             if (driversResponse.ok) {
                 allDrivers = await driversResponse.json();
@@ -85,7 +85,7 @@ export default function SponsorDriverManagement() {
             }
             
             // Get all sponsor users to get additional user info
-            const sponsorUsersResponse = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+            const sponsorUsersResponse = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsorUsers`);
             let allSponsorUsers = [];
             if (sponsorUsersResponse.ok) {
                 allSponsorUsers = await sponsorUsersResponse.json();
@@ -193,7 +193,7 @@ export default function SponsorDriverManagement() {
             };
 
             const queryString = new URLSearchParams(driverData).toString();
-            const response = await fetch(`http://localhost:4000/driverAPI/addDriver?${queryString}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/addDriver?${queryString}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -242,7 +242,7 @@ export default function SponsorDriverManagement() {
                 PasswordSalt: editingDriver.PasswordSalt
             };
 
-            const response = await fetch(`http://localhost:4000/driverAPI/updateDriver`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/updateDriver`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -311,7 +311,7 @@ export default function SponsorDriverManagement() {
         }
 
         try {
-            const response = await fetch(`http://localhost:4000/driverAPI/toggleDriverActivity/${driverID}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/toggleDriverActivity/${driverID}`, {
                 method: 'POST'
             });
 
@@ -330,7 +330,7 @@ export default function SponsorDriverManagement() {
     const handleDebugAllUsers = async () => {
         try {
             console.log('Fetching debug data for all users...');
-            const response = await fetch('http://localhost:4000/driverAPI/debugAllUsers');
+            const response = await fetch('https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/debugAllUsers');
             if (response.ok) {
                 const result = await response.json();
                 console.log('Debug data received:', result);
@@ -478,21 +478,19 @@ export default function SponsorDriverManagement() {
                                                 Edit
                                             </button>
                                             <button 
-                                                className="btn btn-sm btn-outline-info me-2" // Changed to a distinct color
+                                                className="btn btn-sm btn-outline-info me-2"
                                                 onClick={() => handleManagePointsClick(driver)}
                                             >
                                                 <i className="fas fa-coins me-1"></i>
                                                 Points
                                             </button>
-                                            {driver.DriverID && (
-                                                <button 
-                                                    className={`btn btn-sm ${driver.ActiveAccount === 1 ? 'btn-outline-warning' : 'btn-outline-success'}`}
-                                                    onClick={() => handleRemoveDriver(driver.DriverID, `${driver.FirstName} ${driver.LastName}`, driver.ActiveAccount === 1)}
-                                                >
-                                                    <i className={`fas ${driver.ActiveAccount === 1 ? 'fa-ban' : 'fa-check'} me-1`}></i>
-                                                    {driver.ActiveAccount === 1 ? 'Deactivate' : 'Reactivate'}
-                                                </button>
-                                            )}
+                                            <button 
+                                                className={`btn btn-sm ${driver.ActiveAccount === 1 ? 'btn-outline-warning' : 'btn-outline-success'}`}
+                                                onClick={() => handleRemoveDriver(driver.DriverID || driver.UserID, `${driver.FirstName} ${driver.LastName}`, driver.ActiveAccount === 1)}
+                                            >
+                                                <i className={`fas ${driver.ActiveAccount === 1 ? 'fa-ban' : 'fa-check'} me-1`}></i>
+                                                {driver.ActiveAccount === 1 ? 'Deactivate' : 'Reactivate'}
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}

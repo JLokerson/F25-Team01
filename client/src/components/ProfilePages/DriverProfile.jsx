@@ -150,28 +150,44 @@ export default function DriverProfile() {
                         
                         setAllDriverMappings(transformedMappings);
                         
-                        // Fetch points history for the first (default) mapping
+                        // Check for saved sponsor selection and restore it
+                        let initialMappingIndex = 0;
+                        try {
+                            const savedSelection = localStorage.getItem('selectedSponsorMapping');
+                            if (savedSelection) {
+                                const parsedSelection = JSON.parse(savedSelection);
+                                console.log('DriverProfile - Found saved sponsor selection:', parsedSelection);
+                                
+                                // Find matching mapping by SponsorID
+                                const matchingIndex = transformedMappings.findIndex(
+                                    mapping => mapping.SponsorID === parsedSelection.sponsorID
+                                );
+                                
+                                if (matchingIndex !== -1) {
+                                    initialMappingIndex = matchingIndex;
+                                    console.log(`DriverProfile - Restored sponsor selection to index ${matchingIndex}`);
+                                } else {
+                                    console.log('DriverProfile - Saved sponsor selection not found in current mappings, using default');
+                                }
+                            }
+                        } catch (error) {
+                            console.error('DriverProfile - Error restoring saved sponsor selection:', error);
+                        }
+                        
+                        setSelectedMappingIndex(initialMappingIndex);
+                        
+                        // Fetch points history for the selected mapping
                         if (transformedMappings.length > 0) {
-                            const firstMappingID = transformedMappings[0].MappingID;
-                            console.log(`DriverProfile - Attempting to fetch points history for first mapping with MappingID: ${firstMappingID}`);
+                            const selectedMappingID = transformedMappings[initialMappingIndex].MappingID;
+                            console.log(`DriverProfile - Attempting to fetch points history for mapping with MappingID: ${selectedMappingID}`);
                             
-                            if (firstMappingID !== undefined && firstMappingID !== null) {
-                                fetchPointsHistory(firstMappingID);
+                            if (selectedMappingID !== undefined && selectedMappingID !== null) {
+                                fetchPointsHistory(selectedMappingID);
                             } else {
-                                console.error('DriverProfile - No valid MappingID found for first mapping, cannot fetch points history');
+                                console.error('DriverProfile - No valid MappingID found for selected mapping, cannot fetch points history');
                                 setPointsHistory([]);
                             }
                         }
-
-                        // Create sponsor name mapping from the response data
-                        const sponsorNameMap = {};
-                        allMappings.forEach(mapping => {
-                            if (mapping.Name) {
-                                sponsorNameMap[mapping.SponsorID] = mapping.Name;
-                            }
-                        });
-                        setSponsorNames(sponsorNameMap);
-                        
                     } else {
                         console.log('DriverProfile - No driver-sponsor mappings found, falling back');
                         await fetchDriverInfoFallback(userInfo);
@@ -322,8 +338,22 @@ export default function DriverProfile() {
         console.log(`DriverProfile - Sponsor selection changed to index: ${index}`);
         setSelectedMappingIndex(index);
         
-        // Fetch points history for the newly selected mapping
+        // Save the selected sponsor mapping to localStorage
         const selectedMapping = allDriverMappings[index];
+        if (selectedMapping) {
+            const sponsorSelection = {
+                mappingIndex: index,
+                sponsorID: selectedMapping.SponsorID,
+                mappingID: selectedMapping.MappingID,
+                sponsorName: selectedMapping.SponsorName || sponsorNames[selectedMapping.SponsorID],
+                currentPoints: selectedMapping.Points || 0, // Add current points to saved selection
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('selectedSponsorMapping', JSON.stringify(sponsorSelection));
+            console.log('DriverProfile - Saved sponsor selection to localStorage:', sponsorSelection);
+        }
+        
+        // Fetch points history for the newly selected mapping
         console.log(`DriverProfile - Selected mapping:`, selectedMapping);
         
         if (selectedMapping && selectedMapping.MappingID !== undefined && selectedMapping.MappingID !== null) {

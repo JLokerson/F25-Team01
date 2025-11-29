@@ -5,6 +5,19 @@ import DriverNavbar from './DriverNavbar';
 import driversSeed from '../content/json-assets/driver_sample.json';
 import { CookiesProvider, useCookies } from 'react-cookie';
 
+/**
+ * Get saved sponsor selection from localStorage
+ */
+function getSavedSponsorSelection() {
+    try {
+        const saved = localStorage.getItem('selectedSponsorMapping');
+        return saved ? JSON.parse(saved) : null;
+    } catch (error) {
+        console.error('Error reading saved sponsor selection:', error);
+        return null;
+    }
+}
+
 export default function DriverCart() {
     let navigate = useNavigate();
     // read user from localStorage to determine availability
@@ -17,6 +30,10 @@ export default function DriverCart() {
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState('');
 
+    // Sponsor and points state
+    const [sponsorInfo, setSponsorInfo] = useState(null);
+    const [currentPoints, setCurrentPoints] = useState(0);
+
     // Check if admin is in impostor mode as driver
     const impostorMode = localStorage.getItem('impostorMode');
     const impostorType = localStorage.getItem('impostorType');
@@ -25,6 +42,78 @@ export default function DriverCart() {
     // Cart is stored as an array of ITEM_IDs
     const [cart, setCart] = useState([]);
     const [productsMap, setProductsMap] = useState({});
+
+    // Load sponsor information
+    useEffect(() => {
+        if (user?.UserID) {
+            loadSponsorInfo();
+        }
+    }, [user]);
+
+    const loadSponsorInfo = async () => {
+        try {
+            const savedSelection = getSavedSponsorSelection();
+            if (savedSelection) {
+                setSponsorInfo({
+                    SponsorID: savedSelection.sponsorID,
+                    CompanyName: savedSelection.sponsorName || `Sponsor ${savedSelection.sponsorID}`
+                });
+
+                // Get current points from saved selection first
+                let points = 0;
+                
+                // First try: Use points from saved selection if available
+                if (savedSelection.currentPoints !== undefined) {
+                    points = savedSelection.currentPoints;
+                    console.log('Cart - Using saved points from localStorage:', points);
+                    setCurrentPoints(points);
+                } else {
+                    // Second try: Fetch from API if no saved points
+                    try {
+                        const mappingsUrl = `https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/getDriverSponsorMappings?UserID=${user.UserID}`;
+                        const mappingsRes = await fetch(mappingsUrl);
+                        if (mappingsRes.ok) {
+                            const mappingsData = await mappingsRes.json();
+                            console.log('Cart - Fetched mappings for points:', mappingsData);
+                            
+                            // Handle nested array response (same as DriverProfile)
+                            let mappings = mappingsData;
+                            if (Array.isArray(mappingsData) && mappingsData.length > 0 && Array.isArray(mappingsData[0])) {
+                                mappings = mappingsData[0];
+                            }
+                            
+                            // Find matching sponsor mapping
+                            if (Array.isArray(mappings)) {
+                                const currentMapping = mappings.find(m => m.SponsorID == savedSelection.sponsorID);
+                                if (currentMapping) {
+                                    points = currentMapping.Points || 0;
+                                    console.log('Cart - Found current points for SponsorID', savedSelection.sponsorID, ':', points);
+                                    setCurrentPoints(points);
+                                    
+                                    // Update saved selection with fetched points
+                                    const updatedSelection = { ...savedSelection, currentPoints: points };
+                                    localStorage.setItem('selectedSponsorMapping', JSON.stringify(updatedSelection));
+                                } else {
+                                    console.log('Cart - No mapping found for SponsorID:', savedSelection.sponsorID);
+                                    setCurrentPoints(0);
+                                }
+                            }
+                        } else {
+                            console.log('Cart - Failed to fetch mappings:', mappingsRes.status);
+                            setCurrentPoints(0);
+                        }
+                    } catch (error) {
+                        console.log("Cart - Could not fetch current points:", error);
+                        setCurrentPoints(0);
+                    }
+                }
+            } else {
+                console.log('Cart - No saved sponsor selection found');
+            }
+        } catch (error) {
+            console.error('Cart - Error loading sponsor info:', error);
+        }
+    };
 
     // Not sure how to tie this into the existing setup, try this for now though:
     async function GetCartFromDB(){
@@ -284,13 +373,38 @@ export default function DriverCart() {
         <div>
             {DriverNavbar()}
             <div className="container my-5">
-                <h3>Your Cart</h3>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Your Cart</h3>
+                    {sponsorInfo && (
+                        <div className="text-end">
+                            <div className="alert alert-info mb-0 py-2 px-3">
+                                <div className="d-flex align-items-center justify-content-between">
+                                    <div className="me-3">
+                                        <i className="fas fa-building me-2"></i>
+                                        <strong>Sponsor:</strong> {sponsorInfo.CompanyName}
+                                    </div>
+                                    <div>
+                                        <span className="badge bg-primary fs-6">
+                                            <i className="fas fa-coins me-1"></i>
+                                            {currentPoints} Points
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 {(userType !== 1 && !isAdminImpostorAsDriver) ? (
                     <p>The cart is only available to drivers. If you believe this is an error, please contact an administrator.</p>
                 ) : (
                     <>
                         {cart.length === 0 ? (
-                            <p>Your cart is empty.</p>
+                            <div className="alert alert-info">
+                                <i className="fas fa-shopping-cart me-2"></i>
+                                Your cart is empty. 
+                                <Link to="/DriverProducts" className="ms-2">Browse products</Link> to get started.
+                            </div>
                         ) : (
                             <div className="list-group mb-3">
                                 {cart.map(id => productsMap[id]).filter(Boolean).map(item => (
