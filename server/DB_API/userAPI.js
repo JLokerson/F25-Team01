@@ -64,37 +64,48 @@ async function getUser(data) {
   }
 }
 
-async function addNewUser(data){
-    try {
-        console.log("Inserting new User to User Table");
-        console.log("Data to insert:", data);
-        
-        // Safety check for PasswordSalt - ensure it's never null or undefined
-        if (!data.PasswordSalt) {
-            console.warn("PasswordSalt is missing, generating emergency salt");
-            const crypto = require('crypto');
-            data.PasswordSalt = 'emergency-' + crypto.randomBytes(8).toString('hex') + '-' + Date.now();
-        }
-        
-        console.log("PasswordSalt verification:", data.PasswordSalt ? 'EXISTS' : 'MISSING');
-        
-        const sql = "INSERT INTO USER (FirstName, LastName, Email, Password, PasswordSalt, UserType) VALUES (?, ?, ?, ?, ?, ?)";
-        const values = [data.FirstName, data.LastName, data.Email, data.Password, data.PasswordSalt, data.UserType];
+async function addNewUser(data) {
+  try {
+    console.log("Inserting new User to User Table");
+    console.log("Data to insert:", data);
 
-        console.log("SQL:", sql);
-        console.log("Values:", values);
-        console.log("PasswordSalt in values array (index 4):", values[4]);
-
-        const result = await db.executeQuery(sql, values);
-
-        console.log("Record inserted user, ID: " + result.insertId);
-        return result; 
+    // Safety check for PasswordSalt - ensure it's never null or undefined
+    if (!data.PasswordSalt) {
+      console.warn("PasswordSalt is missing, generating emergency salt");
+      const crypto = require("crypto");
+      data.PasswordSalt =
+        "emergency-" + crypto.randomBytes(8).toString("hex") + "-" + Date.now();
     }
-    catch (error) {
-        console.error("Database query failed:", error);
-        throw error;
-    }
-};
+
+    console.log(
+      "PasswordSalt verification:",
+      data.PasswordSalt ? "EXISTS" : "MISSING"
+    );
+
+    const sql =
+      "INSERT INTO USER (FirstName, LastName, Email, Password, PasswordSalt, UserType) VALUES (?, ?, ?, ?, ?, ?)";
+    const values = [
+      data.FirstName,
+      data.LastName,
+      data.Email,
+      data.Password,
+      data.PasswordSalt,
+      data.UserType,
+    ];
+
+    console.log("SQL:", sql);
+    console.log("Values:", values);
+    console.log("PasswordSalt in values array (index 4):", values[4]);
+
+    const result = await db.executeQuery(sql, values);
+
+    console.log("Record inserted user, ID: " + result.insertId);
+    return result;
+  } catch (error) {
+    console.error("Database query failed:", error);
+    throw error;
+  }
+}
 
 /**
  * Updates a user's password in the USER database.
@@ -337,11 +348,15 @@ router.post("/updatePassword", async (req, res, next) => {
 
 router.post("/login", async (req, res, next) => {
   console.log("--- /login route hit ---");
+  console.log("Raw req.body:", req.body);
   console.log("Raw req.query:", req.query);
 
+  // fallback
+  const src = Object.keys(req.body).length > 0 ? req.body : req.query;
+
   const data = {
-    Email: req.query.Email,
-    Password: req.query.Password,
+    Email: src.Email,
+    Password: src.Password,
   };
 
   console.log("Final parsed data:", data);
@@ -433,24 +448,25 @@ router.get("/checkEmail", async (req, res, next) => {
  * @returns {Promise<object>} The result from the database operation
  */
 async function toggleAccountActivity(userID) {
-    if (!userID) {
-        throw new Error("UserID is required to toggle account activity.");
-    }
+  if (!userID) {
+    throw new Error("UserID is required to toggle account activity.");
+  }
 
-    try {
-        console.log(`Toggling account activity for UserID: ${userID}`);
-        const sql = "UPDATE USER SET ActiveAccount = 1 - ActiveAccount WHERE UserID = ?";
-        const values = [userID];
+  try {
+    console.log(`Toggling account activity for UserID: ${userID}`);
+    const sql =
+      "UPDATE USER SET ActiveAccount = 1 - ActiveAccount WHERE UserID = ?";
+    const values = [userID];
 
-        const result = await db.executeQuery(sql, values);
+    const result = await db.executeQuery(sql, values);
 
-        console.log(`Toggle result: ${result.affectedRows} rows affected.`);
-        console.log(`Toggled account activity for UserID: ${userID}`);
-        return result;
-    } catch (error) {
-        console.error("Failed to toggle account activity:", error);
-        throw error;
-    }
+    console.log(`Toggle result: ${result.affectedRows} rows affected.`);
+    console.log(`Toggled account activity for UserID: ${userID}`);
+    return result;
+  } catch (error) {
+    console.error("Failed to toggle account activity:", error);
+    throw error;
+  }
 }
 
-module.exports={router, addNewUser, toggleAccountActivity};
+module.exports = { router, addNewUser, toggleAccountActivity };

@@ -26,9 +26,15 @@ const apiCall = async (method, path, params = null) => {
 
   // If parameters are provided, construct the query string.
   // This is used for both GET and POST requests as per your Postman setup.
+  // For POST requests, parameters will be sent in the body.
   if (params) {
-    const query = new URLSearchParams(params).toString();
-    url += `?${query}`;
+    if (method === "GET") {
+      const query = new URLSearchParams(params).toString();
+      url += `?${query}`;
+    } else {
+      console.log("(DEBUG) Params being sent in body:", params);
+      options.body = JSON.stringify(params);
+    }
   }
 
   try {
@@ -243,7 +249,8 @@ export const deleteUserCartItems = (driverId) =>
  * @param {number} mappingId - The ID of the CART_MAPPINGS entry to remove.
  * @param {number} driverId - The ID of the driver (for verification).
  */
-export const removeCartItem = (mappingId, driverId) => { // fix later
+export const removeCartItem = (mappingId, driverId) => {
+  // fix later
   const API_BASE_URL =
     "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws";
   // const API_BASE_URL = "http://localhost:4000"; // swap for localhost testing
