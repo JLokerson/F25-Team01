@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link, useNavigate } from "react-router-dom";
-import DriverNavbar from "./DriverNavbar";
-import driversSeed from "../content/json-assets/driver_sample.json";
 import { CookiesProvider, useCookies } from "react-cookie";
 import {
   getCartItems,
@@ -263,13 +261,6 @@ export default function DriverCart() {
             } catch (e) {
               driversList = [];
             }
-          }
-
-          // If still no drivers persisted, fall back to the bundled seed JSON
-          if (!Array.isArray(driversList) || driversList.length === 0) {
-            driversList = Array.isArray(driversSeed)
-              ? driversSeed.map((d) => ({ ...d }))
-              : [];
           }
 
           // Calculate total cost of ordered items (sum of ITEM_PRICE)

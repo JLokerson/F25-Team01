@@ -2,8 +2,8 @@ const db = require("./db");
 
 async function getCartItems(data) {
   let sql;
+  
   let values;
-
   if (data.DriverID) {
     console.log(`Querying CART_MAPPINGS by DriverID: ${data.DriverID}`);
     sql = "SELECT * FROM CART_MAPPINGS WHERE DriverID = ?";

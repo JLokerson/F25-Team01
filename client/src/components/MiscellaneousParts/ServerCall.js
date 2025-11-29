@@ -243,7 +243,7 @@ export const deleteUserCartItems = (driverId) =>
  * @param {number} mappingId - The ID of the CART_MAPPINGS entry to remove.
  * @param {number} driverId - The ID of the driver (for verification).
  */
-export const removeCartItem = (mappingId, driverId) => {
+export const removeCartItem = (mappingId, driverId) => { // fix later
   const API_BASE_URL =
     "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws";
   // const API_BASE_URL = "http://localhost:4000"; // swap for localhost testing

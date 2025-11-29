@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { addCartItem } from "./MiscellaneousParts/ServerCall";
 import "./DriverProducts.css";
 
 const CATEGORY_PLACEHOLDER =
@@ -188,7 +189,7 @@ export default function DriverProducts() {
       try {
         const filter = `categoryPath.id=${categoryId}`;
         const params = new URLSearchParams({
-          show: "name,salePrice,image",
+          show: "name,salePrice,image,sku",
           pageSize: PRODUCTS_PER_PAGE,
           page: 1,
           sort: "name.asc",
@@ -267,17 +268,14 @@ export default function DriverProducts() {
       );
 
       // Call the backend endpoint to add to cart
-      const url = withApiBase("/cartAPI/addCartItem");
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          DriverID: driverID,
-          ProductID: product.sku, // Best Buy API uses string SKUs
-        }),
-      });
+      //const url = withApiBase("/cartAPI/addCartItem");
+      const cartBody = {
+        DriverID: driverID,
+        ProductID: product.sku, // Best Buy API uses string SKUs
+      };
+      console.log("Product: ", product);
+      console.log("Cart body:", cartBody);
+      const response = await addCartItem(cartBody);
 
       if (!response.ok) {
         const errorMsg = await parseError(
