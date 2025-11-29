@@ -376,6 +376,36 @@ export const getItemMappings = (productId) =>
 export const deleteUserCartItems = (driverId) =>
   apiCall("DELETE", "/cartAPI/deleteCartItems", { DriverID: driverId });
 
+// I made this server call to remove a single item from the cart based on MappingID - Jason
+/**
+ * Removes a single item from a driver's cart by MappingID.
+ * @param {number} mappingId - The ID of the CART_MAPPINGS entry to remove.
+ * @param {number} driverId - The ID of the driver (for verification).
+ */
+export const removeCartItem = (mappingId, driverId) => { // fix later
+  const API_BASE_URL =
+    "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws";
+  // const API_BASE_URL = "http://localhost:4000"; // swap for localhost testing
+
+  return fetch(`${API_BASE_URL}/cartAPI/removeFromCart`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      MappingID: mappingId,
+      DriverID: driverId,
+    }),
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(
+        `HTTP error! status: ${response.status} - ${response.statusText}`
+      );
+    }
+    return response.json();
+  });
+};
+
 // --- Application API Calls ---
 
 /**

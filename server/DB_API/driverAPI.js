@@ -42,13 +42,28 @@ async function getAllDrivers() {
   }
 }
 
+// get information about specific driver user
 async function getSpecificDriverSponsors(data) {
   try {
     console.log("Reading info for chosen driver");
 
+    // Filter by UserID if provided
+    if (data.UserID) {
+      const query =
+        "SELECT DRIVER.DriverID, DRIVER.SponsorID, DRIVER.UserID, USER.FirstName, USER.LastName, USER.Email FROM DRIVER INNER JOIN USER ON DRIVER.USERID = USER.USERID WHERE DRIVER.UserID = ?";
+      const result = await db.executeQuery(query, [data.UserID]);
+      console.log(
+        "Returning driver(s) for UserID:",
+        data.UserID,
+        "Count:",
+        result.length
+      );
+      return result;
+    }
+
+    // If no filter, return all drivers
     const query =
-      "SELECT DRIVER.DriverID, DRIVER.SponsorID, DRIVER.UserID, USER.FirstName, USER.LastName, USER.Email FROM DRIVER \
-                        INNER JOIN USER ON DRIVER.USERID = USER.USERID;";
+      "SELECT DRIVER.DriverID, DRIVER.SponsorID, DRIVER.UserID, USER.FirstName, USER.LastName, USER.Email FROM DRIVER INNER JOIN USER ON DRIVER.USERID = USER.USERID";
     const allDrivers = await db.executeQuery(query);
     console.log("Returning %s Drivers", allDrivers.length);
     return allDrivers;
@@ -884,6 +899,7 @@ router.post("/updateDriverWithSponsor", async (req, res, next) => {
   }
 });
 
+// Primary backend (Step 1)
 // --- Gets the SponsorID from the DRIVER_SPONSOR_MAPPINGS table not the DRIVER table -JL
 /**
  * Get the SponsorID for a given DriverID from DRIVER_SPONSOR_MAPPINGS table
@@ -921,6 +937,8 @@ async function getSponsorForDriver(driverID) {
     throw error;
   }
 }
+
+// Backend - Middleware (Step 2), recieves request from frontend, calls Step 1 function and sends back response to frontend
 // --- Gets the SponsorID from the DRIVER_SPONSOR_MAPPINGS table not the DRIVER table -JL
 router.get("/getSponsorForDriver", async (req, res, next) => {
   const driverID = req.query.DriverID || req.body.DriverID;
@@ -936,12 +954,22 @@ router.get("/getSponsorForDriver", async (req, res, next) => {
 
   try {
     const result = await getSponsorForDriver(parseInt(driverID));
+    console.log("(DEBUG) getSponsorForDriver returned:", result);
+
     if (result === null) {
+      console.warn(
+        `(DEBUG) No sponsor mapping found for DriverID ${driverID} - returning 404`
+      );
       return res.status(404).json({
         message: "No sponsor mapping found for this driver",
         driverID: parseInt(driverID),
       });
     }
+
+    console.log(
+      `(DEBUG) Returning sponsor data for DriverID ${driverID}:`,
+      result
+    );
     res.json(result);
   } catch (error) {
     console.error("Error fetching sponsor for driver:", error);

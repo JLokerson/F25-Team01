@@ -1,6 +1,7 @@
 // Use express
 const express = require("express");
 const db = require("./db");
+const http = require("axios");
 
 const router = express.Router();
 
@@ -50,7 +51,86 @@ async function getAllCategoriesForSponsor(sponsorID) {
     WHERE SponsorID = ?
     ORDER BY Active DESC, CatalogID ASC
   `;
-  return db.executeQuery(sql, [sponsorID]);
+  const catalogRows = await db.executeQuery(sql, [sponsorID]);
+
+  // Enrich catalog entries with category names and images from Best Buy API
+  let categoryMap = {};
+  try {
+    const API_KEY = process.env.API_KEY || "3AsycyCu2CRRwvvnLtHYuBMV";
+    const BB_BASE = "https://api.bestbuy.com/v1";
+
+    // Step 1: Fetch all category metadata (names)
+    const params = {
+      show: "id,name",
+      pageSize: 100,
+      cursorMark: "*",
+      format: "json",
+      apiKey: API_KEY,
+    };
+
+    const response = await http.get(`${BB_BASE}/categories`, { params });
+    const allCategories = response.data?.categories || [];
+
+    // Create map: categoryId -> { name, image }
+    allCategories.forEach((cat) => {
+      categoryMap[cat.id] = {
+        name: cat.name,
+        image: null, // Will be filled in next step
+      };
+    });
+
+    // Step 2: Fetch images for categories in this sponsor's catalog (limit to avoid rate limiting)
+    const MAX_IMAGES = 5; // Only fetch images for first 5 to avoid rate limits
+    for (let i = 0; i < Math.min(catalogRows.length, MAX_IMAGES); i++) {
+      const categoryId = catalogRows[i].CategoryID;
+
+      if (!categoryMap[categoryId]) continue;
+
+      try {
+        // Fetch first product in category to get image
+        const productParams = {
+          show: "image,largeImage,thumbnailImage",
+          pageSize: 1,
+          format: "json",
+          apiKey: API_KEY,
+        };
+        const filter = `categoryPath.id=${categoryId}`;
+        const prodResponse = await http.get(`${BB_BASE}/products`, {
+          params: { ...productParams, search: filter },
+        });
+
+        const products = prodResponse.data?.products || [];
+        if (products.length > 0) {
+          const imgUrl =
+            products[0].largeImage ||
+            products[0].image ||
+            products[0].thumbnailImage;
+          categoryMap[categoryId].image = imgUrl;
+        }
+
+        // Add delay to avoid rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      } catch (imgError) {
+        console.warn(
+          `Failed to fetch image for category ${categoryId}:`,
+          imgError.message
+        );
+        // Continue without image if fetch fails
+      }
+    }
+  } catch (error) {
+    console.warn(
+      "Failed to enrich categories with Best Buy data:",
+      error.message
+    );
+    // Continue without enrichment if API fails
+  }
+
+  // Return catalog rows enriched with name and image
+  return catalogRows.map((row) => ({
+    ...row,
+    name: categoryMap[row.CategoryID]?.name || null,
+  }));
 }
 
 async function addCategoryForSponsor(payload) {
@@ -122,8 +202,7 @@ router.get("/getAllCategories", async (req, res) => {
       sponsorId: row.SponsorID,
       categoryId: row.CategoryID,
       active: Boolean(row.Active),
-      name: null,
-      img: null,
+      name: row.name,
     }));
     res.json({ sponsorID, categories: normalized });
   } catch (err) {
