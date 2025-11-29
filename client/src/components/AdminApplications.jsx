@@ -3,241 +3,50 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import AdminNavbar from './AdminNavbar';
 
 export default function AdminApplications() {
-    // Extended dummy data for applications from all sponsors - updated to match real database sponsors
-    const [applications, setApplications] = useState([
-        {
-            id: 1,
-            firstName: 'David',
-            lastName: 'Johnson',
-            email: 'davidjohnson@email.com',
-            phone: '(555) 123-4567',
-            dateOfBirth: '1990-05-15',
-            licenseNumber: 'DL123456789',
-            address: '123 Main St, City, State 12345',
-            requestedOrganization: 'RandTruckCompany',
-            sponsorId: 1,
-            applicationDate: '2024-01-15',
-            status: 'pending',
-            tempPassword: 'password123'
-        },
-        // {
-        //     id: 2,
-        //     firstName: 'Sarah',
-        //     lastName: 'Williams',
-        //     email: 'sarahwilliams@email.com',
-        //     phone: '(555) 987-6543',
-        //     dateOfBirth: '1988-09-22',
-        //     licenseNumber: 'DL987654321',
-        //     address: '456 Oak Ave, City, State 54321',
-        //     requestedOrganization: 'CoolTruckCompany',
-        //     sponsorId: 3,
-        //     applicationDate: '2024-01-18',
-        //     status: 'pending',
-        //     tempPassword: 'password456'
-        // },
-        {
-            id: 3,
-            firstName: 'James',
-            lastName: 'Anderson',
-            email: 'jamesanderson@email.com',
-            phone: '(555) 555-1234',
-            dateOfBirth: '1985-03-10',
-            licenseNumber: 'DL555123456',
-            address: '789 Pine Rd, City, State 67890',
-            requestedOrganization: 'CoolTruckCompany',
-            sponsorId: 3,
-            applicationDate: '2024-01-20',
-            status: 'pending',
-            tempPassword: 'password789'
-        },
-        {
-            id: 4,
-            firstName: 'Maria',
-            lastName: 'Rodriguez',
-            email: 'mariarodriguez@email.com',
-            phone: '(555) 444-7890',
-            dateOfBirth: '1992-07-25',
-            licenseNumber: 'DL444789012',
-            address: '321 Elm St, City, State 54321',
-            requestedOrganization: 'RandTruckCompany',
-            sponsorId: 5,
-            applicationDate: '2024-01-22',
-            status: 'approved',
-            tempPassword: 'passwordabc',
-            approvedBy: 'Sponsor User',
-            approvedDate: '2024-01-23',
-            processedByType: 'sponsor'
-        },
-        {
-            id: 5,
-            firstName: 'Michael',
-            lastName: 'Brown',
-            email: 'michaelbrown@email.com',
-            phone: '(555) 333-2468',
-            dateOfBirth: '1987-11-05',
-            licenseNumber: 'DL333246810',
-            address: '654 Maple Ave, City, State 13579',
-            requestedOrganization: 'CoolTruckCompany',
-            sponsorId: 3,
-            applicationDate: '2024-01-19',
-            status: 'denied',
-            tempPassword: 'passworddef',
-            deniedBy: 'Admin Jane Doe',
-            deniedDate: '2024-01-21',
-            denialReason: 'Invalid license number provided',
-            processedByType: 'admin'
-        },
-        {
-            id: 6,
-            firstName: 'Lisa',
-            lastName: 'Garcia',
-            email: 'lisagarcia@email.com',
-            phone: '(555) 777-9999',
-            dateOfBirth: '1991-12-08',
-            licenseNumber: 'DL777999123',
-            address: '987 Cedar Blvd, City, State 98765',
-            requestedOrganization: 'AwesomeTruckCompany',
-            sponsorId: 4,
-            applicationDate: '2024-01-25',
-            status: 'pending',
-            tempPassword: 'password999'
-        }
-    ]);
-
+    const [applications, setApplications] = useState([]);
     const [selectedApplication, setSelectedApplication] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [denialReason, setDenialReason] = useState('');
     const [actionType, setActionType] = useState(''); // 'approve' or 'deny'
     const [filterStatus, setFilterStatus] = useState('pending'); // 'all', 'pending', 'approved', 'denied'
     const [filterOrganization, setFilterOrganization] = useState('all');
-    // Remove unused sponsors state variable
-    // const [sponsors, setSponsors] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     // Load data on component mount
     useEffect(() => {
         const loadData = async () => {
             try {
-                // Load sponsors - remove this since we're not using it
-                // const sponsorResponse = await getAllSponsors();
-                // if (sponsorResponse.ok) {
-                //     const sponsorData = await sponsorResponse.json();
-                //     setSponsors(sponsorData);
+                setError(null);
+                
+                // TODO: Replace with actual API call when application endpoints are available
+                // const response = await fetch('http://localhost:4000/api/applications');
+                // if (response.ok) {
+                //     const data = await response.json();
+                //     setApplications(data);
+                // } else {
+                //     setError('Failed to load applications');
                 // }
 
-                // Since application API endpoints don't exist, always use fallback data
-                console.log('Using shared fallback application data - API endpoints not available');
-                setApplications(getSharedFallbackApplications());
+                // For now, set empty array since no API exists
+                console.log('Would fetch all applications from API');
+                setApplications([]);
+                
             } catch (error) {
                 console.error('Error loading data:', error);
-                setApplications(getSharedFallbackApplications());
+                setError('Failed to load applications');
+                setApplications([]);
+            } finally {
+                setLoading(false);
             }
         };
+        
         loadData();
 
-        // Remove polling since API endpoints don't exist
-        console.log('Application polling disabled - API endpoints not available');
+        // TODO: Add polling when API endpoints are available
+        // const interval = setInterval(loadData, 30000); // Poll every 30 seconds
+        // return () => clearInterval(interval);
     }, []);
-
-    // Shared fallback data - this should match the data in PendingApplications
-    const getSharedFallbackApplications = () => [
-        {
-            id: 1,
-            firstName: 'David',
-            lastName: 'Johnson',
-            email: 'davidjohnson@email.com',
-            phone: '(555) 123-4567',
-            dateOfBirth: '1990-05-15',
-            licenseNumber: 'DL123456789',
-            address: '123 Main St, City, State 12345',
-            requestedOrganization: 'RandTruckCompany',
-            sponsorId: 1,
-            applicationDate: '2024-01-15',
-            status: 'pending',
-            tempPassword: 'password123'
-        },
-        {
-            id: 2,
-            firstName: 'Sarah',
-            lastName: 'Williams',
-            email: 'sarahwilliams@email.com',
-            phone: '(555) 987-6543',
-            dateOfBirth: '1988-09-22',
-            licenseNumber: 'DL987654321',
-            address: '456 Oak Ave, City, State 54321',
-            requestedOrganization: 'CoolTruckCompany',
-            sponsorId: 3,
-            applicationDate: '2024-01-18',
-            status: 'pending',
-            tempPassword: 'password456'
-        },
-        {
-            id: 3,
-            firstName: 'James',
-            lastName: 'Anderson',
-            email: 'jamesanderson@email.com',
-            phone: '(555) 555-1234',
-            dateOfBirth: '1985-03-10',
-            licenseNumber: 'DL555123456',
-            address: '789 Pine Rd, City, State 67890',
-            requestedOrganization: 'AwesomeTruckCompany',
-            sponsorId: 4,
-            applicationDate: '2024-01-20',
-            status: 'pending',
-            tempPassword: 'password789'
-        },
-        {
-            id: 4,
-            firstName: 'Maria',
-            lastName: 'Rodriguez',
-            email: 'mariarodriguez@email.com',
-            phone: '(555) 444-7890',
-            dateOfBirth: '1992-07-25',
-            licenseNumber: 'DL444789012',
-            address: '321 Elm St, City, State 54321',
-            requestedOrganization: 'RandTruckCompany',
-            sponsorId: 5,
-            applicationDate: '2024-01-22',
-            status: 'approved',
-            tempPassword: 'passwordabc',
-            approvedBy: 'Sponsor User',
-            approvedDate: '2024-01-23',
-            processedByType: 'sponsor'
-        },
-        {
-            id: 5,
-            firstName: 'Michael',
-            lastName: 'Brown',
-            email: 'michaelbrown@email.com',
-            phone: '(555) 333-2468',
-            dateOfBirth: '1987-11-05',
-            licenseNumber: 'DL333246810',
-            address: '654 Maple Ave, City, State 13579',
-            requestedOrganization: 'CoolTruckCompany',
-            sponsorId: 3,
-            applicationDate: '2024-01-19',
-            status: 'denied',
-            tempPassword: 'passworddef',
-            deniedBy: 'Admin Jane Doe',
-            deniedDate: '2024-01-21',
-            denialReason: 'Invalid license number provided',
-            processedByType: 'admin'
-        },
-        {
-            id: 6,
-            firstName: 'Lisa',
-            lastName: 'Garcia',
-            email: 'lisagarcia@email.com',
-            phone: '(555) 777-9999',
-            dateOfBirth: '1991-12-08',
-            licenseNumber: 'DL777999123',
-            address: '987 Cedar Blvd, City, State 98765',
-            requestedOrganization: 'AwesomeTruckCompany',
-            sponsorId: 4,
-            applicationDate: '2024-01-25',
-            status: 'pending',
-            tempPassword: 'password999'
-        }
-    ];
 
     const handleViewApplication = (application) => {
         setSelectedApplication(application);
@@ -319,6 +128,13 @@ export default function AdminApplications() {
                             : app
                     ));
                     
+                    // TODO: Update application status via API
+                    // await fetch(`http://localhost:4000/api/applications/${selectedApplication.id}/approve`, {
+                    //     method: 'PUT',
+                    //     headers: { 'Content-Type': 'application/json' },
+                    //     body: JSON.stringify({ approvedBy: adminName, approvedByType: 'admin' })
+                    // });
+                    
                     // Check if this was a partial success (user created but DRIVER table failed)
                     if (responseData && responseData.requiresDriverFix) {
                         alert(`Driver User Account Created Successfully!\n\nUser Account:\n- Email: ${selectedApplication.email}\n- Password: password\n- UserID: ${responseData.userID}\n\nNote: DRIVER table relationship needs to be created manually.\nPlease use the "Fix Missing Driver Records" button in User Management.\n\nThe user can log in but may have limited functionality until the DRIVER relationship is fixed.`);
@@ -350,14 +166,16 @@ export default function AdminApplications() {
             console.log(`Admin denying application for ${selectedApplication.firstName} ${selectedApplication.lastName}`);
             console.log('Denial reason:', denialReason);
             
-            // Since application status API doesn't exist, just log what would be updated
-            console.log('Would update application status:', {
-                applicationId: selectedApplication.id,
-                status: 'denied',
-                processedBy: adminName,
-                processedByType: 'admin',
-                denialReason: denialReason
-            });
+            // TODO: Update application status via API
+            // await fetch(`http://localhost:4000/api/applications/${selectedApplication.id}/deny`, {
+            //     method: 'PUT',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ 
+            //         deniedBy: adminName, 
+            //         deniedByType: 'admin',
+            //         denialReason: denialReason 
+            //     })
+            // });
             
             // Update application status in local state - keep for admin view but mark as processed
             setApplications(prev => prev.map(app => 
@@ -420,6 +238,36 @@ export default function AdminApplications() {
         }
     };
 
+    if (loading) {
+        return (
+            <>
+                <AdminNavbar />
+                <div className="container-fluid mt-4">
+                    <div className="text-center">
+                        <div className="spinner-border" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                        <p className="mt-2">Loading applications...</p>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
+    if (error) {
+        return (
+            <>
+                <AdminNavbar />
+                <div className="container-fluid mt-4">
+                    <div className="alert alert-danger">
+                        <i className="fas fa-exclamation-triangle me-2"></i>
+                        Error: {error}
+                    </div>
+                </div>
+            </>
+        );
+    }
+
     return (
         <>
             <AdminNavbar />
@@ -437,7 +285,7 @@ export default function AdminApplications() {
                             </div>
                         </div>
                         
-                        {/* Enhanced Statistics Cards with sync info */}
+                        {/* Statistics Cards */}
                         <div className="row mb-4">
                             <div className="col-md-3">
                                 <div className="card text-center">
@@ -485,7 +333,7 @@ export default function AdminApplications() {
                     </div>
                 </div>
 
-                {/* Enhanced Filters */}
+                {/* Filters */}
                 <div className="row mb-4">
                     <div className="col-md-6">
                         <label className="form-label">Filter by Status:</label>
@@ -521,11 +369,20 @@ export default function AdminApplications() {
                         {filteredApplications.length === 0 ? (
                             <div className="alert alert-info">
                                 <i className="fas fa-info-circle me-2"></i>
-                                {filterStatus === 'pending' 
-                                    ? "No pending applications match the current filters."
-                                    : "No applications match the current filters."
+                                {applications.length === 0 
+                                    ? "No applications have been submitted yet."
+                                    : filterStatus === 'pending' 
+                                        ? "No pending applications match the current filters."
+                                        : "No applications match the current filters."
                                 }
-                                {filterStatus === 'pending' && (
+                                {applications.length === 0 && (
+                                    <div className="mt-2">
+                                        <small>
+                                            Applications will appear here when drivers submit requests to join organizations.
+                                        </small>
+                                    </div>
+                                )}
+                                {applications.length > 0 && filterStatus === 'pending' && (
                                     <div className="mt-2">
                                         <small>
                                             To view processed applications, change the status filter above.

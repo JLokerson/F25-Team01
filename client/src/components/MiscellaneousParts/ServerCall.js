@@ -1,7 +1,8 @@
 // The base URL for your API endpoint.
-const API_BASE_URL =
-  "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws";
-//const API_BASE_URL = "http://localhost:4000"; // swap for localhost testing
+//const API_BASE_URL = "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws";
+const API_BASE_URL = "http://localhost:4000"; // swap for localhost testing
+
+const LOCALHOST_BASE_URL = "http://localhost:4000";
 
 /**
  * A generic helper function to handle all API calls.
@@ -63,6 +64,14 @@ export const getAllUsers = () => apiCall("GET", "/userAPI/getAllUsers");
  */
 export const getUser = (userId) =>
   apiCall("GET", "/userAPI/getUser", { UserID: userId });
+
+export const getUserFromEmail = (Email) =>
+  apiCall("GET", "/userAPI/getUser", { Email: Email });
+
+// Retrieve salt from email (login purposes)
+export const getSaltForUser = (Email) =>
+  apiCall("GET", "/userAPI/getSaltForUser", {Email: Email});
+
 
 /**
  * Adds a new user.
@@ -167,6 +176,127 @@ export const getAllDrivers = () => apiCall("GET", "/driverAPI/getAllDrivers");
 export const addDriver = (driverData) =>
   apiCall("POST", "/driverAPI/addDriver", driverData);
 
+/**
+ * Fetches driver-sponsor mappings for a specific user using GetDriverInfoSpecific stored procedure.
+ * Falls back to localhost:3001 if the primary endpoint fails, then to getAllDrivers simulation.
+ * @param {string|number} userId - The ID of the user.
+ * 
+ * This is longer than it needs to be, but I can't get it work without the fallback
+ * so for now imma keep it like this - J.L.
+ */
+export const getDriverSponsorMappings = async (userId) => {
+  try {
+    // Try the primary AWS endpoint first
+    return await apiCall("GET", `/driverAPI/getDriverSponsorMappings/${userId}`);
+  } catch (error) {
+    console.warn(`Primary getDriverSponsorMappings endpoint failed for userId ${userId}, trying localhost backup:`, error.message);
+    
+    try {
+      // Try localhost:3001 backup
+      const localhostUrl = `${LOCALHOST_BASE_URL}/driverAPI/getDriverSponsorMappings/${userId}`;
+      const response = await fetch(localhostUrl, {
+        method: 'GET',
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (response.ok) {
+        console.log(`Localhost backup successful for getDriverSponsorMappings userId ${userId}`);
+        return response;
+      } else {
+        throw new Error(`Localhost backup failed with status: ${response.status}`);
+      }
+    } catch (localhostError) {
+      console.warn(`Localhost backup also failed for userId ${userId}, attempting final fallback:`, localhostError.message);
+      
+      // Final fallback to getAllDrivers simulation (existing code)
+      try {
+        const allDriversResponse = await getAllDrivers();
+        if (allDriversResponse && allDriversResponse.ok) {
+          const allDriversData = await allDriversResponse.json();
+          
+          // Extract the actual drivers array from the response
+          let driversArray = allDriversData;
+          if (Array.isArray(allDriversData) && allDriversData.length > 0 && Array.isArray(allDriversData[0])) {
+            driversArray = allDriversData[0];
+          }
+          
+          // Filter for the specific user
+          const userDrivers = driversArray.filter(driver => 
+            Number(driver.UserID) === Number(userId)
+          );
+          
+          console.log(`Final fallback found ${userDrivers.length} driver records for userId ${userId}`);
+          
+          // Transform the driver records to match the stored procedure response structure
+          const transformedDrivers = userDrivers.map((driver, index) => ({
+            ...driver,
+            Name: null, // Will be populated by sponsor name lookup
+            MappingID: driver.DriverID || (index + 1), // Use DriverID as MappingID or fallback to index
+            PointRatio: "0.01"
+          }));
+          
+          console.log(`Final fallback transformed drivers with MappingIDs:`, transformedDrivers);
+          
+          // Create response structure that matches the stored procedure: [[actualData], metadata]
+          const fallbackResponse = [transformedDrivers, { fieldCount: 0, affectedRows: 0 }];
+          
+          // Create a mock response object that matches what the specific endpoint would return
+          const mockResponse = {
+            ok: true,
+            status: 200,
+            json: async () => fallbackResponse
+          };
+          
+          return mockResponse;
+        }
+      } catch (fallbackError) {
+        console.error('Final fallback to getAllDrivers also failed:', fallbackError);
+      }
+      
+      // If all approaches fail, re-throw the original error
+      throw error;
+    }
+  }
+};
+
+/**
+ * Fetches points change history for a specific driver-sponsor mapping.
+ * Falls back to localhost:3001 if the primary endpoint fails.
+ * @param {string|number} mappingID - The DriverSponsorMappingID.
+ */
+export const getPointsHistory = async (mappingID) => {
+  try {
+    // Try the primary AWS endpoint first
+    return await apiCall("GET", `/driverAPI/getPointsHistory/${mappingID}`);
+  } catch (error) {
+    console.warn(`Primary getPointsHistory endpoint failed for mappingID ${mappingID}, trying localhost backup:`, error.message);
+    
+    try {
+      // Try localhost:3001 backup
+      const localhostUrl = `${LOCALHOST_BASE_URL}/driverAPI/getPointsHistory/${mappingID}`;
+      const response = await fetch(localhostUrl, {
+        method: 'GET',
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (response.ok) {
+        console.log(`Localhost backup successful for getPointsHistory mappingID ${mappingID}`);
+        return response;
+      } else {
+        throw new Error(`Localhost backup failed with status: ${response.status} - ${response.statusText}`);
+      }
+    } catch (localhostError) {
+      console.error(`Localhost backup also failed for mappingID ${mappingID}:`, localhostError.message);
+      // Re-throw the original error since localhost backup failed
+      throw error;
+    }
+  }
+};
+
 // --- Sponsor API Calls ---
 
 /**
@@ -204,6 +334,15 @@ export const addSponsorUser = (sponsorUserData) =>
   apiCall("POST", "/sponsorAPI/addSponsorUser", sponsorUserData);
 
 // keep existing getSponsorForUser helper (already defined above)
+
+/**
+ * Updates the points for a single driver.
+ * @param {int} DriverID 
+ * @param {int} PointUpdate - positive or negative change to drivers current points
+ * @param {int} SponsorID
+ */
+export const updateDriverPoints = (driverID , pointUpdate, sponsorID) =>
+  apiCall("POST", "/sponsorAPI/updateDriverPoints", {DriverID: driverID , PointChange: pointUpdate, SponsorID: sponsorID});
 
 // --- Cart API Calls ---
 

@@ -5,7 +5,7 @@ import { HashPassword, GenerateSalt } from '../MiscellaneousParts/HashPass';
 import { CookiesProvider, useCookies } from 'react-cookie';
 import { updatePassword } from '../MiscellaneousParts/ServerCall';
 
-export default function HelperPasswordChange(UserID = 4) {
+export default function HelperPasswordChange(UserID) {
     const [newpass1, setnewpass1] = useState('');
     const [newpass2, setnewpass2] = useState('');
     const [oldpass, setoldpass] = useState('');
@@ -20,12 +20,12 @@ export default function HelperPasswordChange(UserID = 4) {
 
     async function AttemptUpdate(newpass){
         let salt = GenerateSalt();
-        let hashedPassword = await HashPassword(newpass+salt);
+        let hashedPassword = await HashPassword(newpass,salt);
         setMessage("Processing password change...");
         setMessageType("info");
             
         try {
-        const response = await updatePassword(UserID, hashedPassword, salt);
+        const response = await updatePassword(UserID.UserID, hashedPassword, salt);
 
         // Debug: Log the response status and text
         console.log('Response status:', response.status);
@@ -51,6 +51,9 @@ export default function HelperPasswordChange(UserID = 4) {
         }
         
         // Store user info TODO: MAKE THIS USE COOKIES
+        localStorage.setItem("Salt",salt);
+        localStorage.setItem("CurPass",hashedPassword);
+
         console.log('Password change successful.');
         setMessage("Password changed successfully!");
         setMessageType("success");
@@ -70,13 +73,16 @@ export default function HelperPasswordChange(UserID = 4) {
         }
     }
 
-    function ChangePassword(e){
+    async function ChangePassword(e){
         e.preventDefault();
         setMessage(''); // Clear previous messages
         
         if(newpass1 === newpass2){
             // ATTEMPT TO UPDATE PASSWORD IF OLDPASS CORRECT
-            if(oldpass){
+            let OldSalt = localStorage.getItem("Salt");
+            let passcheck = await HashPassword(oldpass,OldSalt);
+            let OrigPass = localStorage.getItem("CurPass");
+            if(OrigPass === passcheck){
                 AttemptUpdate(newpass1);
                 return;
             }

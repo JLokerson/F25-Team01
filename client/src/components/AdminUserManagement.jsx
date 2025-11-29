@@ -38,12 +38,99 @@ export default function AdminUserManagement() {
     const [search, setSearch] = useState("");
     const [userTypeFilter, setUserTypeFilter] = useState("all");
     const [sponsorOrgSearch, setSponsorOrgSearch] = useState(""); // Add search for sponsor orgs
-    const [isFixingDrivers, setIsFixingDrivers] = useState(false);
+    const [bulkUploadFile, setBulkUploadFile] = useState(null);
+    const [bulkUploadResults, setBulkUploadResults] = useState(null);
+    const [bulkUploadLoading, setBulkUploadLoading] = useState(false);
+    const [isDragOver, setIsDragOver] = useState(false);
+
+    const fetchAllUsers = async () => {
+        try {
+            console.log('=== FETCHING ALL USERS ===');
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/userAPI/getAllUsers`);
+            console.log('Users API response status:', response.status);
+            
+            if (response.ok) {
+                const responseText = await response.text();
+                console.log('Raw users response text:', responseText);
+                
+                let allUsersData;
+                try {
+                    allUsersData = JSON.parse(responseText);
+                    console.log('Parsed users data:', allUsersData);
+                } catch (parseError) {
+                    console.error('Failed to parse users JSON:', parseError);
+                    setAllUsers([]);
+                    return;
+                }
+                
+                if (!Array.isArray(allUsersData)) {
+                    console.error('Users data is not an array:', allUsersData);
+                    setAllUsers([]);
+                    return;
+                }
+                
+                // Process and categorize users by UserType
+                const processedUsers = allUsersData.map((user, index) => {
+                    console.log(`Processing user ${index}:`, user);
+                    
+                    const processed = {
+                        ...user,
+                        // Normalize field names
+                        UserID: user.UserID || user.userID || user.user_id,
+                        FirstName: user.FirstName || user.firstName || user.first_name || '',
+                        LastName: user.LastName || user.lastName || user.last_name || '',
+                        Email: user.Email || user.email || '',
+                        ActiveAccount: user.ActiveAccount !== undefined ? user.ActiveAccount : 
+                                     user.activeAccount !== undefined ? user.activeAccount :
+                                     user.active_account !== undefined ? user.active_account : 1,
+                        UserType: user.UserType || user.userType || user.user_type || 1,
+                        LastLogin: user.LastLogin || user.lastLogin || user.last_login,
+                        // Determine user type and display properties
+                        userType: user.UserType === 1 ? 'Driver' : 
+                                 user.UserType === 2 ? 'Sponsor' : 
+                                 user.UserType === 3 ? 'Admin' : 'Unknown',
+                        displayId: user.UserID, // Use UserID as display ID for all users
+                        sponsorName: 'N/A', // Will be updated for drivers if needed
+                        uniqueKey: `User-${user.UserID}`
+                    };
+                    
+                    console.log(`Processed user ${index}:`, processed);
+                    return processed;
+                });
+                
+                // Sort by UserID for consistent display
+                const sortedUsers = processedUsers.sort((a, b) => a.UserID - b.UserID);
+                
+                console.log('Final processed users:', sortedUsers);
+                
+                // Set individual arrays for compatibility with existing code
+                setDrivers(sortedUsers.filter(u => u.UserType === 1));
+                setSponsorUsers(sortedUsers.filter(u => u.UserType === 2));
+                setAdmins(sortedUsers.filter(u => u.UserType === 3));
+                setAllUsers(sortedUsers);
+                
+            } else {
+                console.error('Failed to fetch users - HTTP status:', response.status);
+                const errorText = await response.text();
+                console.error('Error response body:', errorText);
+                setAllUsers([]);
+                setDrivers([]);
+                setSponsorUsers([]);
+                setAdmins([]);
+            }
+        } catch (error) {
+            console.error('Network error fetching users:', error);
+            setAllUsers([]);
+            setDrivers([]);
+            setSponsorUsers([]);
+            setAdmins([]);
+        }
+    };
 
     const fetchAllDrivers = async () => {
         try {
             console.log('=== FETCHING DRIVERS ===');
-            const response = await fetch(`http://localhost:4000/driverAPI/getAllDrivers`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/getAllDrivers`);
             console.log('Driver API response status:', response.status);
             console.log('Driver API response headers:', Object.fromEntries(response.headers.entries()));
             
@@ -136,7 +223,7 @@ export default function AdminUserManagement() {
         try {
             console.log('=== FETCHING SPONSORS ===');
             // Get sponsor companies for driver dropdown
-            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsors`);
             console.log('Sponsor API response status:', response.status);
             
             if (response.ok) {
@@ -185,7 +272,7 @@ export default function AdminUserManagement() {
         try {
             console.log('=== FETCHING SPONSOR USERS ===');
             // Get sponsor users for user management
-            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsorUsers`);
             console.log('Sponsor users API response status:', response.status);
             
             if (response.ok) {
@@ -237,7 +324,7 @@ export default function AdminUserManagement() {
     const fetchAllAdmins = async () => {
         try {
             console.log('=== FETCHING ADMINS ===');
-            const response = await fetch(`http://localhost:4000/adminAPI/getAllAdmins`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/adminAPI/getAllAdmins`);
             console.log('Admin API response status:', response.status);
             
             if (response.ok) {
@@ -288,7 +375,7 @@ export default function AdminUserManagement() {
     const fetchSponsorOrgs = async () => {
         try {
             console.log('=== FETCHING SPONSOR ORGANIZATIONS ===');
-            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsors`);
             console.log('Sponsor orgs API response status:', response.status);
             
             if (response.ok) {
@@ -342,34 +429,68 @@ export default function AdminUserManagement() {
         console.log('Current sponsorUsers:', sponsorUsers);
         console.log('Current admins:', admins);
         
-        const combinedUsers = [
-            ...drivers.map(driver => ({
-                ...driver,
-                userType: 'Driver',
-                displayId: driver.DriverID,
-                sponsorName: getSponsorName(driver.SponsorID),
-                uniqueKey: `Driver-${driver.DriverID}-${driver.UserID}`,
-                ActiveAccount: driver.ActiveAccount !== undefined ? driver.ActiveAccount : 1
-            })),
-            ...sponsorUsers.map(sponsor => ({
-                ...sponsor,
-                userType: 'Sponsor',
-                displayId: sponsor.SponsorUserID,
-                sponsorName: 'N/A',
-                uniqueKey: `Sponsor-${sponsor.SponsorUserID}-${sponsor.UserID}`,
-                ActiveAccount: sponsor.ActiveAccount !== undefined ? sponsor.ActiveAccount : 1
-            })),
-            ...admins.map(admin => ({
-                ...admin,
-                userType: 'Admin',
-                displayId: admin.AdminID,
-                sponsorName: 'N/A',
-                uniqueKey: `Admin-${admin.AdminID}-${admin.UserID}`,
-                ActiveAccount: admin.ActiveAccount !== undefined ? admin.ActiveAccount : 1
-            }))
-        ];
+        // Create a map to track unique users by UserID
+        const userMap = new Map();
         
-        console.log('Combined users result:', combinedUsers);
+        // Add drivers first (they take priority for display)
+        drivers.forEach(driver => {
+            const key = driver.UserID;
+            if (!userMap.has(key)) {
+                userMap.set(key, {
+                    ...driver,
+                    userType: 'Driver',
+                    displayId: driver.DriverID,
+                    sponsorName: getSponsorName(driver.SponsorID),
+                    uniqueKey: `Driver-${driver.DriverID}-${driver.UserID}`,
+                    ActiveAccount: driver.ActiveAccount !== undefined ? driver.ActiveAccount : 1,
+                    priority: 1 // Highest priority
+                });
+            }
+        });
+        
+        // Add sponsor users only if they don't already exist as drivers
+        sponsorUsers.forEach(sponsor => {
+            const key = sponsor.UserID;
+            if (!userMap.has(key)) {
+                userMap.set(key, {
+                    ...sponsor,
+                    userType: 'Sponsor',
+                    displayId: sponsor.SponsorUserID,
+                    sponsorName: 'N/A',
+                    uniqueKey: `Sponsor-${sponsor.SponsorUserID}-${sponsor.UserID}`,
+                    ActiveAccount: sponsor.ActiveAccount !== undefined ? sponsor.ActiveAccount : 1,
+                    priority: 2
+                });
+            } else {
+                // Log duplicate detection
+                console.log(`Skipping duplicate user: UserID ${key} already exists as ${userMap.get(key).userType}`);
+            }
+        });
+        
+        // Add admins only if they don't already exist
+        admins.forEach(admin => {
+            const key = admin.UserID;
+            if (!userMap.has(key)) {
+                userMap.set(key, {
+                    ...admin,
+                    userType: 'Admin',
+                    displayId: admin.AdminID,
+                    sponsorName: 'N/A',
+                    uniqueKey: `Admin-${admin.AdminID}-${admin.UserID}`,
+                    ActiveAccount: admin.ActiveAccount !== undefined ? admin.ActiveAccount : 1,
+                    priority: 3
+                });
+            } else {
+                // Log duplicate detection
+                console.log(`Skipping duplicate user: UserID ${key} already exists as ${userMap.get(key).userType}`);
+            }
+        });
+        
+        // Convert map to array and sort by UserID for consistent display
+        const combinedUsers = Array.from(userMap.values()).sort((a, b) => a.UserID - b.UserID);
+        
+        console.log('Combined users result (deduplicated):', combinedUsers);
+        console.log('Total unique users:', combinedUsers.length);
         setAllUsers(combinedUsers);
     };
 
@@ -387,7 +508,7 @@ export default function AdminUserManagement() {
             console.log('Creating driver with DRIVER table relationship:', driverData);
             
             const queryString = new URLSearchParams(driverData).toString();
-            const response = await fetch(`http://localhost:4000/driverAPI/addDriver?${queryString}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/addDriver?${queryString}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -452,7 +573,7 @@ export default function AdminUserManagement() {
             console.log('Sponsor changed:', sponsorChanged);
 
             // Use a new endpoint that handles both DRIVER and SPONSOR_USER updates
-            const response = await fetch(`http://localhost:4000/driverAPI/updateDriverWithSponsor`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/updateDriverWithSponsor`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -501,7 +622,7 @@ export default function AdminUserManagement() {
         try {
             // Use userAPI instead of driverAPI for consistency with other user types
             console.log(`Toggling driver UserID: ${driver.UserID}, Action: ${action}`);
-            const response = await fetch(`http://localhost:4000/userAPI/toggleAccountActivity/${driver.UserID}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/userAPI/toggleAccountActivity/${driver.UserID}`, {
                 method: 'POST'
             });
 
@@ -553,7 +674,7 @@ export default function AdminUserManagement() {
             // Test if we can reach the getAllSponsorUsers endpoint (which we know works)
             console.log('Testing getAllSponsorUsers endpoint...');
             try {
-                const testGetUsers = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+                const testGetUsers = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsorUsers`);
                 console.log('getAllSponsorUsers test status:', testGetUsers.status);
                 if (testGetUsers.ok) {
                     const userData = await testGetUsers.json();
@@ -568,7 +689,7 @@ export default function AdminUserManagement() {
             // Test the debug route
             console.log('Testing debug route...');
             try {
-                const debugTest = await fetch(`http://localhost:4000/sponsorAPI/debug`);
+                const debugTest = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/debug`);
                 console.log('Debug test status:', debugTest.status);
                 if (debugTest.ok) {
                     const debugData = await debugTest.json();
@@ -582,7 +703,7 @@ export default function AdminUserManagement() {
 
             // Now try the update
             console.log('Attempting sponsor update...');
-            const response = await fetch(`http://localhost:4000/sponsorAPI/updateSponsorUser`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/updateSponsorUser`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -618,7 +739,7 @@ export default function AdminUserManagement() {
 
         try {
             console.log(`Toggling sponsor UserID: ${sponsorUserID}, Action: ${action}`);
-            const response = await fetch(`http://localhost:4000/userAPI/toggleAccountActivity/${sponsorUserID}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/userAPI/toggleAccountActivity/${sponsorUserID}`, {
                 method: 'POST'
             });
 
@@ -666,7 +787,7 @@ export default function AdminUserManagement() {
 
             console.log('Sending admin update data:', updateData);
 
-            const response = await fetch(`http://localhost:4000/adminAPI/updateAdminUser`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/adminAPI/updateAdminUser`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -710,7 +831,7 @@ export default function AdminUserManagement() {
 
         try {
             console.log(`Toggling admin UserID: ${adminUserID}, Action: ${action}`);
-            const response = await fetch(`http://localhost:4000/userAPI/toggleAccountActivity/${adminUserID}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/userAPI/toggleAccountActivity/${adminUserID}`, {
                 method: 'POST'
             });
 
@@ -775,7 +896,7 @@ export default function AdminUserManagement() {
         const fetchData = async () => {
             console.log('Starting data fetch...');
             setLoading(true);
-            await Promise.all([fetchAllDrivers(), fetchAllSponsors(), fetchAllSponsorUsers(), fetchAllAdmins(), fetchSponsorOrgs()]);
+            await Promise.all([fetchAllUsers(), fetchAllSponsors(), fetchSponsorOrgs()]);
             console.log('Data fetch completed');
             setLoading(false);
         };
@@ -786,42 +907,6 @@ export default function AdminUserManagement() {
     useEffect(() => {
         combineAllUsers();
     }, [drivers, sponsors, sponsorUsers, admins]);
-
-    const handleFixMissingDriverRecords = async () => {
-        if (!window.confirm('This will create DRIVER records for users who have SPONSOR_USER relationships but no DRIVER records. Continue?')) {
-            return;
-        }
-
-        setIsFixingDrivers(true);
-        try {
-            console.log('Attempting to fix missing DRIVER records...');
-            const response = await fetch(`http://localhost:4000/driverAPI/createMissingDriverRecords`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log('Fix result:', result);
-                
-                alert(`Fix completed!\n\nFound: ${result.found} users missing DRIVER records\nCreated: ${result.created.length} new DRIVER records\n\nRefreshing data...`);
-                
-                // Refresh all data to show the updates
-                await Promise.all([fetchAllDrivers(), fetchAllSponsorUsers(), fetchAllAdmins()]);
-            } else {
-                const errorText = await response.text();
-                console.error('Fix failed:', errorText);
-                alert(`Failed to fix missing DRIVER records: ${errorText}`);
-            }
-        } catch (error) {
-            console.error('Error fixing missing DRIVER records:', error);
-            alert(`Error fixing missing DRIVER records: ${error.message}`);
-        } finally {
-            setIsFixingDrivers(false);
-        }
-    };
 
     const handleAddSponsorOrg = async (e) => {
         e.preventDefault();
@@ -835,7 +920,7 @@ export default function AdminUserManagement() {
 
             console.log('Creating sponsor organization:', orgData);
             
-            const response = await fetch(`http://localhost:4000/sponsorAPI/addSponsor`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/addSponsor`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -884,7 +969,7 @@ export default function AdminUserManagement() {
             console.log('Sending sponsor org update data:', updateData);
 
             // Note: Update endpoint may not exist yet, using placeholder
-            const response = await fetch(`http://localhost:4000/sponsorAPI/updateSponsor`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/updateSponsor`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -916,7 +1001,7 @@ export default function AdminUserManagement() {
 
         try {
             console.log(`Toggling sponsor org ID: ${sponsorID}, Action: ${action}`);
-            const response = await fetch(`http://localhost:4000/sponsorAPI/toggleSponsorActivity/${sponsorID}`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/toggleSponsorActivity/${sponsorID}`, {
                 method: 'POST'
             });
 
@@ -931,6 +1016,303 @@ export default function AdminUserManagement() {
         } catch (error) {
             console.error(`Error ${action}ing sponsor org:`, error);
             alert(`Error ${action}ing sponsor organization: ${error.message}`);
+        }
+    };
+
+    const handleBulkUpload = async (e) => {
+        e.preventDefault();
+        if (!bulkUploadFile) {
+            alert('Please select a file to upload.');
+            return;
+        }
+
+        setBulkUploadLoading(true);
+        setBulkUploadResults(null);
+
+        try {
+            const fileContent = await readFileContent(bulkUploadFile);
+            const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line);
+            
+            const results = {
+                totalLines: lines.length,
+                processed: 0,
+                errors: [],
+                success: {
+                    organizations: 0,
+                    drivers: 0,
+                    sponsors: 0
+                },
+                organizationCache: new Set() // Track organizations we've created in this session
+            };
+
+            // Load existing organizations into cache
+            sponsors.forEach(sponsor => {
+                results.organizationCache.add(sponsor.Name.toLowerCase());
+            });
+
+            for (let i = 0; i < lines.length; i++) {
+                const lineNumber = i + 1;
+                const line = lines[i];
+                
+                try {
+                    const result = await processUploadLine(line, lineNumber, results.organizationCache);
+                    
+                    if (result.success) {
+                        results.success[result.type]++;
+                        if (result.type === 'organizations') {
+                            results.organizationCache.add(result.organizationName.toLowerCase());
+                        }
+                    } else {
+                        results.errors.push({
+                            line: lineNumber,
+                            content: line,
+                            error: result.error
+                        });
+                    }
+                } catch (error) {
+                    results.errors.push({
+                        line: lineNumber,
+                        content: line,
+                        error: `Unexpected error: ${error.message}`
+                    });
+                }
+                
+                results.processed++;
+            }
+
+            setBulkUploadResults(results);
+            
+            // Refresh all data after bulk upload
+            await Promise.all([fetchAllUsers(), fetchAllSponsors(), fetchSponsorOrgs()]);
+            
+        } catch (error) {
+            console.error('Error processing bulk upload:', error);
+            alert(`Error processing file: ${error.message}`);
+        } finally {
+            setBulkUploadLoading(false);
+        }
+    };
+
+    const processUploadLine = async (line, lineNumber, organizationCache) => {
+        const parts = line.split('|');
+        
+        if (parts.length < 2) {
+            return { success: false, error: 'Invalid format: Not enough fields (minimum 2 required)' };
+        }
+
+        const type = parts[0].trim().toUpperCase();
+        
+        switch (type) {
+            case 'O':
+                return await processOrganizationRecord(parts, organizationCache);
+            case 'D':
+                return await processDriverRecord(parts, organizationCache);
+            case 'S':
+                return await processSponsorRecord(parts, organizationCache);
+            default:
+                return { success: false, error: `Invalid type '${type}'. Must be O, D, or S.` };
+        }
+    };
+
+    const processOrganizationRecord = async (parts, organizationCache) => {
+        if (parts.length !== 2) {
+            return { success: false, error: 'Organization record must have exactly 2 fields: O|organization name' };
+        }
+
+        const organizationName = parts[1].trim();
+        
+        if (!organizationName) {
+            return { success: false, error: 'Organization name cannot be empty' };
+        }
+
+        // Check if organization already exists (case insensitive)
+        if (organizationCache.has(organizationName.toLowerCase())) {
+            return { success: false, error: `Organization '${organizationName}' already exists` };
+        }
+
+        try {
+            const orgData = {
+                Name: organizationName,
+                PointRatio: 0.01,
+                EnabledSponsor: 1
+            };
+
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/addSponsor`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(orgData)
+            });
+
+            if (response.ok) {
+                return { 
+                    success: true, 
+                    type: 'organizations',
+                    organizationName: organizationName
+                };
+            } else {
+                const errorText = await response.text();
+                return { success: false, error: `Failed to create organization: ${errorText}` };
+            }
+        } catch (error) {
+            return { success: false, error: `Network error creating organization: ${error.message}` };
+        }
+    };
+
+    const processDriverRecord = async (parts, organizationCache) => {
+        if (parts.length !== 5) {
+            return { success: false, error: 'Driver record must have exactly 5 fields: D|organization|first name|last name|email' };
+        }
+
+        const [, organizationName, firstName, lastName, email] = parts.map(p => p.trim());
+        
+        if (!organizationName || !firstName || !lastName || !email) {
+            return { success: false, error: 'All driver fields are required and cannot be empty' };
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return { success: false, error: 'Invalid email format' };
+        }
+
+        // Check if organization exists
+        const sponsor = sponsors.find(s => s.Name.toLowerCase() === organizationName.toLowerCase());
+        if (!sponsor && !organizationCache.has(organizationName.toLowerCase())) {
+            return { success: false, error: `Organization '${organizationName}' does not exist. Create it first with an 'O' record.` };
+        }
+
+        try {
+            const salt = GenerateSalt();
+            const driverData = {
+                FirstName: firstName,
+                LastName: lastName,
+                Email: email,
+                Password: 'DefaultPassword123!', // Default password - user should change on first login
+                SponsorID: sponsor ? sponsor.SponsorID : 0, // Will need to be resolved if organization was just created
+                UserType: 1,
+                PasswordSalt: salt
+            };
+
+            // If organization was just created, we need to find its ID
+            if (!sponsor) {
+                // For now, we'll skip this record and suggest processing organizations first
+                return { success: false, error: `Organization '${organizationName}' was created in this batch but ID not yet available. Please process organizations first, then drivers.` };
+            }
+
+            const queryString = new URLSearchParams(driverData).toString();
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/addDriver?${queryString}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                return { success: true, type: 'drivers' };
+            } else {
+                const errorText = await response.text();
+                return { success: false, error: `Failed to create driver: ${errorText}` };
+            }
+        } catch (error) {
+            return { success: false, error: `Network error creating driver: ${error.message}` };
+        }
+    };
+
+    const processSponsorRecord = async (parts, organizationCache) => {
+        if (parts.length !== 5) {
+            return { success: false, error: 'Sponsor record must have exactly 5 fields: S|organization|first name|last name|email' };
+        }
+
+        const [, organizationName, firstName, lastName, email] = parts.map(p => p.trim());
+        
+        if (!organizationName || !firstName || !lastName || !email) {
+            return { success: false, error: 'All sponsor fields are required and cannot be empty' };
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return { success: false, error: 'Invalid email format' };
+        }
+
+        // Check if organization exists
+        const sponsor = sponsors.find(s => s.Name.toLowerCase() === organizationName.toLowerCase());
+        if (!sponsor && !organizationCache.has(organizationName.toLowerCase())) {
+            return { success: false, error: `Organization '${organizationName}' does not exist. Create it first with an 'O' record.` };
+        }
+
+        try {
+            const salt = GenerateSalt();
+            const sponsorData = {
+                FirstName: firstName,
+                LastName: lastName,
+                Email: email,
+                Password: 'DefaultPassword123!', // Default password - user should change on first login
+                SponsorID: sponsor ? sponsor.SponsorID : 0,
+                UserType: 2,
+                PasswordSalt: salt
+            };
+
+            // If organization was just created, we need to find its ID
+            if (!sponsor) {
+                return { success: false, error: `Organization '${organizationName}' was created in this batch but ID not yet available. Please process organizations first, then sponsors.` };
+            }
+
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/addSponsorUser`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(sponsorData)
+            });
+
+            if (response.ok) {
+                return { success: true, type: 'sponsors' };
+            } else {
+                const errorText = await response.text();
+                return { success: false, error: `Failed to create sponsor: ${errorText}` };
+            }
+        } catch (error) {
+            return { success: false, error: `Network error creating sponsor: ${error.message}` };
+        }
+    };
+
+    const readFileContent = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(new Error('Failed to read file'));
+            reader.readAsText(file);
+        });
+    };
+
+    const handleFileSelect = (file) => {
+        if (file && (file.type === 'text/plain' || file.name.endsWith('.txt'))) {
+            setBulkUploadFile(file);
+            setBulkUploadResults(null);
+        } else {
+            alert('Please select a valid text file (.txt)');
+        }
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDragOver(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setIsDragOver(false);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragOver(false);
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) {
+            handleFileSelect(files[0]);
         }
     };
 
@@ -955,25 +1337,6 @@ export default function AdminUserManagement() {
             <div className="container mt-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2>User Management</h2>
-                    <div>
-                        <button 
-                            className="btn btn-warning me-2"
-                            onClick={handleFixMissingDriverRecords}
-                            disabled={isFixingDrivers}
-                        >
-                            {isFixingDrivers ? (
-                                <>
-                                    <div className="spinner-border spinner-border-sm me-2" role="status"></div>
-                                    Fixing...
-                                </>
-                            ) : (
-                                <>
-                                    <i className="fas fa-wrench me-2"></i>
-                                    Fix Missing Driver Records
-                                </>
-                            )}
-                        </button>
-                    </div>
                 </div>
 
                 {/* Tab Navigation */}
@@ -994,6 +1357,15 @@ export default function AdminUserManagement() {
                         >
                             <i className="fas fa-building me-2"></i>
                             Sponsor Organizations
+                        </button>
+                    </li>
+                    <li className="nav-item">
+                        <button 
+                            className={`nav-link ${activeTab === 'bulk' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('bulk')}
+                        >
+                            <i className="fas fa-upload me-2"></i>
+                            Bulk Load
                         </button>
                     </li>
                 </ul>
@@ -1027,42 +1399,27 @@ export default function AdminUserManagement() {
 
                         <div className="card mb-3">
                             <div className="card-body">
-                                <h5 className="card-title">System Overview & Debug Info</h5>
+                                <h5 className="card-title">System Overview</h5>
                                 <div className="row">
                                     <div className="col-md-3">
                                         <p className="card-text">
-                                            <strong>Total Drivers:</strong> {drivers.length}
+                                            <strong>Total Drivers:</strong> {allUsers.filter(u => u.UserType === 1).length}
                                         </p>
                                     </div>
                                     <div className="col-md-3">
                                         <p className="card-text">
-                                            <strong>Total Sponsor Users:</strong> {sponsorUsers.length}
+                                            <strong>Total Sponsors:</strong> {allUsers.filter(u => u.UserType === 2).length}
                                         </p>
                                     </div>
                                     <div className="col-md-3">
                                         <p className="card-text">
-                                            <strong>Total Admins:</strong> {admins.length}
+                                            <strong>Total Admins:</strong> {allUsers.filter(u => u.UserType === 3).length}
                                         </p>
                                     </div>
                                     <div className="col-md-3">
                                         <p className="card-text">
                                             <strong>Total Users:</strong> {allUsers.length}
                                         </p>
-                                    </div>
-                                </div>
-                                <div className="row mt-2">
-                                    <div className="col-12">
-                                        <small className="text-muted">
-                                            Debug: Check browser console for detailed API response information.
-                                            {drivers.length === 0 && " | No drivers found - check API endpoint."}
-                                            {sponsorUsers.length === 0 && " | No sponsor users found - check API endpoint."}
-                                            {admins.length === 0 && " | No admins found - check API endpoint."}
-                                        </small>
-                                        <br />
-                                        <small className="text-warning">
-                                            <i className="fas fa-info-circle me-1"></i>
-                                            If approved applications don't show up for sponsors, use "Fix Missing Driver Records" button above.
-                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -1086,7 +1443,6 @@ export default function AdminUserManagement() {
                                             <th>User Type</th>
                                             <th>Name</th>
                                             <th>Email</th>
-                                            <th>Sponsor</th>
                                             <th>User ID</th>
                                             <th>Actions</th>
                                         </tr>
@@ -1108,12 +1464,6 @@ export default function AdminUserManagement() {
                                                 </td>
                                                 <td>{user.FirstName} {user.LastName}</td>
                                                 <td>{user.Email}</td>
-                                                <td>
-                                                    {user.userType === 'Driver' 
-                                                        ? `${user.sponsorName} (ID: ${user.SponsorID})`
-                                                        : user.sponsorName
-                                                    }
-                                                </td>
                                                 <td>{user.UserID}</td>
                                                 <td>
                                                     {user.userType === 'Driver' && (
@@ -1284,6 +1634,256 @@ export default function AdminUserManagement() {
                                 </table>
                             </div>
                         )}
+                    </>
+                )}
+
+                {/* Bulk Load Tab */}
+                {activeTab === 'bulk' && (
+                    <>
+                        <div className="row">
+                            <div className="col-md-8">
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h5 className="card-title">
+                                            <i className="fas fa-upload me-2"></i>
+                                            Bulk Load Users and Organizations
+                                        </h5>
+                                        <p className="card-text">
+                                            Upload a pipe-delimited text file to create multiple organizations, drivers, and sponsors at once.
+                                        </p>
+
+                                        <form onSubmit={handleBulkUpload}>
+                                            <div 
+                                                className={`border rounded p-4 mb-3 text-center ${isDragOver ? 'border-primary bg-light' : 'border-dashed'}`}
+                                                onDragOver={handleDragOver}
+                                                onDragLeave={handleDragLeave}
+                                                onDrop={handleDrop}
+                                                style={{ 
+                                                    borderStyle: isDragOver ? 'solid' : 'dashed',
+                                                    minHeight: '120px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    flexDirection: 'column'
+                                                }}
+                                            >
+                                                {bulkUploadFile ? (
+                                                    <div>
+                                                        <i className="fas fa-file-alt fa-2x text-success mb-2"></i>
+                                                        <p className="mb-0">
+                                                            <strong>{bulkUploadFile.name}</strong>
+                                                        </p>
+                                                        <small className="text-muted">
+                                                            {(bulkUploadFile.size / 1024).toFixed(2)} KB
+                                                        </small>
+                                                    </div>
+                                                ) : (
+                                                    <div>
+                                                        <i className="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                                        <p className="mb-2">
+                                                            Drag and drop your text file here, or click to browse
+                                                        </p>
+                                                        <input
+                                                            type="file"
+                                                            className="form-control"
+                                                            accept=".txt,text/plain"
+                                                            onChange={(e) => handleFileSelect(e.target.files[0])}
+                                                            style={{ maxWidth: '300px', margin: '0 auto' }}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="d-flex justify-content-between">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline-secondary"
+                                                    onClick={() => {
+                                                        setBulkUploadFile(null);
+                                                        setBulkUploadResults(null);
+                                                    }}
+                                                    disabled={!bulkUploadFile}
+                                                >
+                                                    Clear File
+                                                </button>
+                                                <button
+                                                    type="submit"
+                                                    className="btn btn-primary"
+                                                    disabled={!bulkUploadFile || bulkUploadLoading}
+                                                >
+                                                    {bulkUploadLoading ? (
+                                                        <>
+                                                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                            Processing...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <i className="fas fa-upload me-2"></i>
+                                                            Upload and Process
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                        {/* Results Display */}
+                                        {bulkUploadResults && (
+                                            <div className="mt-4">
+                                                <hr />
+                                                <h6>Upload Results</h6>
+                                                <div className="row mb-3">
+                                                    <div className="col-md-3">
+                                                        <div className="card bg-primary text-white">
+                                                            <div className="card-body text-center">
+                                                                <h5>{bulkUploadResults.totalLines}</h5>
+                                                                <small>Total Lines</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-3">
+                                                        <div className="card bg-success text-white">
+                                                            <div className="card-body text-center">
+                                                                <h5>
+                                                                    {bulkUploadResults.success.organizations + 
+                                                                     bulkUploadResults.success.drivers + 
+                                                                     bulkUploadResults.success.sponsors}
+                                                                </h5>
+                                                                <small>Successful</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-3">
+                                                        <div className="card bg-danger text-white">
+                                                            <div className="card-body text-center">
+                                                                <h5>{bulkUploadResults.errors.length}</h5>
+                                                                <small>Errors</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-3">
+                                                        <div className="card bg-info text-white">
+                                                            <div className="card-body text-center">
+                                                                <h5>{bulkUploadResults.processed}</h5>
+                                                                <small>Processed</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="row mb-3">
+                                                    <div className="col-md-4">
+                                                        <div className="text-center">
+                                                            <i className="fas fa-building text-warning fa-2x"></i>
+                                                            <h6 className="mt-2">Organizations</h6>
+                                                            <span className="badge bg-warning">{bulkUploadResults.success.organizations}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <div className="text-center">
+                                                            <i className="fas fa-car text-primary fa-2x"></i>
+                                                            <h6 className="mt-2">Drivers</h6>
+                                                            <span className="badge bg-primary">{bulkUploadResults.success.drivers}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <div className="text-center">
+                                                            <i className="fas fa-handshake text-success fa-2x"></i>
+                                                            <h6 className="mt-2">Sponsors</h6>
+                                                            <span className="badge bg-success">{bulkUploadResults.success.sponsors}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Error Details */}
+                                                {bulkUploadResults.errors.length > 0 && (
+                                                    <div className="mt-3">
+                                                        <h6 className="text-danger">
+                                                            <i className="fas fa-exclamation-triangle me-2"></i>
+                                                            Errors ({bulkUploadResults.errors.length})
+                                                        </h6>
+                                                        <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                                            <table className="table table-sm table-striped">
+                                                                <thead className="table-dark">
+                                                                    <tr>
+                                                                        <th>Line</th>
+                                                                        <th>Content</th>
+                                                                        <th>Error</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {bulkUploadResults.errors.map((error, index) => (
+                                                                        <tr key={index}>
+                                                                            <td>{error.line}</td>
+                                                                            <td>
+                                                                                <code style={{ fontSize: '0.8em' }}>
+                                                                                    {error.content.length > 50 
+                                                                                        ? error.content.substring(0, 50) + '...' 
+                                                                                        : error.content}
+                                                                                </code>
+                                                                            </td>
+                                                                            <td className="text-danger" style={{ fontSize: '0.9em' }}>
+                                                                                {error.error}
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="col-md-4">
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h6 className="card-title">
+                                            <i className="fas fa-info-circle me-2"></i>
+                                            File Format Instructions
+                                        </h6>
+                                        <div className="mb-3">
+                                            <h6>Record Types:</h6>
+                                            <ul className="list-unstyled">
+                                                <li><code>O</code> - Organization</li>
+                                                <li><code>D</code> - Driver</li>
+                                                <li><code>S</code> - Sponsor User</li>
+                                            </ul>
+                                        </div>
+
+                                        <div className="mb-3">
+                                            <h6>Format Examples:</h6>
+                                            <div className="bg-light p-2 rounded">
+                                                <code style={{ fontSize: '0.8em' }}>
+                                                    O|New Organization<br />
+                                                    D|New Organization|Joe|Driver|joe@email.com<br />
+                                                    S|New Organization|Jill|Sponsor|jill@mail.com
+                                                </code>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-3">
+                                            <h6>Rules:</h6>
+                                            <ul style={{ fontSize: '0.9em' }}>
+                                                <li>Organizations must exist or be created first</li>
+                                                <li>Use pipe (|) as delimiter</li>
+                                                <li>No pipes allowed in field data</li>
+                                                <li>Email addresses must be valid format</li>
+                                                <li>Default password: "DefaultPassword123!"</li>
+                                                <li>Errors are skipped, processing continues</li>
+                                            </ul>
+                                        </div>
+
+                                        <div className="alert alert-warning" style={{ fontSize: '0.8em' }}>
+                                            <strong>Note:</strong> For best results, process organizations first, then users. 
+                                            Organizations created in the same batch may not be immediately available for user creation.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </>
                 )}
 

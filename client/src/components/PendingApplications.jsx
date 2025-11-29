@@ -10,11 +10,13 @@ export default function PendingApplications() {
     const [showModal, setShowModal] = useState(false);
     const [denialReason, setDenialReason] = useState('');
     const [actionType, setActionType] = useState(''); // 'approve' or 'deny'
+    const [error, setError] = useState(null);
 
     // Load applications on component mount
     useEffect(() => {
         const loadApplications = async () => {
             try {
+                setError(null);
                 // Get current sponsor info to determine which applications to show
                 const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
                 let sponsorID = null;
@@ -31,23 +33,33 @@ export default function PendingApplications() {
                         }
                     } catch (error) {
                         console.warn('Could not fetch sponsor info:', error);
+                        setError('Could not determine sponsor information');
                     }
                 }
 
-                // Since application API endpoints don't exist, always use fallback data
-                console.log('Using fallback application data - API endpoints not available');
-                if (sponsorID) {
-                    const fallbackData = getFallbackApplications().filter(app => app.sponsorId === sponsorID);
-                    setApplications(fallbackData);
-                } else {
-                    console.warn('Could not determine sponsor ID, showing all applications');
-                    const fallbackData = getFallbackApplications();
-                    setApplications(fallbackData);
+                if (!sponsorID) {
+                    setError('Could not determine sponsor ID');
+                    setApplications([]);
+                    return;
                 }
+
+                // TODO: Replace with actual API call when application endpoints are available
+                // const response = await fetch(`http://localhost:4000/api/applications/sponsor/${sponsorID}/pending`);
+                // if (response.ok) {
+                //     const data = await response.json();
+                //     setApplications(data);
+                // } else {
+                //     setError('Failed to load applications');
+                // }
+
+                // For now, set empty array since no API exists
+                console.log(`Would fetch pending applications for sponsor ID: ${sponsorID}`);
+                setApplications([]);
+                
             } catch (error) {
                 console.error('Error loading applications:', error);
-                // Use fallback data in case of any errors
-                setApplications(getFallbackApplications());
+                setError('Failed to load applications');
+                setApplications([]);
             } finally {
                 setLoading(false);
             }
@@ -55,70 +67,6 @@ export default function PendingApplications() {
 
         loadApplications();
     }, []);
-
-    // Shared fallback data - this should match the data in AdminApplications
-    const getFallbackApplications = () => [
-        {
-            id: 1,
-            firstName: 'David',
-            lastName: 'Johnson',
-            email: 'davidjohnson@email.com',
-            phone: '(555) 123-4567',
-            dateOfBirth: '1990-05-15',
-            licenseNumber: 'DL123456789',
-            address: '123 Main St, City, State 12345',
-            requestedOrganization: 'RandTruckCompany',
-            sponsorId: 1,
-            applicationDate: '2024-01-15',
-            status: 'pending',
-            tempPassword: 'password123'
-        },
-        // {
-        //     id: 2,
-        //     firstName: 'Sarah',
-        //     lastName: 'Williams',
-        //     email: 'sarahwilliams@email.com',
-        //     phone: '(555) 987-6543',
-        //     dateOfBirth: '1988-09-22',
-        //     licenseNumber: 'DL987654321',
-        //     address: '456 Oak Ave, City, State 54321',
-        //     requestedOrganization: 'CoolTruckCompany',
-        //     sponsorId: 3,
-        //     applicationDate: '2024-01-18',
-        //     status: 'pending',
-        //     tempPassword: 'password456'
-        // },
-        {
-            id: 3,
-            firstName: 'James',
-            lastName: 'Anderson',
-            email: 'jamesanderson@email.com',
-            phone: '(555) 555-1234',
-            dateOfBirth: '1985-03-10',
-            licenseNumber: 'DL555123456',
-            address: '789 Pine Rd, City, State 67890',
-            requestedOrganization: 'CoolTruckCompany',
-            sponsorId: 3,
-            applicationDate: '2024-01-20',
-            status: 'pending',
-            tempPassword: 'password789'
-        },
-        {
-            id: 6,
-            firstName: 'Lisa',
-            lastName: 'Garcia',
-            email: 'lisagarcia@email.com',
-            phone: '(555) 777-9999',
-            dateOfBirth: '1991-12-08',
-            licenseNumber: 'DL777999123',
-            address: '987 Cedar Blvd, City, State 98765',
-            requestedOrganization: 'AwesomeTruckCompany',
-            sponsorId: 4,
-            applicationDate: '2024-01-25',
-            status: 'pending',
-            tempPassword: 'password999'
-        }
-    ];
 
     const handleConfirmAction = async () => {
         const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -174,6 +122,13 @@ export default function PendingApplications() {
                         app.id !== selectedApplication.id // Remove the processed application from the list
                     ));
                     
+                    // TODO: Update application status via API
+                    // await fetch(`http://localhost:4000/api/applications/${selectedApplication.id}/approve`, {
+                    //     method: 'PUT',
+                    //     headers: { 'Content-Type': 'application/json' },
+                    //     body: JSON.stringify({ approvedBy: sponsorName, approvedByType: 'sponsor' })
+                    // });
+                    
                     // Show detailed success message with generated IDs
                     if (responseData && responseData.driverID) {
                         alert(`Driver created successfully!\n\nLogin credentials:\n- Email: ${selectedApplication.email}\n- Password: password\n- UserID: ${responseData.userID}\n\nDRIVER Table Record:\n- DriverID: ${responseData.driverID}\n- SponsorID: ${selectedApplication.sponsorId}\n- Points: 0\n\nThe driver can now log in to access their account.`);
@@ -201,14 +156,16 @@ export default function PendingApplications() {
             console.log(`Sponsor denying application for ${selectedApplication.firstName} ${selectedApplication.lastName}`);
             console.log('Denial reason:', denialReason);
             
-            // Since application status API doesn't exist, just log what would be updated
-            console.log('Would update application status:', {
-                applicationId: selectedApplication.id,
-                status: 'denied',
-                processedBy: sponsorName,
-                processedByType: 'sponsor',
-                denialReason: denialReason
-            });
+            // TODO: Update application status via API
+            // await fetch(`http://localhost:4000/api/applications/${selectedApplication.id}/deny`, {
+            //     method: 'PUT',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ 
+            //         deniedBy: sponsorName, 
+            //         deniedByType: 'sponsor',
+            //         denialReason: denialReason 
+            //     })
+            // });
             
             // Update application status in local state
             setApplications(prev => prev.filter(app => 
@@ -264,6 +221,20 @@ export default function PendingApplications() {
         );
     }
 
+    if (error) {
+        return (
+            <>
+                <SponsorNavbar />
+                <div className="container-fluid mt-4">
+                    <div className="alert alert-danger">
+                        <i className="fas fa-exclamation-triangle me-2"></i>
+                        Error: {error}
+                    </div>
+                </div>
+            </>
+        );
+    }
+
     return (
         <>
             <SponsorNavbar />
@@ -281,9 +252,12 @@ export default function PendingApplications() {
                         </div>
                         
                         {pendingApplications.length === 0 ? (
-                            <div className="alert alert-warning">
-                                <i className="fas fa-exclamation-triangle me-2"></i>
+                            <div className="alert alert-info">
+                                <i className="fas fa-info-circle me-2"></i>
                                 No pending applications for your organization at this time.
+                                <div className="mt-2">
+                                    <small>Applications will appear here when drivers submit requests to join your organization.</small>
+                                </div>
                             </div>
                         ) : (
                             <div className="table-responsive">

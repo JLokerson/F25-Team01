@@ -90,6 +90,12 @@ export default function SponsorNavbar() {
                             <li className="nav-item">
                                 <Link className="nav-link" to="/sponsorcatalog">Catalog Management</Link>
                             </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/sponsorauditview">Audit</Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/sponsorbulkupload">Bulk Upload</Link>
+                            </li>
                         </ul>
                         <div className="d-flex align-items-center">
                             {isAdminImpostor && (

@@ -402,4 +402,29 @@ router.post("/updateSponsorUser", async (req, res, next) => {
     }
 });
 
+async function updateDriverPoints(data) {
+    try {
+        console.log("Updating Points:");
+        console.log(data);
+        const sql = "CALL PointsUpdate(?, ?, ?)";
+        const result = await db.executeQuery(sql, [data.DriverID, data.PointChange, data.SponsorID]);
+        console.log("Points Updated successfully.");
+    } catch (error) {
+        console.error("Failed to update points for driver:", error);
+        throw error;
+    }
+}
+
+router.post("/updateDriverPoints", async (req, res, next) => {
+    const data = req.query;
+    console.log('Received POST data for driver point update: ', data);
+    try {
+        const result = await updateDriverPoints(data);
+        res.status(200).json({ message: 'Driver user points updated successfully!', result });
+    } catch (error) {
+        console.error('Error updating drivers points:', error);
+        res.status(500).send('Error updating driver points.');
+    }
+});
+
 module.exports={router};

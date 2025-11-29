@@ -1,5 +1,5 @@
 .driver-products {
-  padding: 2rem;
+  padding: 0 2rem 2rem 2rem;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -7,7 +7,12 @@
 .driver-products__header {
   margin-bottom: 2rem;
   border-bottom: 2px solid #dee2e6;
-  padding-bottom: 1rem;
+  padding: 2rem 0 1rem 0;
+  background-color: #f8f9fa;
+  margin-left: -2rem;
+  margin-right: -2rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 .driver-products__header h1 {
@@ -19,6 +24,22 @@
 
 .driver-products__header p {
   font-size: 1rem;
+}
+
+/* Sponsor info alert styling */
+.driver-products__header .alert {
+  margin-top: 1rem;
+  margin-bottom: 0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.driver-products__header .alert i {
+  color: #0c5460;
+}
+
+.driver-products__header .alert small {
+  font-size: 0.8rem;
 }
 
 .driver-products__section-title {
