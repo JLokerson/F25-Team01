@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import DriverNavbar from './DriverNavbar';
 import driversSeed from '../content/json-assets/driver_sample.json';
 import { CookiesProvider, useCookies } from 'react-cookie';
+import { getCartItems, removeCartItem } from './MiscellaneousParts/ServerCall';
 
 /**
  * Get saved sponsor selection from localStorage
@@ -39,16 +40,81 @@ export default function DriverCart() {
     const impostorType = localStorage.getItem('impostorType');
     const isAdminImpostorAsDriver = impostorMode && impostorType === 'driver';
 
-    // Cart is stored as an array of ITEM_IDs
-    const [cart, setCart] = useState([]);
-    const [productsMap, setProductsMap] = useState({});
+    // Cart items from database
+    const [dbCartItems, setDbCartItems] = useState([]);
+    const [cartLoading, setCartLoading] = useState(true);
+    const [driverID, setDriverID] = useState(null);
 
-    // Load sponsor information
+    // Load sponsor information and cart from DB
     useEffect(() => {
         if (user?.UserID) {
             loadSponsorInfo();
+            loadCartFromDB();
         }
     }, [user]);
+
+    /**
+     * Get DriverID from UserID, then fetch cart items from database
+     */
+    const loadCartFromDB = async () => {
+        try {
+            setCartLoading(true);
+            
+            // Step 1: Get DriverID from UserID
+            const driverUrl = `http://localhost:4000/driverAPI/getSpecificDriver?UserID=${user.UserID}`;
+            const driverRes = await fetch(driverUrl);
+            if (!driverRes.ok) throw new Error("Failed to get driver info");
+            
+            const driverData = await driverRes.json();
+            const driver = Array.isArray(driverData) && driverData.length > 0 ? driverData[0] : null;
+            if (!driver?.DriverID) throw new Error("No driver found");
+            
+            setDriverID(driver.DriverID);
+            console.log('DriverCart - Got DriverID:', driver.DriverID);
+            
+            // Step 2: Fetch cart items from database using existing function
+            const cartResponse = await getCartItems(driver.DriverID);
+            const cartData = await cartResponse.json();
+            
+            console.log('DriverCart - Cart items from DB:', cartData);
+            
+            // cartData should be array of { MappingID, DriverID, ProductID, ... }
+            const items = Array.isArray(cartData) ? cartData : [];
+            
+            // Step 3: Enrich each cart item with product details from Best Buy API
+            const enrichedItems = await Promise.all(
+                items.map(async (cartItem) => {
+                    try {
+                        // Use ProductID (SKU) to fetch product from Best Buy
+                        const bbUrl = `https://api.bestbuy.com/v1/products(sku=${cartItem.ProductID})?show=sku,name,salePrice,image,largeImage&format=json&apiKey=${process.env.REACT_APP_BESTBUY_API_KEY || '3AsycyCu2CRRwvvnLtHYuBMV'}`;
+                        const bbRes = await fetch(bbUrl);
+                        if (bbRes.ok) {
+                            const bbData = await bbRes.json();
+                            const product = bbData.products?.[0];
+                            return {
+                                ...cartItem,
+                                name: product?.name || 'Unknown Product',
+                                price: product?.salePrice || 0,
+                                image: product?.largeImage || product?.image || 'https://via.placeholder.com/150',
+                            };
+                        }
+                    } catch (err) {
+                        console.error(`Failed to fetch product ${cartItem.ProductID}:`, err);
+                    }
+                    return { ...cartItem, name: 'Unknown', price: 0, image: 'https://via.placeholder.com/150' };
+                })
+            );
+            
+            setDbCartItems(enrichedItems);
+            console.log('DriverCart - Enriched cart items:', enrichedItems);
+        } catch (error) {
+            console.error('DriverCart - Error loading cart:', error);
+            setMessage(`Error loading cart: ${error.message}`);
+            setMessageType('error');
+        } finally {
+            setCartLoading(false);
+        }
+    };
 
     const loadSponsorInfo = async () => {
         try {
@@ -195,6 +261,47 @@ export default function DriverCart() {
             const updated = { ...prev, [itemId]: { ...p, ITEM_STOCK: (p.ITEM_STOCK ?? 0) + 1 } };
             return updated;
         });
+    };
+
+    /**
+     * Remove a single item from cart by MappingID
+     */
+    const handleRemoveItem = async (mappingId) => {
+        try {
+            const response = await removeCartItem(mappingId, driverID);
+            const data = await response.json();
+            console.log('Item removed:', data);
+            
+            // Reload cart from DB
+            loadCartFromDB();
+            setMessage('Item removed from cart');
+            setMessageType('success');
+        } catch (error) {
+            console.error('Error removing item:', error);
+            setMessage('Failed to remove item');
+            setMessageType('error');
+        }
+    };
+
+    /**
+     * Clear all items from cart
+     */
+    const handleClearCart = async () => {
+        if (window.confirm('Are you sure you want to clear your cart?')) {
+            try {
+                // Remove each item
+                await Promise.all(dbCartItems.map(item => removeCartItem(item.MappingID, driverID)));
+                
+                // Reload cart
+                loadCartFromDB();
+                setMessage('Cart cleared');
+                setMessageType('success');
+            } catch (error) {
+                console.error('Error clearing cart:', error);
+                setMessage('Failed to clear cart');
+                setMessageType('error');
+            }
+        }
     };
 
     async function RemoveAllCartItems(){
@@ -399,31 +506,66 @@ export default function DriverCart() {
                     <p>The cart is only available to drivers. If you believe this is an error, please contact an administrator.</p>
                 ) : (
                     <>
-                        {cart.length === 0 ? (
+                        {cartLoading ? (
+                            <div className="alert alert-info">
+                                <i className="fas fa-spinner fa-spin me-2"></i>
+                                Loading cart...
+                            </div>
+                        ) : dbCartItems.length === 0 ? (
                             <div className="alert alert-info">
                                 <i className="fas fa-shopping-cart me-2"></i>
                                 Your cart is empty. 
                                 <Link to="/DriverProducts" className="ms-2">Browse products</Link> to get started.
                             </div>
                         ) : (
-                            <div className="list-group mb-3">
-                                {cart.map(id => productsMap[id]).filter(Boolean).map(item => (
-                                    <div key={item.ITEM_ID} className="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <div><strong>{item.ITEM_NAME}</strong></div>
-                                            <div className="text-muted small">Price: ${item.ITEM_PRICE} • Stock: {item.ITEM_STOCK}</div>
-                                        </div>
-                                        <div>
-                                            <button className="btn btn-sm btn-danger me-2" onClick={() => remove(item.ITEM_ID)}>Remove</button>
+                            <div className="row g-3 mb-4">
+                                {dbCartItems.map((item) => (
+                                    <div key={item.MappingID} className="col-md-6 col-lg-4">
+                                        <div className="card h-100 shadow-sm">
+                                            <img 
+                                                src={item.image} 
+                                                className="card-img-top" 
+                                                alt={item.name}
+                                                style={{ height: '200px', objectFit: 'cover' }}
+                                            />
+                                            <div className="card-body d-flex flex-column">
+                                                <h5 className="card-title">{item.name}</h5>
+                                                <p className="card-text text-muted">SKU: {item.ProductID}</p>
+                                                <p className="card-text fw-bold text-primary fs-5">${item.price.toFixed(2)}</p>
+                                                <button 
+                                                    className="btn btn-sm btn-danger mt-auto"
+                                                    onClick={() => handleRemoveItem(item.MappingID)}
+                                                >
+                                                    <i className="fas fa-trash me-1"></i>Remove
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         )}
-                        <div className="d-flex">
-                            <button type="submit" onClick={OrderConfirm} className="btn btn-info me-2">Order All</button>
-                            <button type="submit" onClick={RemoveAllCartItems} className="btn btn-info me-2">Empty Cart</button>
-                            <Link to="/DriverHome" className="btn btn-secondary">Back</Link>
+                        <div className="d-flex gap-2 mt-4">
+                            {dbCartItems.length > 0 && (
+                                <>
+                                    <button 
+                                        type="button" 
+                                        onClick={OrderConfirm} 
+                                        className="btn btn-success"
+                                    >
+                                        <i className="fas fa-check me-1"></i>Order All
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => handleClearCart()} 
+                                        className="btn btn-warning"
+                                    >
+                                        <i className="fas fa-trash me-1"></i>Empty Cart
+                                    </button>
+                                </>
+                            )}
+                            <Link to="/DriverHome" className="btn btn-secondary ms-auto">
+                                <i className="fas fa-arrow-left me-1"></i>Back
+                            </Link>
                         </div>
                     </>
                 )}
