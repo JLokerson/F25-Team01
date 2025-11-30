@@ -41,8 +41,7 @@ function extractSponsorCategory(data = {}) {
 }
 
 /**
- * Return every catalog row for a sponsor with enriched Best Buy metadata.
- * This mirrors the provided `CATALOG` table and enriches it with category names/images.
+ * This function given a SponsorID, return all assigned categories with names/images.
  */
 async function getAllCategoriesForSponsor(sponsorID) {
   const sql = `
@@ -51,6 +50,7 @@ async function getAllCategoriesForSponsor(sponsorID) {
     WHERE SponsorID = ?
     ORDER BY Active DESC, CatalogID ASC
   `;
+  // return db.executeQuery(sql, [sponsorID]);
   const catalogRows = await db.executeQuery(sql, [sponsorID]);
 
   // Enrich catalog entries with category names and images from Best Buy API
@@ -189,11 +189,12 @@ router.get("/getAllCategories", async (req, res) => {
       .json({ message: "SponsorID query parameter is required." });
   }
 
-  // Disable caching to ensure fresh data (prevents 304 responses)
+  // ** Disable caching to ensure fresh data (prevents 304 responses)
+  // Try removing this later if performance becomes an issue
   res.set({
     "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
-    "Pragma": "no-cache",
-    "Expires": "0",
+    Pragma: "no-cache",
+    Expires: "0",
   });
 
   try {
