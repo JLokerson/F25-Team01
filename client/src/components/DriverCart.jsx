@@ -74,16 +74,29 @@ export default function DriverCart() {
 
     // *** Call getSpecificDriver to get driver info
     if (user?.UserID) {
-      fetch(
-        `http://localhost:4000/driverAPI/getSpecificDriver?UserID=${user.UserID}`
-      )
+      fetch(`http://localhost:4000/driverAPI/getSpecificDriver?UserID=${user.UserID}`)
         .then((res) => res.json())
         .then((data) => {
           console.log("* * * getSpecificDriver output:", data);
+          
+          // Get DriverID from response
+          const driverData = Array.isArray(data) && data.length > 0 ? data[0] : data;
+          const driverId = driverData?.DriverID;
+          
+          if (driverId) {
+            // Now fetch CART_MAPPING items for this driver
+            return fetch(`http://localhost:4000/cartAPI/getCartItems?DriverID=${driverId}`)
+              .then((cartRes) => cartRes.json())
+              .then((cartData) => {
+                console.log("* * * CART_MAPPING items for DriverID", driverId, ":", cartData);
+                
+                // Extract and log all ProductIDs
+                const productIds = (cartData.items || cartData || []).map((item) => item.ProductID);
+                console.log("* * * ProductIDs from CART_MAPPING:", productIds);
+              });
+          }
         })
-        .catch((err) =>
-          console.error("* * * Error calling getSpecificDriver:", err)
-        );
+        .catch((err) => console.error("* * * Error calling getSpecificDriver:", err));
     }
     // ***
 
