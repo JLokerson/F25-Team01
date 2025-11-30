@@ -7,6 +7,7 @@ import {
   removeCartItem,
   deleteUserCartItems,
 } from "./MiscellaneousParts/ServerCall";
+import DriverNavbar from "./DriverNavbar";
 
 export default function DriverCart() {
   let navigate = useNavigate();
@@ -406,6 +407,7 @@ export default function DriverCart() {
 
   return (
     <div>
+      <DriverNavbar />
       <div className="container my-5">
         <h3>Your Cart</h3>
         {userType !== 1 && !isAdminImpostorAsDriver ? (
