@@ -1,18 +1,16 @@
 .driver-products {
-  padding: 0 2rem 2rem 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+  margin: 0;
 }
 
 .driver-products__header {
   margin-bottom: 2rem;
   border-bottom: 2px solid #dee2e6;
-  padding: 2rem 0 1rem 0;
+  padding: 2rem;
   background-color: #f8f9fa;
-  margin-left: -2rem;
-  margin-right: -2rem;
-  padding-left: 2rem;
-  padding-right: 2rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .driver-products__header h1 {
@@ -47,6 +45,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+  padding: 0 2rem;
 }
 
 .driver-products__section-title h2 {
@@ -59,6 +58,7 @@
   display: grid;
   gap: 1.5rem;
   margin-bottom: 2rem;
+  padding: 0 2rem;
 }
 
 .driver-products__grid--4col {
@@ -282,7 +282,7 @@
   justify-content: center;
   gap: 1rem;
   margin-top: 2rem;
-  padding: 1rem 0;
+  padding: 1rem 2rem;
   border-top: 1px solid #dee2e6;
 }
 
@@ -306,11 +306,23 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .driver-products {
+    padding: 0;
+  }
+
+  .driver-products__header {
     padding: 1rem;
   }
 
   .driver-products__header h1 {
     font-size: 2rem;
+  }
+
+  .driver-products__section-title {
+    padding: 0 1rem;
+  }
+
+  .driver-products__grid {
+    padding: 0 1rem;
   }
 
   .driver-products__grid--4col {
@@ -336,5 +348,9 @@
 
   .driver-products__modal-header h2 {
     font-size: 1.25rem;
+  }
+
+  .driver-products__pagination {
+    padding: 1rem;
   }
 }
