@@ -41,8 +41,7 @@ function extractSponsorCategory(data = {}) {
 }
 
 /**
- * Return every catalog row for a sponsor. This mirrors the provided
- * `CATALOG` table (CatalogID, SponsorID, CategoryID, Active).
+ * This function given a SponsorID, return all assigned categories with names/images.
  */
 async function getAllCategoriesForSponsor(sponsorID) {
   const sql = `
@@ -184,8 +183,7 @@ async function updateCategoryStatus(payload) {
 
 /**
  * GET /catalogAPI/getAllCategories
- * Returns every category code assigned to the sponsor (used in sprint8-feat-catalogapi-new).
- * Name/Img are currently null placeholders until we persist metadata locally.
+ * Returns every category code assigned to the sponsor with Best Buy metadata enrichment.
  */
 router.get("/getAllCategories", async (req, res) => {
   const sponsorID = Number(req.query.SponsorID || req.query.sponsorID);
@@ -194,6 +192,14 @@ router.get("/getAllCategories", async (req, res) => {
       .status(400)
       .json({ message: "SponsorID query parameter is required." });
   }
+
+  // ** Disable caching to ensure fresh data (prevents 304 responses)
+  // Try removing this later if performance becomes an issue
+  res.set({
+    "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+    Pragma: "no-cache",
+    Expires: "0",
+  });
 
   try {
     const categories = await getAllCategoriesForSponsor(sponsorID);
