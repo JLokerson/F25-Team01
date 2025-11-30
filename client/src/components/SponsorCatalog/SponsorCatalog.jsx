@@ -7,13 +7,6 @@ const CATEGORY_PLACEHOLDER =
   "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Best_Buy_Logo.svg/640px-Best_Buy_Logo.svg.png";
 
 const API_BASE = (() => {
-  if (process.env.REACT_APP_SERVER_URL) {
-    return process.env.REACT_APP_SERVER_URL.replace(/\/$/, "");
-  }
-  if (typeof window !== "undefined") {
-    const { protocol, hostname } = window.location;
-    return `${protocol}//${hostname}:4000`;
-  }
   return "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws";
 })();
 
