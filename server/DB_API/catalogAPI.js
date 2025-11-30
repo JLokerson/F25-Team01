@@ -51,6 +51,7 @@ async function getAllCategoriesForSponsor(sponsorID) {
     ORDER BY Active DESC, CatalogID ASC
   `;
   // return db.executeQuery(sql, [sponsorID]);
+  // **
   const catalogRows = await db.executeQuery(sql, [sponsorID]);
 
   // Enrich catalog entries with category names and images from Best Buy API
@@ -77,6 +78,7 @@ async function getAllCategoriesForSponsor(sponsorID) {
         name: cat.name,
         image: null,
       };
+      console.log(`BB Successfully fetched: ${cat.name} (ID: ${cat.id})`);
     });
 
     // Step 2: Fetch images for categories in this sponsor's catalog (limit to avoid rate limiting)
