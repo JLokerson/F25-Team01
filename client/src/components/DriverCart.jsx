@@ -118,14 +118,14 @@ export default function DriverCart() {
     // Not sure how to tie this into the existing setup, try this for now though:
     async function GetCartFromDB(){
         try {
-        const response = await fetch(`http://localhost:4000/userAPI/updatePassword?DriverID=${cookies.MyDriverID}`, {
+        const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/userAPI/updatePassword?DriverID=${cookies.MyDriverID}`, {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
             }
         });
 
-        console.log('Request URL:', `http://localhost:4000/userAPI/updatePassword?DriverID=${cookies.MyDriverID}`);
+        console.log('Request URL:', `https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/userAPI/updatePassword?DriverID=${cookies.MyDriverID}`);
 
         // Debug: Log the response status and text
         console.log('Response status:', response.status);
@@ -199,14 +199,14 @@ export default function DriverCart() {
 
     async function RemoveAllCartItems(){
         try {
-        const response = await fetch(`http://localhost:4000/userAPI/updatePassword?UserID=${user?.UserID}`, {
+        const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/userAPI/updatePassword?UserID=${user?.UserID}`, {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
             }
         });
 
-        console.log('Request URL:', `http://localhost:4000/userAPI/updatePassword?UserID=${user?.UserID}`);
+        console.log('Request URL:', `https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/userAPI/updatePassword?UserID=${user?.UserID}`);
 
         // Debug: Log the response status and text
         console.log('Response status:', response.status);
@@ -242,7 +242,7 @@ export default function DriverCart() {
 
         // REQUEST HANDLING START
         try {
-        const response = await fetch("http://localhost:4000/CartAPI/getCartItems", {
+        const response = await fetch("https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/CartAPI/getCartItems", {
             method: 'GET',
             headers: {
             'Content-Type': 'application/json',
