@@ -159,7 +159,7 @@ export default function DriverCart() {
     // REQUEST HANDLING START
     try {
       const response = await fetch(
-        "http://localhost:4000/CartAPI/getCartItems",
+        "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/CartAPI/getCartItems",
         {
           method: "GET",
           headers: {

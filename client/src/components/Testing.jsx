@@ -56,7 +56,7 @@ const Testing = () => {
         config.body = JSON.stringify(body);
       }
 
-      const response = await fetch(`http://localhost:4000${endpoint}`, config);
+      const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws${endpoint}`, config);
       const data = await response.json();
       
       addResult(method, endpoint, response.status, data);
