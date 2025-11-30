@@ -23,7 +23,6 @@ import AdminApplications from "./components/AdminApplications";
 import AdminUserManagement from "./components/AdminUserManagement";
 import SponsorCatalog from "./components/SponsorCatalog/SponsorCatalog";
 import DriverProducts from "./components/DriverProducts.jsx";
-import DriverCatalogCart from "./components/DriverCatalogCart";
 import MakeNewUser from "./components/MakeNewUser";
 import DriverCart from "./components/DriverCart";
 import DriverOrderConfirmation from "./components/DriverOrderConfirmation";
@@ -32,7 +31,6 @@ import Testing from "./components/Testing.jsx";
 import { CookiesProvider, useCookies } from "react-cookie";
 import AdminAuditView from "./components/AdminAuditView";
 import SponsorAuditView from "./components/SponsorAuditView";
-import SponsorBulkLoading from "./components/SponsorBulkLoading.jsx";
 
 function AppContent() {
   const location = useLocation();
@@ -56,10 +54,7 @@ function AppContent() {
         <Route path="/recover" element={<Recover />} />
         <Route path="/register" element={<Register />} />
         <Route path="/products" element={<DriverProducts />} />
-        <Route path="/driver-catalog-cart" element={<DriverCatalogCart />} />
         <Route path="/testing" element={<Testing />} />
-        {/* <Route path="/OrderConfirmation" element={<OrderConfirmation/>}/> */}
-        {/* <Route path="/Cart" element={<CartPage/>}/> */}
         <Route path="/MakeNewUser" element={<MakeNewUser />} />
 
         {/* Admin routes */}
@@ -82,7 +77,6 @@ function AppContent() {
         <Route path="/pending-applications" element={<PendingApplications />} />
         <Route path="/sponsorcatalog" element={<SponsorCatalog />} />
         <Route path="/sponsorauditview" element={<SponsorAuditView />} />
-        <Route path="/sponsorbulkupload" element={<SponsorBulkLoading />} />
 
         {/* Driver routes */}
         <Route path="/driverhome" element={<DriverHome />} />
@@ -92,8 +86,6 @@ function AppContent() {
           path="/driverorderconfirmation"
           element={<DriverOrderConfirmation />}
         />
-
-        {/* Shared pages */}
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
