@@ -99,9 +99,6 @@ export default function DriverNavbar() {
                             <li className="nav-item">
                                 <Link className="nav-link" to="/products">Catalog</Link>
                             </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/drivercart">Cart</Link>
-                            </li>
                         </ul>
                         <div className="d-flex align-items-center">
                             {isAdminImpostor && (
@@ -136,7 +133,7 @@ export default function DriverNavbar() {
                                         e.target.nextSibling.style.display = 'inline';
                                     }}
                                 />
-                                <span style={{display: 'none'}}>Cart</span>
+                                <i className="fas fa-shopping-cart" style={{display: 'none'}}></i>
                                 {cartItemCount > 0 && (
                                     <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                                         {cartItemCount}
