@@ -106,7 +106,7 @@ export default function SponsorProfile() {
         console.log('SponsorProfile - UserInfo:', userInfo); // Debug log
         if (userInfo && userInfo.UserID) {
             try {
-                const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsorUsers`);
+                const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsorUsers`);
                 if (response.ok) {
                     const allSponsorUsers = await response.json();
                     console.log('SponsorProfile - All sponsor users:', allSponsorUsers); // Debug log
@@ -127,7 +127,7 @@ export default function SponsorProfile() {
 
     const fetchSponsorName = async (sponsorID) => {
         try {
-            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsors`);
             if (response.ok) {
                 const allSponsors = await response.json();
                 console.log('SponsorProfile - All sponsors:', allSponsors); // Debug log

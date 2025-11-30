@@ -14,7 +14,7 @@ const API_BASE = (() => {
     const { protocol, hostname } = window.location;
     return `${protocol}//${hostname}:4000`;
   }
-  return "http://localhost:4000";
+  return "https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws";
 })();
 
 const withApiBase = (path) => {

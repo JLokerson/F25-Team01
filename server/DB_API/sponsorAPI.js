@@ -260,7 +260,8 @@ router.post("/addSponsorUser", async (req, res, next) => {
  * Expects JSON body: { SponsorID, ITEM_ID, newPrice }
  * This is VERY TEMPORARY and insecure, just to demonstrate updating the JSON file
  * Demo directions:
- *      URL: http://localhost:4000/sponsorAPI/updateProductPrice
+ *      URL: http://localhost:4000/sponsorAPI/updateProductPrice 
+ *      or https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/updateProductPrice
  */
 router.post('/updateProductPrice', async (req, res, next) => {
     try {
