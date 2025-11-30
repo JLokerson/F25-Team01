@@ -20,7 +20,7 @@ export default function App() {
 
     try {
       const res = await fetch(
-        `http://localhost:4000/api/products?category=${encodeURIComponent(
+        `https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/api/products?category=${encodeURIComponent(
           category
         )}`
       );
