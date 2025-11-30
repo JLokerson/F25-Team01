@@ -98,7 +98,7 @@ export default function DriverHome() {
                             <div className="card-body">
                                 <h5 className="card-title">Product Catalog</h5>
                                 <p className="card-text">Browse available products and add them to your cart.</p>
-                                <Link to="/products" className="btn btn-primary">Browse Catalog</Link>
+                                <Link to="/driver-catalog-cart" className="btn btn-primary">Browse Catalog</Link>
                             </div>
                         </div>
                     </div>

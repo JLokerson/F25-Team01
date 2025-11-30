@@ -23,6 +23,7 @@ import AdminApplications from "./components/AdminApplications";
 import AdminUserManagement from "./components/AdminUserManagement";
 import SponsorCatalog from "./components/SponsorCatalog/SponsorCatalog";
 import DriverProducts from "./components/DriverProducts.jsx";
+import DriverCatalogCart from "./components/DriverCatalogCart";
 import MakeNewUser from "./components/MakeNewUser";
 import DriverCart from "./components/DriverCart";
 import DriverOrderConfirmation from "./components/DriverOrderConfirmation";
@@ -55,6 +56,7 @@ function AppContent() {
         <Route path="/recover" element={<Recover />} />
         <Route path="/register" element={<Register />} />
         <Route path="/products" element={<DriverProducts />} />
+        <Route path="/driver-catalog-cart" element={<DriverCatalogCart />} />
         <Route path="/testing" element={<Testing />} />
         {/* <Route path="/OrderConfirmation" element={<OrderConfirmation/>}/> */}
         {/* <Route path="/Cart" element={<CartPage/>}/> */}

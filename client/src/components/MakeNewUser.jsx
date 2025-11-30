@@ -26,7 +26,7 @@ export default function MakeNewUser() {
     // Fetch sponsor organizations for driver creation
     const fetchSponsorOrgs = async () => {
         try {
-            const response = await fetch(`http://localhost:4000/sponsorAPI/getAllSponsors`);
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsors`);
             if (response.ok) {
                 const data = await response.json();
                 // Filter to only active sponsors
@@ -151,7 +151,7 @@ export default function MakeNewUser() {
 
             console.log('Creating sponsor organization:', orgData);
             
-            const response = await fetch(`http://localhost:4000/sponsorAPI/addSponsor`, {
+            const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/addSponsor`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -20,7 +20,7 @@ export default function AdminApplications() {
                 setError(null);
                 
                 // TODO: Replace with actual API call when application endpoints are available
-                // const response = await fetch('http://localhost:4000/api/applications');
+                // const response = await fetch('https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/api/applications');
                 // if (response.ok) {
                 //     const data = await response.json();
                 //     setApplications(data);
@@ -94,7 +94,7 @@ export default function AdminApplications() {
                 // 1. A record in the USER table 
                 // 2. A record in the DRIVER table with (DriverID, SponsorID, UserID, Points=0)
                 const queryString = new URLSearchParams(driverData).toString();
-                const response = await fetch(`http://localhost:4000/driverAPI/addDriver?${queryString}`, {
+                const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/addDriver?${queryString}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ export default function AdminApplications() {
                     ));
                     
                     // TODO: Update application status via API
-                    // await fetch(`http://localhost:4000/api/applications/${selectedApplication.id}/approve`, {
+                    // await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/api/applications/${selectedApplication.id}/approve`, {
                     //     method: 'PUT',
                     //     headers: { 'Content-Type': 'application/json' },
                     //     body: JSON.stringify({ approvedBy: adminName, approvedByType: 'admin' })
@@ -167,7 +167,7 @@ export default function AdminApplications() {
             console.log('Denial reason:', denialReason);
             
             // TODO: Update application status via API
-            // await fetch(`http://localhost:4000/api/applications/${selectedApplication.id}/deny`, {
+            // await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/api/applications/${selectedApplication.id}/deny`, {
             //     method: 'PUT',
             //     headers: { 'Content-Type': 'application/json' },
             //     body: JSON.stringify({ 

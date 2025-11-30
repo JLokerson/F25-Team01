@@ -50,8 +50,6 @@ async function getAllCategoriesForSponsor(sponsorID) {
     WHERE SponsorID = ?
     ORDER BY Active DESC, CatalogID ASC
   `;
-  // return db.executeQuery(sql, [sponsorID]);
-  // **
   const catalogRows = await db.executeQuery(sql, [sponsorID]);
 
   // Enrich catalog entries with category names and images from Best Buy API
@@ -76,19 +74,19 @@ async function getAllCategoriesForSponsor(sponsorID) {
     allCategories.forEach((cat) => {
       categoryMap[cat.id] = {
         name: cat.name,
-        image: null,
+        image: null, // Will be filled in next step
       };
-      console.log(`BB Successfully fetched: ${cat.name} (ID: ${cat.id})`);
     });
 
     // Step 2: Fetch images for categories in this sponsor's catalog (limit to avoid rate limiting)
-    const MAX_IMAGES = 5;
+    const MAX_IMAGES = 5; // Only fetch images for first 5 to avoid rate limits
     for (let i = 0; i < Math.min(catalogRows.length, MAX_IMAGES); i++) {
       const categoryId = catalogRows[i].CategoryID;
 
       if (!categoryMap[categoryId]) continue;
 
       try {
+        // Fetch first product in category to get image
         const productParams = {
           show: "image,largeImage,thumbnailImage",
           pageSize: 1,
@@ -109,12 +107,14 @@ async function getAllCategoriesForSponsor(sponsorID) {
           categoryMap[categoryId].image = imgUrl;
         }
 
+        // Add delay to avoid rate limiting
         await new Promise((resolve) => setTimeout(resolve, 300));
       } catch (imgError) {
         console.warn(
           `Failed to fetch image for category ${categoryId}:`,
           imgError.message
         );
+        // Continue without image if fetch fails
       }
     }
   } catch (error) {
@@ -122,8 +122,10 @@ async function getAllCategoriesForSponsor(sponsorID) {
       "Failed to enrich categories with Best Buy data:",
       error.message
     );
+    // Continue without enrichment if API fails
   }
 
+  // Return catalog rows enriched with name and image
   return catalogRows.map((row) => ({
     ...row,
     name: categoryMap[row.CategoryID]?.name || null,
@@ -206,8 +208,7 @@ router.get("/getAllCategories", async (req, res) => {
       sponsorId: row.SponsorID,
       categoryId: row.CategoryID,
       active: Boolean(row.Active),
-      name: row.name || null,
-      image: row.image || null,
+      name: row.name,
     }));
     res.json({ sponsorID, categories: normalized });
   } catch (err) {
