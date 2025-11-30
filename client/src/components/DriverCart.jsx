@@ -32,6 +32,9 @@ export default function DriverCart() {
   // Cart is now stored as an array of objects with { MappingID, DriverID, ProductID }
   const [cart, setCart] = useState([]);
   const [productsMap, setProductsMap] = useState({});
+  // ** new enriched cart with product details from Best Buy API
+  const [enrichedCart, setEnrichedCart] = useState([]);
+  const [cartLoading, setCartLoading] = useState(true);
 
   // Fetch cart items from backend
   async function GetCartFromDB() {
@@ -71,34 +74,91 @@ export default function DriverCart() {
   useEffect(() => {
     // Fetch cart from backend on component mount
     GetCartFromDB();
+    setCartLoading(true);
 
     // *** Call getSpecificDriver to get driver info
     if (user?.UserID) {
-      fetch(`http://localhost:4000/driverAPI/getSpecificDriver?UserID=${user.UserID}`)
+      fetch(
+        `http://localhost:4000/driverAPI/getSpecificDriver?UserID=${user.UserID}`
+      )
         .then((res) => res.json())
         .then((data) => {
           console.log("* * * getSpecificDriver output:", data);
-          
+
           // Get DriverID from response
-          const driverData = Array.isArray(data) && data.length > 0 ? data[0] : data;
+          const driverData =
+            Array.isArray(data) && data.length > 0 ? data[0] : data;
           const driverId = driverData?.DriverID;
-          
+
           if (driverId) {
             // Now fetch CART_MAPPING items for this driver
-            return fetch(`http://localhost:4000/cartAPI/getCartItems?DriverID=${driverId}`)
+            return fetch(
+              `http://localhost:4000/cartAPI/getCartItems?DriverID=${driverId}`
+            )
               .then((cartRes) => cartRes.json())
               .then((cartData) => {
-                console.log("* * * CART_MAPPING items for DriverID", driverId, ":", cartData);
-                
+                console.log(
+                  "* * * CART_MAPPING items for DriverID",
+                  driverId,
+                  ":",
+                  cartData
+                );
+
                 // Extract and log all ProductIDs
-                const productIds = (cartData.items || cartData || []).map((item) => item.ProductID);
+                const productIds = (cartData.items || cartData || []).map(
+                  (item) => item.ProductID
+                );
                 console.log("* * * ProductIDs from CART_MAPPING:", productIds);
+                const cartItems = cartData.items || cartData || [];
+
+                // Fetch data from Best Buy API for each ProductID
+                const bbApiKey =
+                  process.env.REACT_APP_BB_API_KEY ||
+                  "3AsycyCu2CRRwvvnLtHYuBMV";
+                const productPromises = cartItems.map((cartItem) => {
+                  const bbUrl = `https://api.bestbuy.com/v1/products(sku=${cartItem.ProductID})?show=sku,name,salePrice,image,largeImage&format=json&apiKey=${bbApiKey}`;
+                  return fetch(bbUrl)
+                    .then((res) => res.json())
+                    .then((productData) => {
+                      const product = productData.products?.[0];
+                      return {
+                        ...cartItem,
+                        name: product?.name || "Unknown Product",
+                        price: product?.salePrice || 0,
+                        image:
+                          product?.largeImage ||
+                          product?.image ||
+                          "https://via.placeholder.com/150",
+                      };
+                    })
+                    .catch((err) => {
+                      console.error(
+                        `Error fetching ProductID ${cartItem.ProductID}:`,
+                        err
+                      );
+                      return {
+                        ...cartItem,
+                        name: "Unknown Product",
+                        price: 0,
+                        image: "https://via.placeholder.com/150",
+                      };
+                    });
+                });
+
+                return Promise.all(productPromises).then((enrichedItems) => {
+                  setEnrichedCart(enrichedItems);
+                  setCartLoading(false);
+                });
               });
           }
         })
-        .catch((err) => console.error("* * * Error calling getSpecificDriver:", err));
+        .catch((err) => {
+          console.error("Error loading enriched cart:", err);
+          setCartLoading(false);
+        });
+    } else {
+      setCartLoading(false);
     }
-    // ***
 
     // Also load products map from localStorage for display info
     const prodRaw = localStorage.getItem("products") || "[]";
@@ -110,7 +170,7 @@ export default function DriverCart() {
     } catch (e) {
       setProductsMap({});
     }
-  }, [cookies.MyDriverID]);
+  }, [cookies.MyDriverID, user?.UserID]);
 
   const remove = async (mappingId, productId) => {
     try {
@@ -355,55 +415,63 @@ export default function DriverCart() {
           </p>
         ) : (
           <>
-            {cart.length === 0 ? (
+            {cartLoading ? (
+              <p>Loading cart items...</p>
+            ) : enrichedCart.length === 0 ? (
               <p>Your cart is empty.</p>
             ) : (
-              <div className="list-group mb-3">
-                {cart.map((cartItem) => {
-                  const product = productsMap[cartItem.ProductID];
-                  return (
-                    <div
-                      key={cartItem.MappingID}
-                      className="list-group-item d-flex justify-content-between align-items-center"
-                    >
-                      <div>
-                        <div>
-                          <strong>
-                            {product?.ITEM_NAME || "Unknown Item"}
-                          </strong>
-                        </div>
-                        <div className="text-muted small">
-                          Price: ${product?.ITEM_PRICE || "N/A"} • Stock:{" "}
-                          {product?.ITEM_STOCK ?? 0}
-                        </div>
-                      </div>
-                      <div>
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {enrichedCart.map((item) => (
+                    <tr key={item.MappingID}>
+                      <td>
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          style={{
+                            width: "60px",
+                            height: "60px",
+                            objectFit: "cover",
+                          }}
+                        />
+                      </td>
+                      <td>{item.name}</td>
+                      <td>${item.price?.toFixed(2) || "0.00"}</td>
+                      <td>
                         <button
-                          className="btn btn-sm btn-danger me-2"
-                          onClick={() =>
-                            remove(cartItem.MappingID, cartItem.ProductID)
-                          }
+                          className="btn btn-sm btn-danger"
+                          onClick={() => remove(item.MappingID, item.ProductID)}
                         >
                           Remove
                         </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
-            <div className="d-flex">
+            <div className="d-flex gap-2">
               <button
                 type="submit"
                 onClick={OrderConfirm}
-                className="btn btn-info me-2"
+                className="btn btn-success"
+                disabled={enrichedCart.length === 0}
               >
                 Order All
               </button>
               <button
                 type="submit"
                 onClick={RemoveAllCartItems}
-                className="btn btn-info me-2"
+                className="btn btn-warning"
+                disabled={enrichedCart.length === 0}
               >
                 Empty Cart
               </button>
