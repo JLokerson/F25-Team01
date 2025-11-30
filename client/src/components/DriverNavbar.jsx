@@ -94,10 +94,13 @@ export default function DriverNavbar() {
                                 <Link className="nav-link" to="/DriverHome">Home</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to="/DriverProfile">Profile</Link>
+                                <Link className="nav-link" to="/driverprofile">Profile</Link>
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to="/products">Catalog</Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/drivercart">Cart</Link>
                             </li>
                         </ul>
                         <div className="d-flex align-items-center">
