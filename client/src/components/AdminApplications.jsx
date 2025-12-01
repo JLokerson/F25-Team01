@@ -19,22 +19,54 @@ export default function AdminApplications() {
             try {
                 setError(null);
                 
-                // TODO: Replace with actual API call when application endpoints are available
-                // const response = await fetch('https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/api/applications');
-                // if (response.ok) {
-                //     const data = await response.json();
-                //     setApplications(data);
-                // } else {
-                //     setError('Failed to load applications');
-                // }
-
-                // For now, set empty array since no API exists
-                console.log('Would fetch all applications from API');
-                setApplications([]);
+                // Determine API base URL - use localhost if running locally
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const baseURL = isLocalhost 
+                    ? 'http://localhost:4000' 
+                    : 'https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws';
+                
+                console.log('Using API base URL:', baseURL);
+                
+                // Fetch all driver-sponsor mappings
+                const response = await fetch(`${baseURL}/adminAPI/getDriverSponsorMappings`);
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    const mappings = await response.json();
+                    console.log('Raw mappings data:', mappings);
+                    
+                    // Transform mappings into application format
+                    const formattedApplications = mappings.map(mapping => ({
+                        id: mapping.MappingID,
+                        firstName: mapping.FirstName || 'Unknown',
+                        lastName: mapping.LastName || 'User',
+                        email: mapping.Email || 'no-email@example.com',
+                        phone: '(555) 000-0000', // Not available in current mapping
+                        dateOfBirth: '1990-01-01', // Not available in current mapping
+                        licenseNumber: 'DL000000000', // Not available in current mapping
+                        address: 'Address not provided', // Not available in current mapping
+                        requestedOrganization: mapping.SponsorName || `Sponsor ID ${mapping.SponsorID}`,
+                        sponsorId: mapping.SponsorID,
+                        driverId: mapping.DriverID,
+                        currentPoints: mapping.Points,
+                        applicationAccepted: mapping.ApplicationAccepted,
+                        applicationDate: mapping.ApplicationDate || new Date().toISOString().split('T')[0],
+                        status: mapping.Status || (mapping.ApplicationAccepted === 0 ? 'pending' : 'approved'),
+                        tempPassword: 'password123'
+                    }));
+                    
+                    console.log('Formatted applications:', formattedApplications);
+                    setApplications(formattedApplications);
+                } else {
+                    const errorText = await response.text();
+                    console.error('API Error:', errorText);
+                    setError(`Failed to load applications from database: ${response.status} ${errorText}`);
+                    setApplications([]);
+                }
                 
             } catch (error) {
                 console.error('Error loading data:', error);
-                setError('Failed to load applications');
+                setError(`Failed to load applications: ${error.message}`);
                 setApplications([]);
             } finally {
                 setLoading(false);
@@ -43,7 +75,7 @@ export default function AdminApplications() {
         
         loadData();
 
-        // TODO: Add polling when API endpoints are available
+        // TODO: Add polling when needed
         // const interval = setInterval(loadData, 30000); // Poll every 30 seconds
         // return () => clearInterval(interval);
     }, []);
@@ -395,28 +427,39 @@ export default function AdminApplications() {
                                 <table className="table table-striped table-hover">
                                     <thead className="table-dark">
                                         <tr>
-                                            <th>Name</th>
-                                            <th>Email</th>
-                                            <th>Phone</th>
+                                            <th>Mapping ID</th>
+                                            <th>Sponsor ID</th>
+                                            <th>Driver ID</th>
                                             <th>Organization</th>
-                                            <th>Application Date</th>
-                                            <th>Status</th>
+                                            <th>Accepted Status</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {filteredApplications.map(application => (
                                             <tr key={application.id}>
-                                                <td>{application.firstName} {application.lastName}</td>
-                                                <td>{application.email}</td>
-                                                <td>{application.phone}</td>
+                                                <td>
+                                                    <span className="badge bg-secondary">{application.id}</span>
+                                                </td>
+                                                <td>
+                                                    <span className="badge bg-info">{application.sponsorId}</span>
+                                                </td>
+                                                <td>
+                                                    <span className="badge bg-primary">{application.driverId}</span>
+                                                </td>
                                                 <td>
                                                     <span className="badge bg-light text-dark">
                                                         {application.requestedOrganization}
                                                     </span>
+                                                    {application.requestedOrganization.startsWith('Sponsor ID') && (
+                                                        <small className="d-block text-muted">Name not found</small>
+                                                    )}
                                                 </td>
-                                                <td>{new Date(application.applicationDate).toLocaleDateString()}</td>
-                                                <td>{getStatusBadge(application.status)}</td>
+                                                <td>
+                                                    <span className={`badge ${application.applicationAccepted === 0 ? 'bg-warning text-dark' : 'bg-success'}`}>
+                                                        {application.applicationAccepted === 0 ? 'Not Accepted (0)' : 'Accepted (1)'}
+                                                    </span>
+                                                </td>
                                                 <td>
                                                     <button 
                                                         className="btn btn-primary btn-sm"

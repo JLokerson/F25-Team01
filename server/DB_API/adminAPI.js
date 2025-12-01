@@ -58,6 +58,76 @@ async function addAdmin(data) {
 }
 
 /**
+ * Retrieves all driver-sponsor mappings from the database.
+ * @returns {Promise<Array<Object>>} A promise that resolves with an array of mapping objects.
+ */
+async function getDriverSponsorMappings(){
+    try {
+        console.log("Reading all driver-sponsor mappings for admin");
+
+        // Query to get all mappings with user details and SPONSOR organization names
+        let query = `
+            SELECT 
+                dsm.MappingID,
+                dsm.SponsorID,
+                dsm.DriverID,
+                dsm.Points,
+                dsm.ApplicationAccepted,
+                u.FirstName,
+                u.LastName,
+                u.Email,
+                s.Name as SponsorName,
+                CASE 
+                    WHEN dsm.ApplicationAccepted = 0 THEN 'pending'
+                    WHEN dsm.ApplicationAccepted = 1 THEN 'approved'
+                    ELSE 'unknown'
+                END as Status,
+                NOW() as ApplicationDate
+            FROM Team01_DB.DRIVER_SPONSOR_MAPPINGS dsm
+            LEFT JOIN Team01_DB.DRIVER d ON dsm.DriverID = d.DriverID
+            LEFT JOIN Team01_DB.USER u ON d.UserID = u.UserID
+            LEFT JOIN Team01_DB.SPONSOR s ON dsm.SponsorID = s.SponsorID
+            ORDER BY dsm.ApplicationAccepted ASC, dsm.MappingID DESC
+        `;
+        let mappings;
+        
+        try {
+            mappings = await db.executeQuery(query);
+            console.log("Successfully queried all mappings with full JOIN");
+        } catch (error) {
+            console.log("Full JOIN failed, trying fallback with SPONSOR table only");
+            // Fallback query that still includes SPONSOR table for organization names
+            query = `
+                SELECT 
+                    dsm.*,
+                    s.Name as SponsorName,
+                    CASE 
+                        WHEN dsm.ApplicationAccepted = 0 THEN 'pending'
+                        WHEN dsm.ApplicationAccepted = 1 THEN 'approved'
+                        ELSE 'unknown'
+                    END as Status
+                FROM Team01_DB.DRIVER_SPONSOR_MAPPINGS dsm
+                LEFT JOIN Team01_DB.SPONSOR s ON dsm.SponsorID = s.SponsorID
+                ORDER BY dsm.ApplicationAccepted ASC, dsm.MappingID DESC
+            `;
+            mappings = await db.executeQuery(query);
+            console.log("Successfully queried DRIVER_SPONSOR_MAPPINGS with SPONSOR join");
+        }
+        
+        console.log("Query used:", query);
+        console.log("Raw result count:", mappings.length);
+        console.log("Sample mapping with sponsor name:", mappings.length > 0 ? mappings[0] : 'No data');
+        console.log("Returning %s driver-sponsor mappings", mappings.length);
+        
+        return mappings;
+    } catch (error) {
+        console.error("Failed to get driver-sponsor mappings: ", error);
+        console.error("Error details:", error.message);
+        throw error;
+    }
+}
+
+/**
  * Retrieves all driver applications from all sponsor organizations.
  * @returns {Promise<Array<Object>>} A promise that resolves with an array of application objects.
  */
@@ -65,75 +135,54 @@ async function getAllApplications(){
     try {
         console.log("Reading all driver applications");
         
-        // For now, return dummy data since we don't have an APPLICATIONS table yet
-        // This would be replaced with a real database query once the table is created
-        // Updated to match real sponsors from Team01_DB.SPONSOR table
-        const applications = [
-            {
-                id: 1,
-                firstName: 'John',
-                lastName: 'Doe',
-                email: 'jdoe@email.com',
-                phone: '(555) 123-4567',
-                dateOfBirth: '1990-05-15',
-                licenseNumber: 'DL123456789',
-                address: '123 Main St, City, State 12345',
-                requestedOrganization: 'RandTruckCompany',
-                sponsorId: 1,
-                applicationDate: '2024-01-15',
-                status: 'pending',
-                tempPassword: 'password123'
-            },
-            {
-                id: 2,
-                firstName: 'Jane',
-                lastName: 'Smith',
-                email: 'jsmith@email.com',
-                phone: '(555) 987-6543',
-                dateOfBirth: '1988-09-22',
-                licenseNumber: 'DL987654321',
-                address: '456 Oak Ave, City, State 54321',
-                requestedOrganization: 'CoolTruckCompany',
-                sponsorId: 3,
-                applicationDate: '2024-01-18',
-                status: 'pending',
-                tempPassword: 'password456'
-            },
-            {
-                id: 3,
-                firstName: 'Mike',
-                lastName: 'Johnson',
-                email: 'mjohnson@email.com',
-                phone: '(555) 555-1234',
-                dateOfBirth: '1985-03-10',
-                licenseNumber: 'DL555123456',
-                address: '789 Pine Rd, City, State 67890',
-                requestedOrganization: 'AwesomeTruckCompany',
-                sponsorId: 4,
-                applicationDate: '2024-01-20',
-                status: 'pending',
-                tempPassword: 'password789'
-            },
-            {
-                id: 4,
-                firstName: 'Sarah',
-                lastName: 'Williams',
-                email: 'swilliams@email.com',
-                phone: '(555) 444-7890',
-                dateOfBirth: '1992-07-25',
-                licenseNumber: 'DL444789012',
-                address: '321 Elm St, City, State 54321',
-                requestedOrganization: 'RandTruckCompany',
-                sponsorId: 5,
-                applicationDate: '2024-01-22',
-                status: 'approved',
-                tempPassword: 'passwordabc',
-                approvedBy: 'Admin John Smith',
-                approvedDate: '2024-01-23'
-            }
-        ];
+        // Try to fetch real driver-sponsor mappings from database
+        let applications = [];
         
-        console.log("Returning %s applications", applications.length);
+        try {
+            const mappings = await getDriverSponsorMappings();
+            console.log("Successfully got mappings:", mappings.length);
+            
+            // Transform mappings into application format
+            applications = mappings.map(mapping => ({
+                id: mapping.MappingID,
+                firstName: mapping.FirstName,
+                lastName: mapping.LastName,
+                email: mapping.Email,
+                phone: mapping.Phone || '(555) 000-0000',
+                dateOfBirth: mapping.DateOfBirth || '1990-01-01',
+                licenseNumber: mapping.LicenseNumber || 'DL000000000',
+                address: mapping.Address || 'Address not provided',
+                requestedOrganization: mapping.SponsorName,
+                sponsorId: mapping.SponsorID,
+                applicationDate: mapping.ApplicationDate || new Date().toISOString().split('T')[0],
+                status: mapping.Status || 'pending',
+                tempPassword: 'password123'
+            }));
+            
+            console.log("Returning %s applications from database", applications.length);
+        } catch (error) {
+            console.warn("Could not fetch from database, using fallback data:", error.message);
+            
+            // Fallback to dummy data if database fails
+            applications = [
+                {
+                    id: 1,
+                    firstName: 'John',
+                    lastName: 'Doe',
+                    email: 'jdoe@email.com',
+                    phone: '(555) 123-4567',
+                    dateOfBirth: '1990-05-15',
+                    licenseNumber: 'DL123456789',
+                    address: '123 Main St, City, State 12345',
+                    requestedOrganization: 'RandTruckCompany',
+                    sponsorId: 1,
+                    applicationDate: '2024-01-15',
+                    status: 'pending',
+                    tempPassword: 'password123'
+                }
+            ];
+        }
+        
         return applications;
     } catch (error) {
         console.error("Failed to get all applications: ", error);
@@ -201,6 +250,20 @@ router.post("/addAdmin", async (req, res, next) => {
     }
 });
 
+router.get("/getDriverSponsorMappings", async (req, res, next) => {
+    try {
+        const mappings = await getDriverSponsorMappings();
+        console.log("Sending response with all mappings:", mappings.length, "records");
+        res.json(mappings);
+    } catch (error) {
+        console.error("Error in getDriverSponsorMappings route:", error);
+        res.status(500).json({
+            error: 'Database error',
+            details: error.message
+        });
+    }
+});
+
 router.get("/getAllApplications", async (req, res, next) => {
     try {
         const applications = await getAllApplications();
@@ -218,6 +281,24 @@ router.post("/updateApplicationStatus", async (req, res, next) => {
         res.status(200).json({ message: 'Application status updated successfully!', result });
     } catch (error) {
         res.status(500).send('Error updating application status.');
+    }
+});
+
+// Add debug route for admin API
+router.get("/testDriverSponsorMappings", async (req, res, next) => {
+    try {
+        const mappings = await getDriverSponsorMappings();
+        res.json({
+            success: true,
+            count: mappings.length,
+            data: mappings
+        });
+    } catch (error) {
+        console.error("Error in admin testDriverSponsorMappings:", error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
     }
 });
 

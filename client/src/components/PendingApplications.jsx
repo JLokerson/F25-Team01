@@ -21,15 +21,34 @@ export default function PendingApplications() {
                 const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
                 let sponsorID = null;
                 
+                // Determine API base URL - use localhost if running locally
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const baseURL = isLocalhost 
+                    ? 'http://localhost:4000' 
+                    : 'https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws';
+                
+                console.log('Using API base URL:', baseURL);
+                console.log('Current user info:', userInfo);
+                
                 if (userInfo.UserID) {
                     try {
-                        const sponsorResponse = await getAllSponsorUsers();
+                        // Get sponsor info for the logged-in user
+                        const sponsorResponse = await fetch(`${baseURL}/sponsorAPI/getAllSponsorUsers`);
                         if (sponsorResponse.ok) {
                             const allSponsorUsers = await sponsorResponse.json();
-                            const currentSponsorInfo = allSponsorUsers.find(s => s.UserID === userInfo.UserID);
+                            console.log('All sponsor users:', allSponsorUsers);
+                            
+                            const currentSponsorInfo = allSponsorUsers.find(s => s.UserID === parseInt(userInfo.UserID));
+                            console.log('Current sponsor info found:', currentSponsorInfo);
+                            
                             if (currentSponsorInfo) {
                                 sponsorID = currentSponsorInfo.SponsorID;
+                                console.log('Sponsor ID determined:', sponsorID);
+                            } else {
+                                console.warn('No sponsor info found for UserID:', userInfo.UserID);
                             }
+                        } else {
+                            console.error('Failed to fetch sponsor users:', sponsorResponse.status);
                         }
                     } catch (error) {
                         console.warn('Could not fetch sponsor info:', error);
@@ -38,27 +57,59 @@ export default function PendingApplications() {
                 }
 
                 if (!sponsorID) {
-                    setError('Could not determine sponsor ID');
+                    console.warn('Could not determine sponsor ID for user:', userInfo);
+                    setError(`Could not determine sponsor ID for user. UserID: ${userInfo.UserID}`);
                     setApplications([]);
                     return;
                 }
 
-                // TODO: Replace with actual API call when application endpoints are available
-                // const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/api/applications/sponsor/${sponsorID}/pending`);
-                // if (response.ok) {
-                //     const data = await response.json();
-                //     setApplications(data);
-                // } else {
-                //     setError('Failed to load applications');
-                // }
-
-                // For now, set empty array since no API exists
-                console.log(`Would fetch pending applications for sponsor ID: ${sponsorID}`);
-                setApplications([]);
+                console.log('Fetching mappings for SponsorID:', sponsorID);
+                
+                // Fetch driver-sponsor mappings for this sponsor using appropriate URL
+                const response = await fetch(`${baseURL}/sponsorAPI/getDriverSponsorMappingsForSponsor?SponsorID=${sponsorID}`);
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    const mappings = await response.json();
+                    console.log('Raw mappings data:', mappings);
+                    
+                    // Filter to only show applications for this specific sponsor
+                    const sponsorMappings = mappings.filter(mapping => mapping.SponsorID === sponsorID);
+                    console.log('Filtered mappings for sponsor:', sponsorMappings);
+                    
+                    // Transform mappings into application format
+                    const formattedApplications = sponsorMappings.map(mapping => ({
+                        id: mapping.MappingID,
+                        firstName: mapping.FirstName || 'Unknown',
+                        lastName: mapping.LastName || 'User',
+                        email: mapping.Email || 'no-email@example.com',
+                        phone: '(555) 000-0000', // Not available in current mapping
+                        dateOfBirth: '1990-01-01', // Not available in current mapping
+                        licenseNumber: 'DL000000000', // Not available in current mapping
+                        address: 'Address not provided', // Not available in current mapping
+                        requestedOrganization: mapping.SponsorName || `Sponsor ID ${mapping.SponsorID}`,
+                        sponsorId: mapping.SponsorID,
+                        driverId: mapping.DriverID,
+                        currentPoints: mapping.Points,
+                        applicationAccepted: mapping.ApplicationAccepted,
+                        applicationDate: mapping.ApplicationDate || new Date().toISOString().split('T')[0],
+                        status: mapping.Status || (mapping.ApplicationAccepted === 0 ? 'pending' : 'approved'),
+                        tempPassword: 'password123'
+                    }));
+                    
+                    console.log('Formatted applications for sponsor:', formattedApplications);
+                    console.log('Number of pending applications:', formattedApplications.filter(app => app.status === 'pending').length);
+                    setApplications(formattedApplications);
+                } else {
+                    const errorText = await response.text();
+                    console.error('API Error:', errorText);
+                    setError(`Failed to load applications from database: ${response.status} ${errorText}`);
+                    setApplications([]);
+                }
                 
             } catch (error) {
                 console.error('Error loading applications:', error);
-                setError('Failed to load applications');
+                setError(`Failed to load applications: ${error.message}`);
                 setApplications([]);
             } finally {
                 setLoading(false);
@@ -256,7 +307,11 @@ export default function PendingApplications() {
                                 <i className="fas fa-info-circle me-2"></i>
                                 No pending applications for your organization at this time.
                                 <div className="mt-2">
-                                    <small>Applications will appear here when drivers submit requests to join your organization.</small>
+                                    <small>
+                                        Applications will appear here when drivers submit requests to join your organization.
+                                        <br />
+                                        <em>Note: Only applications with ApplicationAccepted = 0 are shown as pending.</em>
+                                    </small>
                                 </div>
                             </div>
                         ) : (
@@ -264,26 +319,30 @@ export default function PendingApplications() {
                                 <table className="table table-striped table-hover">
                                     <thead className="table-dark">
                                         <tr>
-                                            <th>Name</th>
-                                            <th>Email</th>
-                                            <th>Phone</th>
-                                            <th>Requested Organization</th>
-                                            <th>Application Date</th>
+                                            <th>Mapping ID</th>
+                                            <th>Sponsor ID</th>
+                                            <th>Driver ID</th>
+                                            <th>Accepted Status</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {pendingApplications.map(application => (
                                             <tr key={application.id}>
-                                                <td>{application.firstName} {application.lastName}</td>
-                                                <td>{application.email}</td>
-                                                <td>{application.phone}</td>
                                                 <td>
-                                                    <span className="badge bg-info">
-                                                        {application.requestedOrganization}
+                                                    <span className="badge bg-secondary">{application.id}</span>
+                                                </td>
+                                                <td>
+                                                    <span className="badge bg-info">{application.sponsorId}</span>
+                                                </td>
+                                                <td>
+                                                    <span className="badge bg-primary">{application.driverId}</span>
+                                                </td>
+                                                <td>
+                                                    <span className={`badge ${application.applicationAccepted === 0 ? 'bg-warning text-dark' : 'bg-success'}`}>
+                                                        {application.applicationAccepted === 0 ? 'Not Accepted (0)' : 'Accepted (1)'}
                                                     </span>
                                                 </td>
-                                                <td>{new Date(application.applicationDate).toLocaleDateString()}</td>
                                                 <td>
                                                     <button 
                                                         className="btn btn-primary btn-sm"
@@ -303,7 +362,7 @@ export default function PendingApplications() {
                 </div>
             </div>
 
-            {/* Application Review Modal - same as existing */}
+            {/* Application Review Modal */}
             {showModal && selectedApplication && (
                 <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-lg">
@@ -316,21 +375,29 @@ export default function PendingApplications() {
                                 <button type="button" className="btn-close" onClick={handleCloseModal}></button>
                             </div>
                             <div className="modal-body">
-                                {/* ...existing modal body content... */}
                                 <div className="row">
                                     <div className="col-md-6">
-                                        <h6>Personal Information</h6>
-                                        <p><strong>Name:</strong> {selectedApplication.firstName} {selectedApplication.lastName}</p>
-                                        <p><strong>Email:</strong> {selectedApplication.email}</p>
-                                        <p><strong>Phone:</strong> {selectedApplication.phone}</p>
-                                        <p><strong>Date of Birth:</strong> {new Date(selectedApplication.dateOfBirth).toLocaleDateString()}</p>
+                                        <h6><i className="fas fa-database me-2"></i>Database Mapping Information</h6>
+                                        <p><strong>Mapping ID:</strong> {selectedApplication.id}</p>
+                                        <p><strong>Sponsor ID:</strong> {selectedApplication.sponsorId}</p>
+                                        <p><strong>Driver ID:</strong> {selectedApplication.driverId}</p>
+                                        <p><strong>Current Points:</strong> {selectedApplication.currentPoints}</p>
+                                        <p><strong>Application Accepted:</strong> 
+                                            <span className={`badge ms-2 ${selectedApplication.applicationAccepted === 0 ? 'bg-warning text-dark' : 'bg-success'}`}>
+                                                {selectedApplication.applicationAccepted === 0 ? 'Not Accepted (0)' : 'Accepted (1)'}
+                                            </span>
+                                        </p>
                                     </div>
                                     <div className="col-md-6">
-                                        <h6>Driver Information</h6>
-                                        <p><strong>License Number:</strong> {selectedApplication.licenseNumber}</p>
-                                        <p><strong>Address:</strong> {selectedApplication.address}</p>
-                                        <p><strong>Requested Organization:</strong> {selectedApplication.requestedOrganization}</p>
-                                        <p><strong>Application Date:</strong> {new Date(selectedApplication.applicationDate).toLocaleDateString()}</p>
+                                        <h6><i className="fas fa-user me-2"></i>User Information</h6>
+                                        <p><strong>Name:</strong> {selectedApplication.firstName} {selectedApplication.lastName}</p>
+                                        <p><strong>Email:</strong> {selectedApplication.email}</p>
+                                        <p><strong>Organization:</strong> {selectedApplication.requestedOrganization}</p>
+                                        <p><strong>Status:</strong> 
+                                            <span className={`badge ms-2 ${selectedApplication.status === 'pending' ? 'bg-warning text-dark' : 'bg-success'}`}>
+                                                {selectedApplication.status}
+                                            </span>
+                                        </p>
                                     </div>
                                 </div>
 
