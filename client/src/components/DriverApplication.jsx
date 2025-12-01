@@ -17,8 +17,8 @@ export default function DriverApplication() {
 
     const fetchSponsors = async () => {
         try {
-            // Use the direct getAllSponsors endpoint
-            const response = await fetch('http://localhost:4000/sponsorAPI/getAllSponsors');
+            // Use the AWS Lambda endpoint instead of localhost
+            const response = await fetch('https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsors');
             if (response.ok) {
                 const sponsorsData = await response.json();
                 console.log('Fetched sponsors:', sponsorsData);
