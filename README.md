@@ -4,6 +4,13 @@
 
 This project is a **Trucker Rewards Website** designed to incentivize commercial truck drivers. The platform allows sponsoring companies to **issue points** to their drivers, which the drivers can then **redeem for various rewards**.
 
+## Group Members
+
+Ohm Patel
+Julia Lokerson
+Emerson Khan
+Jason Lin
+
 ### Objectives
 
 The primary objectives of this project are:
@@ -96,7 +103,7 @@ Once dependencies are installed and the `.env` file is configured, you can run t
 
 -----
 
-## ☁️ AWS Deployment Implementation
+## AWS Deployment Implementation
 
 The production environment is hosted on Amazon Web Services (AWS) using a serverless architecture for the backend and a dedicated instance for the frontend.
 
@@ -117,7 +124,7 @@ The production environment is hosted on Amazon Web Services (AWS) using a server
 
 -----
 
-## 🏗️ Build and Test
+## Build and Test
 
 ### Building the Project
 
@@ -135,3 +142,4 @@ This command compiles the React JSX code and assets into a production-ready **`b
 ## Project Status
 
 **Current Development Sprint:** **Sprint 11**
+
