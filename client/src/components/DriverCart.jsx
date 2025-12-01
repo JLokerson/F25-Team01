@@ -33,6 +33,7 @@ export default function DriverCart() {
   // Cart is stored as an array of ITEM_IDs
   const [cart, setCart] = useState([]);
   const [productsMap, setProductsMap] = useState({});
+  // ***
   const [cartLoading, setCartLoading] = useState(false);
   const [driverId, setDriverId] = useState(null);
 
@@ -64,7 +65,10 @@ export default function DriverCart() {
       console.log("Cart - Driver data from DB:", driverData);
 
       // Extract DriverID and SponsorID from response
-      const driver = Array.isArray(driverData) && driverData.length > 0 ? driverData[0] : driverData;
+      const driver =
+        Array.isArray(driverData) && driverData.length > 0
+          ? driverData[0]
+          : driverData;
       const fetchedDriverId = driver?.DriverID;
       const sponsorId = driver?.SponsorID;
 
@@ -77,11 +81,14 @@ export default function DriverCart() {
       setDriverId(fetchedDriverId);
 
       // Use SponsorID to fetch sponsor mappings via getDriverSponsorMappings
-      const mappingsUrl = `https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/getDriverSponsorMappings?UserID=${user.UserID}`;
+      const mappingsUrl = `https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/getDriverSponsorMappings/${user.UserID}`;
       const mappingsRes = await fetch(mappingsUrl);
 
       if (!mappingsRes.ok) {
-        console.error("Cart - Failed to fetch sponsor mappings:", mappingsRes.status);
+        console.error(
+          "Cart - Failed to fetch sponsor mappings:",
+          mappingsRes.status
+        );
         return;
       }
 
@@ -90,7 +97,11 @@ export default function DriverCart() {
 
       // Handle nested array response
       let mappings = mappingsData;
-      if (Array.isArray(mappingsData) && mappingsData.length > 0 && Array.isArray(mappingsData[0])) {
+      if (
+        Array.isArray(mappingsData) &&
+        mappingsData.length > 0 &&
+        Array.isArray(mappingsData[0])
+      ) {
         mappings = mappingsData[0];
       }
 
@@ -114,9 +125,8 @@ export default function DriverCart() {
         }
       }
 
-      // Step 4: Fetch cart items from database
+      // Fetch cart items from database
       await loadCartFromDatabase(fetchedDriverId);
-
     } catch (error) {
       console.error("Cart - Error loading sponsor info:", error);
     } finally {
@@ -124,6 +134,7 @@ export default function DriverCart() {
     }
   };
 
+  // ***
   const loadCartFromDatabase = async (driverId) => {
     try {
       console.log("Cart - Fetching cart items for DriverID:", driverId);
@@ -140,7 +151,9 @@ export default function DriverCart() {
       console.log("Cart - Raw cart data from DB:", cartData);
 
       // Extract ITEM_IDs from cart data
-      const itemIds = Array.isArray(cartData) ? cartData.map((item) => item.ITEM_ID) : [];
+      const itemIds = Array.isArray(cartData)
+        ? cartData.map((item) => item.ITEM_ID)
+        : [];
       console.log("Cart - Extracted item IDs:", itemIds);
 
       if (itemIds.length === 0) {
@@ -152,7 +165,6 @@ export default function DriverCart() {
 
       // Enrich items with Best Buy API data
       await enrichCartItems(itemIds);
-
     } catch (error) {
       console.error("Cart - Error loading cart from database:", error);
       setCart([]);
@@ -182,10 +194,15 @@ export default function DriverCart() {
                 ITEM_IMAGE: product.image || "",
                 ITEM_STOCK: 1, // Default stock count
               };
-              console.log(`Cart - Enriched item ${itemId}:`, enrichedProducts[itemId]);
+              console.log(
+                `Cart - Enriched item ${itemId}:`,
+                enrichedProducts[itemId]
+              );
             }
           } else {
-            console.warn(`Cart - Failed to fetch Best Buy data for SKU ${itemId}`);
+            console.warn(
+              `Cart - Failed to fetch Best Buy data for SKU ${itemId}`
+            );
             // Fallback: create minimal product entry
             enrichedProducts[itemId] = {
               ITEM_ID: itemId,
@@ -211,7 +228,6 @@ export default function DriverCart() {
       setProductsMap(enrichedProducts);
       setCart(itemIds);
       console.log("Cart - Enrichment complete. Product map:", enrichedProducts);
-
     } catch (error) {
       console.error("Cart - Error enriching cart items:", error);
     }
@@ -272,8 +288,7 @@ export default function DriverCart() {
   }
 
   useEffect(() => {
-    // Cart is now loaded from database in loadSponsorInfo()
-    // No need to load from localStorage
+    // Cart is loaded from database in loadSponsorInfo()
   }, []);
 
   const remove = (itemId) => {
