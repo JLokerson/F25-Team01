@@ -42,7 +42,7 @@ export default function DriverCart() {
     if (user?.UserID) {
       loadSponsorInfo();
     }
-  }, [user]);
+  }, [user?.UserID]);
 
   const loadSponsorInfo = async () => {
     try {
@@ -134,7 +134,7 @@ export default function DriverCart() {
     }
   };
 
-  // ***
+  // Load cart items from database
   const loadCartFromDatabase = async (driverId) => {
     try {
       console.log("Cart - Fetching cart items for DriverID:", driverId);
@@ -150,9 +150,9 @@ export default function DriverCart() {
       const cartData = await cartRes.json();
       console.log("Cart - Raw cart data from DB:", cartData);
 
-      // Extract ITEM_IDs from cart data
+      // Extract ProductID from cart data (database returns ProductID, not ITEM_ID)
       const itemIds = Array.isArray(cartData)
-        ? cartData.map((item) => item.ITEM_ID)
+        ? cartData.map((item) => item.ProductID)
         : [];
       console.log("Cart - Extracted item IDs:", itemIds);
 
@@ -180,7 +180,7 @@ export default function DriverCart() {
       // Fetch product data from Best Buy API for each item
       for (const itemId of itemIds) {
         try {
-          const bbUrl = `https://api.bestbuyapis.com/v1/products(sku=${itemId})?show=name,salePrice,image&apiKey=${process.env.REACT_APP_BESTBUY_API_KEY}`;
+          const bbUrl = `https://api.bestbuy.com/v1/products(sku=${itemId})?apiKey=3AsycyCu2CRRwvvnLtHYuBMV&sort=name.asc&show=name,salePrice,image&format=json`;
           const bbRes = await fetch(bbUrl);
 
           if (bbRes.ok) {
@@ -575,12 +575,11 @@ export default function DriverCart() {
               </div>
             ) : (
               <div className="list-group mb-3">
-                {cart
-                  .map((id) => productsMap[id])
-                  .filter(Boolean)
-                  .map((item) => (
+                {cart.map((id, index) => {
+                  const item = productsMap[id];
+                  return item ? (
                     <div
-                      key={item.ITEM_ID}
+                      key={`${id}-${index}`}
                       className="list-group-item d-flex justify-content-between align-items-center"
                     >
                       <div>
@@ -588,7 +587,7 @@ export default function DriverCart() {
                           <strong>{item.ITEM_NAME}</strong>
                         </div>
                         <div className="text-muted small">
-                          Price: ${item.ITEM_PRICE} • Stock: {item.ITEM_STOCK}
+                          Price: ${item.ITEM_PRICE}
                         </div>
                       </div>
                       <div>
@@ -600,7 +599,8 @@ export default function DriverCart() {
                         </button>
                       </div>
                     </div>
-                  ))}
+                  ) : null;
+                })}
               </div>
             )}
             <div className="d-flex">
