@@ -582,12 +582,27 @@ export default function DriverCart() {
                       key={`${id}-${index}`}
                       className="list-group-item d-flex justify-content-between align-items-center"
                     >
-                      <div>
+                      <div className="d-flex align-items-center" style={{ flex: 1 }}>
+                        {item.ITEM_IMAGE && (
+                          <img
+                            src={item.ITEM_IMAGE}
+                            alt={item.ITEM_NAME}
+                            style={{
+                              width: "80px",
+                              height: "80px",
+                              objectFit: "cover",
+                              marginRight: "15px",
+                              borderRadius: "4px"
+                            }}
+                          />
+                        )}
                         <div>
-                          <strong>{item.ITEM_NAME}</strong>
-                        </div>
-                        <div className="text-muted small">
-                          Price: ${item.ITEM_PRICE}
+                          <div>
+                            <strong>{item.ITEM_NAME}</strong>
+                          </div>
+                          <div className="text-muted small">
+                            Price: ${item.ITEM_PRICE}
+                          </div>
                         </div>
                       </div>
                       <div>
