@@ -19,16 +19,10 @@ export default function AdminApplications() {
             try {
                 setError(null);
                 
-                // Determine API base URL - use localhost if running locally
-                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                const baseURL = isLocalhost 
-                    ? 'http://localhost:4000' 
-                    : 'https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws';
+                console.log('Using Lambda API URL');
                 
-                console.log('Using API base URL:', baseURL);
-                
-                // Fetch all driver-sponsor mappings
-                const response = await fetch(`${baseURL}/adminAPI/getDriverSponsorMappings`);
+                // Fetch all driver-sponsor mappings using Lambda URL
+                const response = await fetch('https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/adminAPI/getDriverSponsorMappings');
                 console.log('Response status:', response.status);
                 
                 if (response.ok) {

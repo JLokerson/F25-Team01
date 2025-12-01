@@ -21,19 +21,13 @@ export default function PendingApplications() {
                 const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
                 let sponsorID = null;
                 
-                // Determine API base URL - use localhost if running locally
-                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                const baseURL = isLocalhost 
-                    ? 'http://localhost:4000' 
-                    : 'https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws';
-                
-                console.log('Using API base URL:', baseURL);
+                console.log('Using Lambda API URL');
                 console.log('Current user info:', userInfo);
                 
                 if (userInfo.UserID) {
                     try {
                         // Get sponsor info for the logged-in user
-                        const sponsorResponse = await fetch(`${baseURL}/sponsorAPI/getAllSponsorUsers`);
+                        const sponsorResponse = await fetch('https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getAllSponsorUsers');
                         if (sponsorResponse.ok) {
                             const allSponsorUsers = await sponsorResponse.json();
                             console.log('All sponsor users:', allSponsorUsers);
@@ -65,8 +59,8 @@ export default function PendingApplications() {
 
                 console.log('Fetching mappings for SponsorID:', sponsorID);
                 
-                // Fetch driver-sponsor mappings for this sponsor using appropriate URL
-                const response = await fetch(`${baseURL}/sponsorAPI/getDriverSponsorMappingsForSponsor?SponsorID=${sponsorID}`);
+                // Fetch driver-sponsor mappings for this sponsor using Lambda URL
+                const response = await fetch(`https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/sponsorAPI/getDriverSponsorMappingsForSponsor?SponsorID=${sponsorID}`);
                 console.log('Response status:', response.status);
                 
                 if (response.ok) {
