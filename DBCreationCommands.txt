@@ -1,0 +1,249 @@
+/* Literally every command needed to create our DB.
+First tables, then triggers unless I missed one or two, then finally stored procedures.*/
+CREATE TABLE `ABOUT` (
+  `AboutID` int NOT NULL AUTO_INCREMENT,
+  `Team` int DEFAULT NULL,
+  `Sprint` int DEFAULT NULL,
+  `Release` datetime DEFAULT NULL,
+  PRIMARY KEY (`AboutID`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `ADMIN` (
+  `AdminID` int NOT NULL AUTO_INCREMENT,
+  `UserID` int NOT NULL,
+  PRIMARY KEY (`AdminID`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `CART_MAPPINGS` (
+  `MappingID` int NOT NULL AUTO_INCREMENT,
+  `DriverID` int NOT NULL,
+  `ProductID` varchar(50) NOT NULL,
+  PRIMARY KEY (`MappingID`),
+  UNIQUE KEY `MappingID_UNIQUE` (`MappingID`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `CATALOG` (
+  `CatalogID` int NOT NULL AUTO_INCREMENT,
+  `SponsorID` int unsigned NOT NULL,
+  `CategoryID` varchar(20) NOT NULL,
+  `Active` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`CatalogID`),
+  UNIQUE KEY `uq_catalog_sponsor_product` (`SponsorID`,`CategoryID`)
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `DRIVER` (
+  `DriverID` int NOT NULL AUTO_INCREMENT,
+  `SponsorID` int NOT NULL,
+  `UserID` int NOT NULL,
+  `Points` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`DriverID`)
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `DRIVER_SPONSOR_MAPPINGS` (
+  `MappingID` int NOT NULL AUTO_INCREMENT,
+  `SponsorID` int NOT NULL,
+  `DriverID` int NOT NULL,
+  `Points` int NOT NULL DEFAULT '0',
+  `ApplicationAccepted` tinyint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`MappingID`)
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `GENERIC_ACTION_AUDIT` (
+  `ActionID` int NOT NULL AUTO_INCREMENT,
+  `ActionName` varchar(45) DEFAULT NULL,
+  `EventTime` datetime DEFAULT NULL,
+  `AffectedUserID` int DEFAULT NULL,
+  `ActingUserID` int DEFAULT NULL,
+  PRIMARY KEY (`ActionID`)
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `ORDERS` (
+  `OrderID` int NOT NULL AUTO_INCREMENT,
+  `ProductID` int NOT NULL,
+  `DriverID` int NOT NULL,
+  `PurchasedAtPrice` int NOT NULL,
+  `OrderStatus` varchar(30) NOT NULL,
+  `DeliveredOn` date DEFAULT NULL,
+  PRIMARY KEY (`OrderID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `POINTCHANGELOG` (
+  `PointChangeID` int NOT NULL AUTO_INCREMENT,
+  `DriverSponsorMappingID` int NOT NULL,
+  `PointChange` int NOT NULL,
+  `EventTime` datetime DEFAULT NULL,
+  PRIMARY KEY (`PointChangeID`)
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `SPONSOR` (
+  `SponsorID` int NOT NULL AUTO_INCREMENT,
+  `Name` varchar(50) NOT NULL,
+  `PointRatio` decimal(5,2) DEFAULT '0.01',
+  `EnabledSponsor` tinyint NOT NULL DEFAULT '1',
+  PRIMARY KEY (`SponsorID`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `SPONSOR_USER` (
+  `SponsorUserID` int NOT NULL AUTO_INCREMENT,
+  `UserID` int NOT NULL,
+  `SponsorID` int NOT NULL,
+  PRIMARY KEY (`SponsorUserID`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `USER` (
+  `UserID` int NOT NULL AUTO_INCREMENT,
+  `FirstName` varchar(50) NOT NULL,
+  `LastName` varchar(50) NOT NULL,
+  `Email` varchar(50) NOT NULL,
+  `Password` varchar(100) NOT NULL,
+  `PasswordSalt` varchar(50) NOT NULL,
+  `UserType` int NOT NULL,
+  `LastLogin` datetime DEFAULT NULL,
+  `ActiveAccount` tinyint NOT NULL DEFAULT '1',
+  PRIMARY KEY (`UserID`),
+  UNIQUE KEY `user_ID_UNIQUE` (`UserID`)
+) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE DEFINER=`Team01`@`%` TRIGGER `GENERIC_ACTION_AUDIT_BEFORE_INSERT` BEFORE INSERT ON `GENERIC_ACTION_AUDIT` FOR EACH ROW BEGIN
+SET NEW.EventTime = NOW();
+END
+CREATE DEFINER=`Team01`@`%` TRIGGER `USER_UPDATE_AUDIT_LOG` AFTER UPDATE ON `USER` FOR EACH ROW BEGIN
+	INSERT INTO GENERIC_ACTION_AUDIT (ActionName, AffectedUserID) VALUES ("User Account Updated", Old.UserID);
+END
+CREATE DEFINER=`Team01`@`%` TRIGGER `POINTCHANGELOG_BEFORE_INSERT` BEFORE INSERT ON `POINTCHANGELOG` FOR EACH ROW BEGIN
+SET NEW.EventTime = NOW();
+END
+
+DELIMITER $$
+CREATE DEFINER=`Team01`@`%` PROCEDURE `AcceptApplicationByDriverSponsorPair`(IN InDriverID INT, IN InSponsorID INT)
+BEGIN
+UPDATE DRIVER_SPONSOR_MAPPINGS SET ApplicationAccepted = NOT ApplicationAccepted WHERE SponsorID = InSponsorID AND DriverID = InDriverID;
+END$$
+DELIMITER ;
+DELIMITER $$
+CREATE DEFINER=`Team01`@`%` PROCEDURE `AddDriver`(In InputUserID Int, In InputSponsorID Int)
+BEGIN
+DECLARE DriverIDStorage int;
+
+IF (SELECT count(*) FROM Team01_DB.DRIVER WHERE UserID = InputUserID) < 1 THEN
+	INSERT INTO Team01_DB.DRIVER (UserID) VALUES (InputUserID);
+END IF;
+SELECT DRIVER.DriverID into DriverIDStorage from Team01_DB.DRIVER where UserID = InputUserID ORDER BY DRIVER.DriverID desc LIMIT 1;
+INSERT INTO DRIVER_SPONSOR_MAPPINGS (SponsorID, DriverID, Points)
+VALUES (InputSponsorID, DriverIDStorage, Points);
+END$$
+DELIMITER ;
+DELIMITER $$
+CREATE DEFINER=`Team01`@`%` PROCEDURE `AddProductToDriverCart`(IN InDriverID INT, IN InProductID INT)
+BEGIN
+	-- This blocks DBMS's duplicate check
+	IF NOT EXISTS (SELECT 1 FROM DRIVER WHERE DriverID = InDriverID) THEN
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Driver does not exist.';
+	END IF;
+    
+    INSERT INTO CART_MAPPINGS (DriverID, ProductID)
+    VALUES (InDriverID, InProductID);
+END$$
+DELIMITER ;
+DELIMITER $$
+CREATE DEFINER=`Team01`@`%` PROCEDURE `BulkPointsUpdate`(IN InputSponsorID INT, IN PointChangeAmount INT)
+BEGIN
+DECLARE NumRecords int;
+DECLARE p1 int;
+DECLARE p2 int;
+
+SELECT count(*) from DRIVER_SPONSOR_MAPPINGS INTO NumRecords;
+SET p1 = 0;
+
+label1: LOOP
+    SET p1 = p1 + 1;
+    IF p1 < NumRecords AND (SELECT * FROM DRIVER_SPONSOR_MAPPINGS WHERE SponsorID = InputSponsorID AND DriverID = p1) IS NOT NULL THEN
+		INSERT INTO POINTCHANGELOG(DriverSponsorMappingID, PointChange) VALUES (p1, PointChangeAmount);
+        ITERATE label1;
+    END IF;
+    LEAVE label1;
+END LOOP label1;
+SET @x = p1;
+
+UPDATE DRIVER_SPONSOR_MAPPINGS
+SET Points = Points + PointChangeAmount
+WHERE driver.SponsorID = InputSponsorID;
+UPDATE DRIVER_SPONSOR_MAPPINGS
+SET Points = 0
+WHERE points < 0;
+END$$
+DELIMITER ;
+DELIMITER $$
+CREATE DEFINER=`Team01`@`%` PROCEDURE `GetDriverInfo`()
+BEGIN
+	SELECT 
+		USER.FirstName as FirstName, 
+		USER.LastName as LastName, 
+		USER.Email as Email,
+        DRIVER_SPONSOR_MAPPINGS.DriverID as DriverID, 
+        USER.UserID as UserID, 
+        DRIVER_SPONSOR_MAPPINGS.SponsorID, 
+        DRIVER_SPONSOR_MAPPINGS.Points
+    FROM 
+		DRIVER, 
+        USER, 
+        DRIVER_SPONSOR_MAPPINGS, 
+        SPONSOR
+    WHERE 
+		DRIVER.DriverID = DRIVER_SPONSOR_MAPPINGS.DriverID 
+        AND DRIVER.UserID = USER.UserID 
+        AND USER.ActiveAccount = 1 
+        AND DRIVER_SPONSOR_MAPPINGS.ApplicationAccepted = 1 
+        AND SPONSOR.SponsorID = DRIVER_SPONSOR_MAPPINGS.SponsorID 
+        AND SPONSOR.EnabledSponsor = 1;
+END$$
+DELIMITER ;
+DELIMITER $$
+CREATE DEFINER=`Team01`@`%` PROCEDURE `GetDriverInfoLimited`(IN InputUserID INT)
+BEGIN
+	SELECT DRIVER_SPONSOR_MAPPINGS.DriverID as DriverID, USER.FirstName as FirstName, USER.LastName as LastName, USER.Email as Email, USER.UserID as UserID, DRIVER_SPONSOR_MAPPINGS.SponsorID, DRIVER_SPONSOR_MAPPINGS.Points
+    FROM DRIVER, USER, DRIVER_SPONSOR_MAPPINGS
+    WHERE DRIVER.DriverID = DRIVER_SPONSOR_MAPPINGS.DriverID AND DRIVER.UserID = USER.UserID AND InputUserID = USER.UserID AND USER.ActiveAccount = 1 AND DRIVER_SPONSOR_MAPPINGS.ApplicationAccepted = 1
+    LIMIT 1;
+END$$
+DELIMITER ;
+DELIMITER $$
+CREATE DEFINER=`Team01`@`%` PROCEDURE `GetDriverInfoSpecific`(IN InputUserID INT)
+BEGIN
+	SELECT DISTINCT SPONSOR.PointRatio, SPONSOR.Name, DRIVER_SPONSOR_MAPPINGS.DriverID as DriverID, USER.FirstName as FirstName, USER.LastName as LastName, USER.Email as Email, USER.UserID as UserID, DRIVER_SPONSOR_MAPPINGS.SponsorID, DRIVER_SPONSOR_MAPPINGS.Points, DRIVER_SPONSOR_MAPPINGS.MappingID
+    FROM DRIVER, USER, DRIVER_SPONSOR_MAPPINGS, SPONSOR
+    WHERE DRIVER.DriverID = DRIVER_SPONSOR_MAPPINGS.DriverID AND DRIVER.UserID = USER.UserID AND InputUserID = USER.UserID AND USER.ActiveAccount = 1 AND DRIVER_SPONSOR_MAPPINGS.ApplicationAccepted = 1 AND SPONSOR.EnabledSponsor = 1 AND SPONSOR.SponsorID = DRIVER_SPONSOR_MAPPINGS.SponsorID;
+END$$
+DELIMITER ;
+DELIMITER $$
+CREATE DEFINER=`Team01`@`%` PROCEDURE `GetDriverInfoUnlimited`()
+BEGIN
+	SELECT USER.FirstName as FirstName, USER.LastName as LastName, USER.Email as Email,DRIVER_SPONSOR_MAPPINGS.DriverID as DriverID, USER.UserID as UserID, DRIVER_SPONSOR_MAPPINGS.SponsorID, DRIVER_SPONSOR_MAPPINGS.Points
+    FROM DRIVER, USER, DRIVER_SPONSOR_MAPPINGS, SPONSOR
+    WHERE DRIVER.DriverID = DRIVER_SPONSOR_MAPPINGS.DriverID AND DRIVER.UserID = USER.UserID AND SPONSOR.SponsorID = DRIVER_SPONSOR_MAPPINGS.SponsorID;
+END$$
+DELIMITER ;
+DELIMITER $$
+CREATE DEFINER=`Team01`@`%` PROCEDURE `PointsUpdate`(InputDriverID INT, IN PointChangeAmount INT, IN InputSponsorID INT)
+BEGIN
+DECLARE VarMappingID int;
+Select DRIVER_SPONSOR_MAPPINGS.MappingID into VarMappingID from DRIVER_SPONSOR_MAPPINGS where DriverID = InputDriverID AND SponsorID = InputSponsorID;
+UPDATE DRIVER_SPONSOR_MAPPINGS
+SET Points = Points + PointChangeAmount
+WHERE DriverID = InputDriverID;
+UPDATE DRIVER_SPONSOR_MAPPINGS
+SET Points = 0
+WHERE points < 0;
+INSERT INTO POINTCHANGELOG(DriverSponsorMappingID, PointChange) VALUES (VarMappingID, PointChangeAmount);
+
+END$$
+DELIMITER ;
+DELIMITER $$
+CREATE DEFINER=`Team01`@`%` PROCEDURE `RetrieveAuditData`()
+BEGIN
+SELECT GENERIC_ACTION_AUDIT.ActionName AS ActionName, GENERIC_ACTION_AUDIT.EventTime AS EventTime, AffectedUserID, ActingUserID FROM Team01_DB.GENERIC_ACTION_AUDIT;
+END$$
+DELIMITER ;
+DELIMITER $$
+CREATE DEFINER=`Team01`@`%` PROCEDURE `ToggleAccountActivity`(IN InputUserID INT)
+BEGIN
+	UPDATE USER SET ActiveAccount = NOT ActiveAccount where InputUserID = UserID;
+    INSERT INTO GENERIC_ACTION_AUDIT (ActionName, AffectedUserID) VALUES ("Activity status toggle.", InputUserID);
+END$$
+DELIMITER ;
+DELIMITER $$
+CREATE DEFINER=`Team01`@`%` PROCEDURE `ToggleSponsorEnabled`(IN InputSponsorID INT)
+BEGIN
+	UPDATE SPONSOR SET EnabledSponsor = NOT EnabledSponsor where InputSponsorID = SponsorID;
+    INSERT INTO GENERIC_ACTION_AUDIT (ActionName, AffectedUserID) VALUES ("Sponsor status toggle. AffectedUser field used to store SponsorID", InputSponsorID);
+END$$
+DELIMITER ;

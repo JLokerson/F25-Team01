@@ -31,7 +31,11 @@ import Testing from "./components/Testing.jsx";
 import { CookiesProvider, useCookies } from "react-cookie";
 import AdminAuditView from "./components/AdminAuditView";
 import SponsorAuditView from "./components/SponsorAuditView";
+<<<<<<< HEAD
 import SponsorBulkLoading from "./components/SponsorBulkLoading.jsx";
+=======
+import DriverApplication from "./components/DriverApplication.jsx";
+>>>>>>> origin/Sprint11
 
 function AppContent() {
   const location = useLocation();
@@ -85,6 +89,7 @@ function AppContent() {
         {/* Driver routes */}
         <Route path="/driverhome" element={<DriverHome />} />
         <Route path="/driverprofile" element={<DriverProfile />} />
+        <Route path="/driver-application" element={<DriverApplication />} />
         <Route path="/drivercart" element={<DriverCart />} />
         <Route
           path="/driverorderconfirmation"

@@ -336,6 +336,116 @@ router.post("/toggleSponsorActivity/:sponsorID", async (req, res, next) => {
     }
 });
 
+// Add debug routes for testing - works with localhost
+router.get("/testDriverSponsorMappings", async (req, res, next) => {
+    try {
+        console.log("Testing DRIVER_SPONSOR_MAPPINGS table access");
+        console.log("Request from:", req.get('host')); // Shows if localhost or AWS
+        
+        // Test basic table access with multiple variations
+        const queries = [
+            "SELECT * FROM Team01_DB.DRIVER_SPONSOR_MAPPINGS LIMIT 5",
+            "SELECT * FROM DRIVER_SPONSOR_MAPPINGS LIMIT 5"
+        ];
+        
+        let result = null;
+        let usedQuery = "";
+        
+        for (const query of queries) {
+            try {
+                console.log("Trying query:", query);
+                result = await db.executeQuery(query);
+                usedQuery = query;
+                console.log("SUCCESS with query:", query);
+                break;
+            } catch (error) {
+                console.log("FAILED with query:", query, "Error:", error.message);
+            }
+        }
+        
+        if (result === null) {
+            throw new Error("All queries failed - table may not exist");
+        }
+        
+        console.log("Final query result:", result);
+        console.log("Number of records found:", result.length);
+        
+        if (result.length > 0) {
+            console.log("Sample record:", result[0]);
+            console.log("Available columns:", Object.keys(result[0]));
+        }
+        
+        res.json({
+            success: true,
+            recordCount: result.length,
+            sampleData: result,
+            queryUsed: usedQuery,
+            message: "DRIVER_SPONSOR_MAPPINGS table accessed successfully",
+            serverInfo: {
+                host: req.get('host'),
+                isLocalhost: req.get('host').includes('localhost') || req.get('host').includes('127.0.0.1')
+            }
+        });
+    } catch (error) {
+        console.error("Error testing DRIVER_SPONSOR_MAPPINGS table:", error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: "Failed to access DRIVER_SPONSOR_MAPPINGS table",
+            serverInfo: {
+                host: req.get('host'),
+                isLocalhost: req.get('host').includes('localhost') || req.get('host').includes('127.0.0.1')
+            }
+        });
+    }
+});
+
+// Test all tables to see what's available
+router.get("/testAllTables", async (req, res, next) => {
+    try {
+        console.log("Testing all available tables");
+        
+        const tables = [
+            "Team01_DB.DRIVER_SPONSOR_MAPPINGS",
+            "DRIVER_SPONSOR_MAPPINGS", 
+            "Team01_DB.USER",
+            "Team01_DB.DRIVER",
+            "Team01_DB.SPONSOR"
+        ];
+        
+        const results = {};
+        
+        for (const table of tables) {
+            try {
+                const query = `SELECT COUNT(*) as count FROM ${table}`;
+                const result = await db.executeQuery(query);
+                results[table] = {
+                    success: true,
+                    count: result[0].count
+                };
+                console.log(`Table ${table}: ${result[0].count} records`);
+            } catch (error) {
+                results[table] = {
+                    success: false,
+                    error: error.message
+                };
+                console.log(`Table ${table}: ERROR - ${error.message}`);
+            }
+        }
+        
+        res.json({
+            message: "Table access test complete",
+            results: results
+        });
+    } catch (error) {
+        console.error("Error testing tables:", error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 /**
  * Updates an existing Sponsor organization.
  * @param {object} data - The Sponsor data to be updated.
@@ -425,6 +535,183 @@ router.post("/updateDriverPoints", async (req, res, next) => {
     } catch (error) {
         console.error('Error updating drivers points:', error);
         res.status(500).send('Error updating driver points.');
+    }
+});
+
+/**
+ * Retrieves driver-sponsor mappings for a specific sponsor.
+ * @param {number} sponsorId - The sponsor ID to filter by.
+ * @returns {Promise<Array<Object>>} A promise that resolves with an array of mapping objects.
+ */
+async function getDriverSponsorMappingsForSponsor(sponsorId){
+    try {
+        console.log("Reading driver-sponsor mappings for sponsor:", sponsorId);
+
+        // Query to get mappings with user details and SPONSOR names for applications that are NOT accepted (ApplicationAccepted = 0)
+        // AND specifically for this sponsor ID
+        let query = `
+            SELECT 
+                dsm.MappingID,
+                dsm.SponsorID,
+                dsm.DriverID,
+                dsm.Points,
+                dsm.ApplicationAccepted,
+                u.FirstName,
+                u.LastName,
+                u.Email,
+                s.Name as SponsorName,
+                'pending' as Status,
+                NOW() as ApplicationDate
+            FROM Team01_DB.DRIVER_SPONSOR_MAPPINGS dsm
+            LEFT JOIN Team01_DB.DRIVER d ON dsm.DriverID = d.DriverID
+            LEFT JOIN Team01_DB.USER u ON d.UserID = u.UserID
+            LEFT JOIN Team01_DB.SPONSOR s ON dsm.SponsorID = s.SponsorID
+            WHERE dsm.SponsorID = ? AND dsm.ApplicationAccepted = 0
+            ORDER BY dsm.MappingID DESC
+        `;
+        let mappings;
+        
+        try {
+            mappings = await db.executeQuery(query, [sponsorId]);
+            console.log("Successfully queried with full JOIN for sponsor:", sponsorId);
+        } catch (error) {
+            console.log("Full JOIN failed, trying fallback with SPONSOR table only for sponsor:", sponsorId);
+            // Fallback query that still includes SPONSOR table for organization names
+            query = `
+                SELECT 
+                    dsm.*,
+                    s.Name as SponsorName
+                FROM Team01_DB.DRIVER_SPONSOR_MAPPINGS dsm
+                LEFT JOIN Team01_DB.SPONSOR s ON dsm.SponsorID = s.SponsorID
+                WHERE dsm.SponsorID = ? AND dsm.ApplicationAccepted = 0 
+                ORDER BY dsm.MappingID DESC
+            `;
+            mappings = await db.executeQuery(query, [sponsorId]);
+            console.log("Successfully queried DRIVER_SPONSOR_MAPPINGS with SPONSOR join for sponsor:", sponsorId);
+        }
+        
+        console.log("Query used:", query);
+        console.log("Parameters:", [sponsorId]);
+        console.log("Raw result for sponsor", sponsorId, ":", mappings);
+        console.log("Returning %s pending driver-sponsor mappings for sponsor %s", mappings.length, sponsorId);
+        
+        return mappings;
+    } catch (error) {
+        console.error("Failed to get driver-sponsor mappings for sponsor: ", error);
+        console.error("Error details:", error.message);
+        console.error("Error stack:", error.stack);
+        throw error;
+    }
+}
+
+// Add new function to get all mappings for admin
+async function getAllDriverSponsorMappings(){
+    try {
+        console.log("Reading all driver-sponsor mappings");
+
+        // Query to get all mappings with user details and SPONSOR organization names
+        let query = `
+            SELECT 
+                dsm.MappingID,
+                dsm.SponsorID,
+                dsm.DriverID,
+                dsm.Points,
+                dsm.ApplicationAccepted,
+                u.FirstName,
+                u.LastName,
+                u.Email,
+                s.Name as SponsorName,
+                CASE 
+                    WHEN dsm.ApplicationAccepted = 0 THEN 'pending'
+                    WHEN dsm.ApplicationAccepted = 1 THEN 'approved'
+                    ELSE 'unknown'
+                END as Status,
+                NOW() as ApplicationDate
+            FROM Team01_DB.DRIVER_SPONSOR_MAPPINGS dsm
+            LEFT JOIN Team01_DB.DRIVER d ON dsm.DriverID = d.DriverID
+            LEFT JOIN Team01_DB.USER u ON d.UserID = u.UserID
+            LEFT JOIN Team01_DB.SPONSOR s ON dsm.SponsorID = s.SponsorID
+            ORDER BY dsm.ApplicationAccepted ASC, dsm.MappingID DESC
+        `;
+        let mappings;
+        
+        try {
+            mappings = await db.executeQuery(query);
+            console.log("Successfully queried all mappings with full JOIN");
+        } catch (error) {
+            console.log("Full JOIN failed, trying fallback with SPONSOR table only");
+            // Fallback query that still includes SPONSOR table for organization names
+            query = `
+                SELECT 
+                    dsm.*,
+                    s.Name as SponsorName,
+                    CASE 
+                        WHEN dsm.ApplicationAccepted = 0 THEN 'pending'
+                        WHEN dsm.ApplicationAccepted = 1 THEN 'approved'
+                        ELSE 'unknown'
+                    END as Status
+                FROM Team01_DB.DRIVER_SPONSOR_MAPPINGS dsm
+                LEFT JOIN Team01_DB.SPONSOR s ON dsm.SponsorID = s.SponsorID
+                ORDER BY dsm.ApplicationAccepted ASC, dsm.MappingID DESC
+            `;
+            mappings = await db.executeQuery(query);
+            console.log("Successfully queried all DRIVER_SPONSOR_MAPPINGS with SPONSOR join");
+        }
+        
+        console.log("Query used:", query);
+        console.log("Raw result count:", mappings.length);
+        console.log("Sample mapping with sponsor name:", mappings.length > 0 ? mappings[0] : 'No data');
+        console.log("Returning %s total driver-sponsor mappings", mappings.length);
+        
+        return mappings;
+    } catch (error) {
+        console.error("Failed to get all driver-sponsor mappings: ", error);
+        console.error("Error details:", error.message);
+        throw error;
+    }
+}
+
+// Add route for admin to get all mappings
+router.get("/getAllDriverSponsorMappings", async (req, res, next) => {
+    try {
+        const mappings = await getAllDriverSponsorMappings();
+        console.log("Sending response with all mappings:", mappings.length, "records");
+        res.json(mappings);
+    } catch (error) {
+        console.error("Error in getAllDriverSponsorMappings route:", error);
+        res.status(500).json({
+            error: 'Database error',
+            details: error.message
+        });
+    }
+});
+
+// Add route for sponsor to get their pending driver mappings
+router.get("/getDriverSponsorMappingsForSponsor", async (req, res, next) => {
+    const sponsorId = req.query.SponsorID;
+    console.log("Received request for sponsor mappings with SponsorID:", sponsorId);
+    
+    if (!sponsorId) {
+        return res.status(400).json({ message: 'SponsorID required' });
+    }
+    
+    try {
+        const mappings = await getDriverSponsorMappingsForSponsor(sponsorId);
+        console.log("Sending response with mappings for sponsor", sponsorId, ":", mappings.length, "records");
+        
+        // Double-check filtering on the server side to ensure security
+        const filteredMappings = mappings.filter(mapping => 
+            mapping.SponsorID === parseInt(sponsorId) && mapping.ApplicationAccepted === 0
+        );
+        
+        console.log("After server-side filtering:", filteredMappings.length, "records");
+        res.json(filteredMappings);
+    } catch (error) {
+        console.error("Error in getDriverSponsorMappingsForSponsor route:", error);
+        res.status(500).json({
+            error: 'Database error',
+            details: error.message
+        });
     }
 });
 

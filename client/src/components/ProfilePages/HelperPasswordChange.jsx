@@ -25,8 +25,12 @@ export default function HelperPasswordChange(UserID) {
         setMessageType("info");
             
         try {
-        const response = await updatePassword(UserID.UserID, hashedPassword, salt);
-
+        let response;
+        if(typeof myVariable === 'object'){
+            response = await updatePassword(UserID.UserID, hashedPassword, salt);
+        }else{
+            response = await updatePassword(UserID, hashedPassword, salt);
+        }
         // Debug: Log the response status and text
         console.log('Response status:', response.status);
         const responseText = await response.text();
