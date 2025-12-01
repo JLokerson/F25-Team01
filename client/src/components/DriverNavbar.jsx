@@ -99,6 +99,9 @@ export default function DriverNavbar() {
                             <li className="nav-item">
                                 <Link className="nav-link" to="/products">Catalog</Link>
                             </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/driver-application">Apply to Sponsor</Link>
+                            </li>
                         </ul>
                         <div className="d-flex align-items-center">
                             {isAdminImpostor && (
