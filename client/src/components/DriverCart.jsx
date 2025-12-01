@@ -5,18 +5,6 @@ import DriverNavbar from "./DriverNavbar";
 import driversSeed from "../content/json-assets/driver_sample.json";
 import { CookiesProvider, useCookies } from "react-cookie";
 
-// Server URL configuration - matches DriverProducts.jsx pattern
-const API_BASE = (() => {
-  if (process.env.REACT_APP_SERVER_URL) {
-    return process.env.REACT_APP_SERVER_URL.replace(/\/$/, "");
-  }
-  if (typeof window !== "undefined") {
-    const { protocol, hostname } = window.location;
-    return `${protocol}//${hostname}:4000`;
-  }
-  return "http://localhost:4000";
-})();
-
 export default function DriverCart() {
   let navigate = useNavigate();
   // read user from localStorage to determine availability
@@ -45,8 +33,10 @@ export default function DriverCart() {
   // Cart is stored as an array of ITEM_IDs
   const [cart, setCart] = useState([]);
   const [productsMap, setProductsMap] = useState({});
+  const [cartLoading, setCartLoading] = useState(false);
+  const [driverId, setDriverId] = useState(null);
 
-  // Load sponsor information
+  // Load sponsor information and cart
   useEffect(() => {
     if (user?.UserID) {
       loadSponsorInfo();
@@ -55,13 +45,14 @@ export default function DriverCart() {
 
   const loadSponsorInfo = async () => {
     try {
-      // Step 1: Call getSpecificDriver to get driver's database record
+      setCartLoading(true);
+      console.log("Cart - Loading sponsor info and cart from database...");
       if (!user?.UserID) {
         console.log("Cart - No UserID available");
         return;
       }
 
-      const driverUrl = `${API_BASE}/driverAPI/getSpecificDriver?UserID=${user.UserID}`;
+      const driverUrl = `https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/getSpecificDriver?UserID=${user.UserID}`;
       const driverRes = await fetch(driverUrl);
 
       if (!driverRes.ok) {
@@ -74,16 +65,19 @@ export default function DriverCart() {
 
       // Extract DriverID and SponsorID from response
       const driver = Array.isArray(driverData) && driverData.length > 0 ? driverData[0] : driverData;
-      const driverId = driver?.DriverID;
+      const fetchedDriverId = driver?.DriverID;
       const sponsorId = driver?.SponsorID;
 
-      if (!driverId || !sponsorId) {
+      if (!fetchedDriverId || !sponsorId) {
         console.log("Cart - Missing DriverID or SponsorID from driver data");
         return;
       }
 
-      // Step 2: Use SponsorID to fetch sponsor mappings via getDriverSponsorMappings
-      const mappingsUrl = `${API_BASE}/driverAPI/getDriverSponsorMappings?UserID=${user.UserID}`;
+      // Store DriverID for later use
+      setDriverId(fetchedDriverId);
+
+      // Use SponsorID to fetch sponsor mappings via getDriverSponsorMappings
+      const mappingsUrl = `https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/driverAPI/getDriverSponsorMappings?UserID=${user.UserID}`;
       const mappingsRes = await fetch(mappingsUrl);
 
       if (!mappingsRes.ok) {
@@ -108,7 +102,7 @@ export default function DriverCart() {
           const points = currentMapping.Points || 0;
           console.log("Cart - Found sponsor mapping with points:", points);
 
-          // Step 3: Set sponsorInfo and currentPoints from database results
+          // Set sponsorInfo and currentPoints from database results
           setSponsorInfo({
             SponsorID: sponsorId,
             CompanyName: currentMapping.SponsorName || `Sponsor ${sponsorId}`,
@@ -119,8 +113,107 @@ export default function DriverCart() {
           setCurrentPoints(0);
         }
       }
+
+      // Step 4: Fetch cart items from database
+      await loadCartFromDatabase(fetchedDriverId);
+
     } catch (error) {
       console.error("Cart - Error loading sponsor info:", error);
+    } finally {
+      setCartLoading(false);
+    }
+  };
+
+  const loadCartFromDatabase = async (driverId) => {
+    try {
+      console.log("Cart - Fetching cart items for DriverID:", driverId);
+
+      const cartUrl = `https://63iutwxr2owp72oyfbetwyluaq0wakdm.lambda-url.us-east-1.on.aws/cartAPI/getCartItems?DriverID=${driverId}`;
+      const cartRes = await fetch(cartUrl);
+
+      if (!cartRes.ok) {
+        console.error("Cart - Failed to fetch cart items:", cartRes.status);
+        return;
+      }
+
+      const cartData = await cartRes.json();
+      console.log("Cart - Raw cart data from DB:", cartData);
+
+      // Extract ITEM_IDs from cart data
+      const itemIds = Array.isArray(cartData) ? cartData.map((item) => item.ITEM_ID) : [];
+      console.log("Cart - Extracted item IDs:", itemIds);
+
+      if (itemIds.length === 0) {
+        setCart([]);
+        setProductsMap({});
+        console.log("Cart - No items in cart");
+        return;
+      }
+
+      // Enrich items with Best Buy API data
+      await enrichCartItems(itemIds);
+
+    } catch (error) {
+      console.error("Cart - Error loading cart from database:", error);
+      setCart([]);
+      setProductsMap({});
+    }
+  };
+
+  const enrichCartItems = async (itemIds) => {
+    try {
+      console.log("Cart - Enriching items with Best Buy API data...");
+      const enrichedProducts = {};
+
+      // Fetch product data from Best Buy API for each item
+      for (const itemId of itemIds) {
+        try {
+          const bbUrl = `https://api.bestbuyapis.com/v1/products(sku=${itemId})?show=name,salePrice,image&apiKey=${process.env.REACT_APP_BESTBUY_API_KEY}`;
+          const bbRes = await fetch(bbUrl);
+
+          if (bbRes.ok) {
+            const bbData = await bbRes.json();
+            if (bbData.products && bbData.products.length > 0) {
+              const product = bbData.products[0];
+              enrichedProducts[itemId] = {
+                ITEM_ID: itemId,
+                ITEM_NAME: product.name || `Item ${itemId}`,
+                ITEM_PRICE: product.salePrice || 0,
+                ITEM_IMAGE: product.image || "",
+                ITEM_STOCK: 1, // Default stock count
+              };
+              console.log(`Cart - Enriched item ${itemId}:`, enrichedProducts[itemId]);
+            }
+          } else {
+            console.warn(`Cart - Failed to fetch Best Buy data for SKU ${itemId}`);
+            // Fallback: create minimal product entry
+            enrichedProducts[itemId] = {
+              ITEM_ID: itemId,
+              ITEM_NAME: `Item ${itemId}`,
+              ITEM_PRICE: 0,
+              ITEM_IMAGE: "",
+              ITEM_STOCK: 1,
+            };
+          }
+        } catch (error) {
+          console.error(`Cart - Error enriching item ${itemId}:`, error);
+          // Fallback: create minimal product entry
+          enrichedProducts[itemId] = {
+            ITEM_ID: itemId,
+            ITEM_NAME: `Item ${itemId}`,
+            ITEM_PRICE: 0,
+            ITEM_IMAGE: "",
+            ITEM_STOCK: 1,
+          };
+        }
+      }
+
+      setProductsMap(enrichedProducts);
+      setCart(itemIds);
+      console.log("Cart - Enrichment complete. Product map:", enrichedProducts);
+
+    } catch (error) {
+      console.error("Cart - Error enriching cart items:", error);
     }
   };
 
@@ -179,22 +272,8 @@ export default function DriverCart() {
   }
 
   useEffect(() => {
-    const raw = localStorage.getItem("cart") || "[]";
-    try {
-      setCart(JSON.parse(raw));
-    } catch (e) {
-      setCart([]);
-    }
-
-    const prodRaw = localStorage.getItem("products") || "[]";
-    try {
-      const prods = JSON.parse(prodRaw);
-      const map = {};
-      prods.forEach((p) => (map[p.ITEM_ID] = p));
-      setProductsMap(map);
-    } catch (e) {
-      setProductsMap({});
-    }
+    // Cart is now loaded from database in loadSponsorInfo()
+    // No need to load from localStorage
   }, []);
 
   const remove = (itemId) => {
