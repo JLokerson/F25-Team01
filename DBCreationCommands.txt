@@ -1,3 +1,5 @@
+/* Literally every command needed to create our DB.
+First tables, then triggers unless I missed one or two, then finally stored procedures.*/
 CREATE TABLE `ABOUT` (
   `AboutID` int NOT NULL AUTO_INCREMENT,
   `Team` int DEFAULT NULL,
