@@ -1,6 +1,3 @@
-/**
- * Express router mounted at /api/bestbuy. Warpas category/product calls, normalizes payload, enforces page size and reads API_KEY variable from .env
- */
 const path = require("path");
 
 require("dotenv").config({
@@ -10,6 +7,7 @@ const express = require("express");
 const axios = require("axios");
 
 const router = express.Router();
+// API key does load properly from .env (tested with console.log)
 const API_KEY = process.env.API_KEY;
 const BB_BASE = "https://api.bestbuy.com/v1";
 
@@ -36,6 +34,8 @@ router.get("/categories", async (req, res) => {
     }
 
     const show = (req.query.show || "id,name,url").toString();
+    console.log("Requested show fields:", show);
+
     const pageSize = clampPageSize(req.query.pageSize, 100);
     const cursor = req.query.cursor ? req.query.cursor.toString() : undefined;
     const all = req.query.all === "1" || req.query.all === "true";
@@ -62,7 +62,8 @@ router.get("/categories", async (req, res) => {
       let total = 0;
       let totalPages = 0;
       let loops = 0;
-      const MAX_LOOPS = 3; // Limit to 3 pages (300 items max) to avoid timeout
+      // Page limit of 3
+      const MAX_LOOPS = 3;
 
       while (loops < MAX_LOOPS) {
         loops++;
@@ -74,7 +75,10 @@ router.get("/categories", async (req, res) => {
           `[BB Categories Loop ${loops}] Requesting with params:`,
           params
         );
+
+        // This API call to Best Buy
         const { data } = await http.get(`${BB_BASE}/categories`, { params });
+
         const cats = data?.categories || [];
         console.log(
           `[BB Categories Loop ${loops}] Got ${cats.length} categories`

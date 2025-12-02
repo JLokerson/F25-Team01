@@ -31,6 +31,7 @@ import Testing from "./components/Testing.jsx";
 import { CookiesProvider, useCookies } from "react-cookie";
 import AdminAuditView from "./components/AdminAuditView";
 import SponsorAuditView from "./components/SponsorAuditView";
+import SponsorBulkLoading from "./components/SponsorBulkLoading.jsx";
 import DriverApplication from "./components/DriverApplication.jsx";
 
 function AppContent() {
@@ -56,6 +57,8 @@ function AppContent() {
         <Route path="/register" element={<Register />} />
         <Route path="/products" element={<DriverProducts />} />
         <Route path="/testing" element={<Testing />} />
+        {/* <Route path="/OrderConfirmation" element={<OrderConfirmation/>}/> */}
+        {/* <Route path="/Cart" element={<CartPage/>}/> */}
         <Route path="/MakeNewUser" element={<MakeNewUser />} />
 
         {/* Admin routes */}
@@ -78,6 +81,7 @@ function AppContent() {
         <Route path="/pending-applications" element={<PendingApplications />} />
         <Route path="/sponsorcatalog" element={<SponsorCatalog />} />
         <Route path="/sponsorauditview" element={<SponsorAuditView />} />
+        <Route path="/sponsorbulkupload" element={<SponsorBulkLoading />} />
 
         {/* Driver routes */}
         <Route path="/driverhome" element={<DriverHome />} />
@@ -88,6 +92,8 @@ function AppContent() {
           path="/driverorderconfirmation"
           element={<DriverOrderConfirmation />}
         />
+
+        {/* Shared pages */}
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -82,10 +82,10 @@ async function getSponsorIdForDriver(driverID) {
  */
 function getSavedSponsorSelection() {
   try {
-    const saved = localStorage.getItem('selectedSponsorMapping');
+    const saved = localStorage.getItem("selectedSponsorMapping");
     return saved ? JSON.parse(saved) : null;
   } catch (error) {
-    console.error('Error reading saved sponsor selection:', error);
+    console.error("Error reading saved sponsor selection:", error);
     return null;
   }
 }
@@ -95,12 +95,14 @@ function getSavedSponsorSelection() {
  */
 async function getSponsorInfo(sponsorID) {
   try {
-    const sponsorUrl = withApiBase(`/sponsorAPI/getSponsor?SponsorID=${encodeURIComponent(sponsorID)}`);
-    console.log('Fetching sponsor info from:', sponsorUrl);
+    const sponsorUrl = withApiBase(
+      `/sponsorAPI/getSponsor?SponsorID=${encodeURIComponent(sponsorID)}`
+    );
+    console.log("Fetching sponsor info from:", sponsorUrl);
     const sponsorRes = await fetch(sponsorUrl);
     if (sponsorRes.ok) {
       const sponsorData = await sponsorRes.json();
-      console.log('Sponsor data received:', sponsorData);
+      console.log("Sponsor data received:", sponsorData);
       return sponsorData;
     }
     return null;
@@ -117,16 +119,16 @@ async function getSponsorIdForUser(userID) {
   // First, check for saved sponsor selection
   const savedSelection = getSavedSponsorSelection();
   if (savedSelection && savedSelection.sponsorID) {
-    console.log('Using saved sponsor selection:', savedSelection);
+    console.log("Using saved sponsor selection:", savedSelection);
     return {
       sponsorID: savedSelection.sponsorID,
-      sponsorName: savedSelection.sponsorName
+      sponsorName: savedSelection.sponsorName,
     };
   }
 
   // Fallback to original logic
-  console.log('No saved sponsor selection, using driver lookup');
-  
+  console.log("No saved sponsor selection, using driver lookup");
+
   // Step 1: Get DriverID from UserID
   const driverID = await getDriverIdForUser(userID);
   if (!driverID) {
@@ -207,11 +209,18 @@ export default function DriverProducts() {
         // Get current points from saved selection first
         const savedSelection = getSavedSponsorSelection();
         let points = 0;
-        
+
         // First try: Use points from saved selection if available
-        if (savedSelection && savedSelection.sponsorID === sponsorID && savedSelection.currentPoints !== undefined) {
+        if (
+          savedSelection &&
+          savedSelection.sponsorID === sponsorID &&
+          savedSelection.currentPoints !== undefined
+        ) {
           points = savedSelection.currentPoints;
-          console.log('DriverProducts - Using saved points from localStorage:', points);
+          console.log(
+            "DriverProducts - Using saved points from localStorage:",
+            points
+          );
         } else {
           // Second try: Fetch from API if no saved points
           try {
@@ -219,40 +228,69 @@ export default function DriverProducts() {
             const mappingsRes = await fetch(mappingsUrl);
             if (mappingsRes.ok) {
               const mappingsData = await mappingsRes.json();
-              console.log('DriverProducts - Fetched mappings for points:', mappingsData);
-              
+              console.log(
+                "DriverProducts - Fetched mappings for points:",
+                mappingsData
+              );
+
               // Handle nested array response (same as DriverProfile)
               let mappings = mappingsData;
-              if (Array.isArray(mappingsData) && mappingsData.length > 0 && Array.isArray(mappingsData[0])) {
+              if (
+                Array.isArray(mappingsData) &&
+                mappingsData.length > 0 &&
+                Array.isArray(mappingsData[0])
+              ) {
                 mappings = mappingsData[0];
               }
-              
+
               // Find matching sponsor mapping
               if (Array.isArray(mappings)) {
-                const currentMapping = mappings.find(m => m.SponsorID == sponsorID);
+                const currentMapping = mappings.find(
+                  (m) => m.SponsorID == sponsorID
+                );
                 if (currentMapping) {
                   points = currentMapping.Points || 0;
-                  console.log('DriverProducts - Found current points for SponsorID', sponsorID, ':', points);
-                  
+                  console.log(
+                    "DriverProducts - Found current points for SponsorID",
+                    sponsorID,
+                    ":",
+                    points
+                  );
+
                   // Update saved selection with fetched points
                   if (savedSelection) {
-                    const updatedSelection = { ...savedSelection, currentPoints: points };
-                    localStorage.setItem('selectedSponsorMapping', JSON.stringify(updatedSelection));
+                    const updatedSelection = {
+                      ...savedSelection,
+                      currentPoints: points,
+                    };
+                    localStorage.setItem(
+                      "selectedSponsorMapping",
+                      JSON.stringify(updatedSelection)
+                    );
                   }
                 } else {
-                  console.log('DriverProducts - No mapping found for SponsorID:', sponsorID);
+                  console.log(
+                    "DriverProducts - No mapping found for SponsorID:",
+                    sponsorID
+                  );
                 }
               }
             } else {
-              console.log('DriverProducts - Failed to fetch mappings:', mappingsRes.status);
+              console.log(
+                "DriverProducts - Failed to fetch mappings:",
+                mappingsRes.status
+              );
             }
           } catch (error) {
-            console.log("DriverProducts - Could not fetch current points from mappings:", error);
+            console.log(
+              "DriverProducts - Could not fetch current points from mappings:",
+              error
+            );
           }
         }
-        
+
         setCurrentPoints(points);
-        console.log('DriverProducts - Set current points to:', points);
+        console.log("DriverProducts - Set current points to:", points);
 
         // Get categories for this sponsor via CATALOG table
         const url = withApiBase(
@@ -385,7 +423,8 @@ export default function DriverProducts() {
                 <div>
                   <i className="fas fa-building me-2"></i>
                   <strong>Current Sponsor Catalog:</strong>{" "}
-                  {sponsorInfo.CompanyName || `Sponsor ID ${sponsorInfo.SponsorID}`}
+                  {sponsorInfo.CompanyName ||
+                    `Sponsor ID ${sponsorInfo.SponsorID}`}
                   {sponsorInfo.SponsorID && (
                     <small className="ms-2 text-muted">
                       (ID: {sponsorInfo.SponsorID})
@@ -402,7 +441,7 @@ export default function DriverProducts() {
             </div>
           )}
           {/* Debug - remove later */}
-          {console.log('Current points state:', currentPoints)}
+          {console.log("Current points state:", currentPoints)}
         </div>
 
         {/* Categories Grid */}
@@ -451,6 +490,21 @@ export default function DriverProducts() {
                     </div>
                     <div className="driver-products__card-content">
                       <h3>
+                        {/* 
+                          HINT: category.name is currently showing as null
+                          The category object comes from the API response in the loadCategories() function
+                          Look at what getAllCategoriesForSponsor() returns in catalogAPI.js - 
+                          it currently maps "name: null" in the normalized response!
+                          
+                          You need to:
+                          1. Fetch the actual category name from Best Buy API based on categoryId (category.categoryId is the Best Buy category code like "abcat0101001")
+                          2. Store that name either in the database CATALOG table or enhance the API response
+                          
+                          Alternative approach:
+                          - Query Best Buy API with the categoryId to get the display name
+                          - Cache the result to avoid repeated API calls
+                          - Use that instead of null
+                        */}
                         {category.name || `Category ${category.categoryId}`}
                       </h3>
                     </div>
@@ -510,7 +564,7 @@ export default function DriverProducts() {
 
               <div className="driver-products__modal-content">
                 {productsLoading && (
-                  <div className="alert alert-info">Loading products…</div>
+                  <div className="alert alert-info">Loading products ...</div>
                 )}
 
                 {productsError && (
@@ -523,12 +577,14 @@ export default function DriverProducts() {
                   </div>
                 )}
 
-                {!productsLoading && products.length === 0 && !productsError && (
-                  <div className="driver-products__error-card">
-                    <div className="driver-products__error-icon">⚠️</div>
-                    <p>No products available for this category</p>
-                  </div>
-                )}
+                {!productsLoading &&
+                  products.length === 0 &&
+                  !productsError && (
+                    <div className="driver-products__error-card">
+                      <div className="driver-products__error-icon">⚠️</div>
+                      <p>No products available for this category</p>
+                    </div>
+                  )}
 
                 {!productsLoading && paginatedProducts.length > 0 && (
                   <>
