@@ -10,6 +10,7 @@ export default function AdminProfile() {
     const [cookies, setCookie] = useCookies(['username', 'password']);
     const [showPasswordChangeButton, setShowPasswordChangeButton] = useState(false);
     const [userID, setUserID] = useState([]);
+    const [userInfo, setUserInfo] = useState(null);
     
     // Ensure this is actually a sponsor user.
     // TO-DO: verify the login returned success and not fail, rn only checks if error.
@@ -78,10 +79,12 @@ export default function AdminProfile() {
 
     useEffect(() => {
         checkLastLogin();
+        const userInfoData = getUserInfo();
+        if (userInfoData) {
+            setUserID(userInfoData.UserID);
+            setUserInfo(userInfoData);
+        }
     }, []);
-
-    const userInfo = getUserInfo();
-    setUserID(userInfo.UserID);
 
     const getUserTypeString = (userType) => {
         switch (userType) {
